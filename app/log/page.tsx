@@ -1,20 +1,19 @@
 "use client";
 import MatchEntry from "@/components/MatchEntry";
 import { useRouter } from "next/navigation";
-import { Match } from "@/types";
+import { supabase } from "@/lib/supabase";
 
 export default function LogPage() {
   const router = useRouter();
   return (
     <MatchEntry
-      onSave={(match) => {
-        const existing: Match[] = JSON.parse(localStorage.getItem("matches") || "[]");
-        const newMatch: Match = {
-          ...match,
-          id: crypto.randomUUID(),
-          opponentId: match.opponentName,
-        };
-        localStorage.setItem("matches", JSON.stringify([newMatch, ...existing]));
+      onSave={async (match) => {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) { router.push("/auth"); return; }
+        await supabase.from("matches").insert({
+          user_id: user.id,
+          data: match,
+        });
         router.push("/");
       }}
       onCancel={() => router.push("/")}
