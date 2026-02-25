@@ -1,0 +1,577 @@
+import { useState, useCallback } from "react";
+import {
+  Match,
+  MatchFormData,
+  Surface,
+  MatchType,
+  PlayStyle,
+  SetScore,
+  MatchScore,
+  deriveResult,
+} from "../types";
+
+// ─── Sub-types ────────────────────────────────────────────────────────────────
+
+type Step = "info" | "score" | "scout" | "review";
+
+const STEPS: Step[] = ["info", "score", "scout", "review"];
+
+const SURFACES: { value: Surface; label: string; emoji: string; color: string }[] = [
+  { value: "hard",  label: "Hard",  emoji: "🟦", color: "bg-blue-500/20  border-blue-400  text-blue-300"  },
+  { value: "clay",  label: "Clay",  emoji: "🟫", color: "bg-amber-500/20 border-amber-400 text-amber-300" },
+  { value: "grass", label: "Grass", emoji: "🟩", color: "bg-green-500/20 border-green-400 text-green-300" },
+];
+
+const PLAY_STYLES: { value: PlayStyle; label: string; desc: string }[] = [
+  { value: "pusher",          label: "Pusher",         desc: "Retrieves everything" },
+  { value: "big-hitter",      label: "Big Hitter",     desc: "Massive groundstrokes" },
+  { value: "serve-volley",    label: "Serve & Volley",  desc: "Net rusher" },
+  { value: "counter-puncher", label: "Counter Puncher", desc: "Loves fast balls" },
+  { value: "all-court",       label: "All Court",       desc: "Tactically flexible" },
+  { value: "moonballer",      label: "Moonballer",      desc: "High heavy topspin" },
+];
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function emptySet(): SetScore { return { player: null, opponent: null }; }
+
+function emptyScore(): MatchScore {
+  return { sets: [emptySet(), emptySet(), emptySet()] };
+}
+
+function setIsPlayed(s: SetScore): boolean {
+  return s.player !== null && s.opponent !== null;
+}
+
+function setsPlayed(score: MatchScore): number {
+  return score.sets.filter(setIsPlayed).length;
+}
+
+function scoreLabel(score: MatchScore): string {
+  return score.sets
+    .filter(setIsPlayed)
+    .map(s => `${s.player}-${s.opponent}`)
+    .join(", ") || "—";
+}
+
+// ─── Step Indicator ───────────────────────────────────────────────────────────
+
+function StepDots({ current }: { current: Step }) {
+  return (
+    <div className="flex items-center justify-center gap-2 mb-6">
+      {STEPS.map((s) => (
+        <div
+          key={s}
+          className={`rounded-full transition-all duration-300 ${
+            s === current
+              ? "w-6 h-2 bg-lime-400"
+              : STEPS.indexOf(s) < STEPS.indexOf(current)
+              ? "w-2 h-2 bg-lime-400/50"
+              : "w-2 h-2 bg-white/20"
+          }`}
+        />
+      ))}
+    </div>
+  );
+}
+
+// ─── Section Header ───────────────────────────────────────────────────────────
+
+function SectionHeader({ title, sub }: { title: string; sub?: string }) {
+  return (
+    <div className="mb-5">
+      <h2 className="text-xl font-black tracking-tight text-white">{title}</h2>
+      {sub && <p className="text-sm text-white/40 mt-0.5">{sub}</p>}
+    </div>
+  );
+}
+
+// ─── Pill Button ──────────────────────────────────────────────────────────────
+
+function Pill({
+  active,
+  onClick,
+  children,
+  color = "lime",
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+  color?: "lime" | "blue" | "amber" | "green" | "red";
+}) {
+  const activeClass = {
+    lime:  "bg-lime-400  text-black  border-lime-400",
+    blue:  "bg-blue-500  text-white  border-blue-500",
+    amber: "bg-amber-500 text-black  border-amber-500",
+    green: "bg-green-500 text-black  border-green-500",
+    red:   "bg-red-500   text-white  border-red-500",
+  }[color];
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`px-4 py-2 rounded-full border text-sm font-semibold transition-all active:scale-95 ${
+        active
+          ? activeClass
+          : "border-white/20 text-white/50 bg-white/5 hover:border-white/40 hover:text-white/80"
+      }`}
+    >
+      {children}
+    </button>
+  );
+}
+
+// ─── Score Set Input ──────────────────────────────────────────────────────────
+
+function SetInput({
+  setNum,
+  value,
+  onChange,
+}: {
+  setNum: number;
+  value: SetScore;
+  onChange: (v: SetScore) => void;
+}) {
+  const played = setIsPlayed(value);
+
+  return (
+    <div
+      className={`flex items-center gap-3 p-3 rounded-2xl border transition-all ${
+        played ? "border-white/20 bg-white/5" : "border-white/10 bg-white/[0.02]"
+      }`}
+    >
+      <span className="text-xs font-bold text-white/30 w-8 shrink-0">S{setNum}</span>
+      <div className="flex items-center gap-2 flex-1">
+        <input
+          type="number"
+          min={0}
+          max={7}
+          placeholder="You"
+          value={value.player ?? ""}
+          onChange={(e) =>
+            onChange({ ...value, player: e.target.value === "" ? null : Number(e.target.value) })
+          }
+          className="w-full bg-white/10 text-white text-center text-2xl font-black rounded-xl p-2 outline-none focus:ring-2 focus:ring-lime-400/60 placeholder:text-white/20 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+        />
+        <span className="text-white/30 font-bold text-lg">–</span>
+        <input
+          type="number"
+          min={0}
+          max={7}
+          placeholder="Them"
+          value={value.opponent ?? ""}
+          onChange={(e) =>
+            onChange({ ...value, opponent: e.target.value === "" ? null : Number(e.target.value) })
+          }
+          className="w-full bg-white/10 text-white text-center text-2xl font-black rounded-xl p-2 outline-none focus:ring-2 focus:ring-lime-400/60 placeholder:text-white/20 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+        />
+      </div>
+      {played && (
+        <span
+          className={`text-xs font-bold shrink-0 w-6 text-right ${
+            (value.player ?? 0) > (value.opponent ?? 0) ? "text-lime-400" : "text-red-400"
+          }`}
+        >
+          {(value.player ?? 0) > (value.opponent ?? 0) ? "W" : "L"}
+        </span>
+      )}
+    </div>
+  );
+}
+
+// ─── Scouting Text Area ───────────────────────────────────────────────────────
+
+function ScoutField({
+  icon,
+  label,
+  placeholder,
+  value,
+  onChange,
+}: {
+  icon: string;
+  label: string;
+  placeholder: string;
+  value: string;
+  onChange: (v: string) => void;
+}) {
+  return (
+    <div className="space-y-2">
+      <label className="flex items-center gap-2 text-sm font-bold text-white/70">
+        <span className="text-base">{icon}</span>
+        {label}
+      </label>
+      <textarea
+        rows={2}
+        placeholder={placeholder}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full bg-white/5 border border-white/10 rounded-2xl p-3 text-white text-sm placeholder:text-white/25 outline-none focus:ring-2 focus:ring-lime-400/50 focus:border-lime-400/30 resize-none transition-all"
+      />
+    </div>
+  );
+}
+
+// ─── Main Component ───────────────────────────────────────────────────────────
+
+interface MatchEntryProps {
+  onSave?: (match: Omit<Match, "id" | "opponentId">) => void;
+  onCancel?: () => void;
+}
+
+export default function MatchEntry({ onSave, onCancel }: MatchEntryProps) {
+  const [step, setStep] = useState<Step>("info");
+
+  // Form state
+  const [opponentName, setOpponentName] = useState("");
+  const [surface, setSurface]           = useState<Surface | null>(null);
+  const [matchType, setMatchType]       = useState<MatchType>("singles");
+  const [score, setScore]               = useState<MatchScore>(emptyScore());
+  const [styles, setStyles]             = useState<PlayStyle[]>([]);
+  const [weapon, setWeapon]             = useState("");
+  const [hole, setHole]                 = useState("");
+  const [keyToWin, setKeyToWin]         = useState("");
+
+  // Derived
+  const result     = deriveResult(score);
+  const isWin      = result === "win";
+  const stepIndex  = STEPS.indexOf(step);
+  const canAdvance = useCallback(() => {
+    if (step === "info")  return opponentName.trim().length > 0 && surface !== null;
+    if (step === "score") return setsPlayed(score) >= 1;
+    return true;
+  }, [step, opponentName, surface, score]);
+
+  function updateSet(i: number, val: SetScore) {
+    const sets = [...score.sets] as [SetScore, SetScore, SetScore];
+    sets[i] = val;
+    setScore({ sets });
+  }
+
+  function toggleStyle(s: PlayStyle) {
+    setStyles((prev) =>
+      prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s]
+    );
+  }
+
+  function handleSave() {
+    if (!surface) return;
+    onSave?.({
+      createdAt: new Date().toISOString(),
+      opponentName,
+      surface,
+      matchType,
+      score,
+      result,
+      opponentStyle: styles,
+      scouting: { weapon, hole, keyToWin },
+    });
+  }
+
+  return (
+    <div className="min-h-screen bg-[#0c0c0e] flex flex-col font-['DM_Sans',sans-serif]">
+      {/* Header */}
+      <div className="sticky top-0 z-10 bg-[#0c0c0e]/90 backdrop-blur-xl border-b border-white/[0.06] px-5 pt-safe">
+        <div className="flex items-center justify-between h-14">
+          <button
+            onClick={onCancel}
+            className="text-white/40 text-sm font-medium hover:text-white/80 transition-colors active:scale-95"
+          >
+            Cancel
+          </button>
+          <span className="text-xs font-bold tracking-[0.2em] uppercase text-white/30">
+            Log Match
+          </span>
+          {step === "review" ? (
+            <button
+              onClick={handleSave}
+              className="text-sm font-black text-lime-400 hover:text-lime-300 transition-colors active:scale-95"
+            >
+              Save
+            </button>
+          ) : (
+            <div className="w-12" />
+          )}
+        </div>
+      </div>
+
+      {/* Body */}
+      <div className="flex-1 overflow-y-auto px-5 py-6">
+        <StepDots current={step} />
+
+        {/* ── STEP 1: Match Info ── */}
+        {step === "info" && (
+          <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+            <SectionHeader title="Who'd you play?" sub="Basic match details" />
+
+            <div>
+              <label className="text-xs font-bold text-white/40 uppercase tracking-widest block mb-2">
+                Opponent
+              </label>
+              <input
+                autoFocus
+                type="text"
+                placeholder="e.g. Rafael Nadal"
+                value={opponentName}
+                onChange={(e) => setOpponentName(e.target.value)}
+                className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3.5 text-white text-base placeholder:text-white/25 outline-none focus:ring-2 focus:ring-lime-400/50 focus:border-lime-400/30 transition-all font-medium"
+              />
+            </div>
+
+            <div>
+              <label className="text-xs font-bold text-white/40 uppercase tracking-widest block mb-3">
+                Surface
+              </label>
+              <div className="grid grid-cols-3 gap-2">
+                {SURFACES.map((s) => (
+                  <button
+                    key={s.value}
+                    type="button"
+                    onClick={() => setSurface(s.value)}
+                    className={`flex flex-col items-center gap-1.5 p-4 rounded-2xl border text-sm font-bold transition-all active:scale-95 ${
+                      surface === s.value
+                        ? s.color + " shadow-lg"
+                        : "border-white/10 text-white/40 bg-white/[0.02] hover:border-white/20 hover:text-white/60"
+                    }`}
+                  >
+                    <span className="text-2xl">{s.emoji}</span>
+                    {s.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <label className="text-xs font-bold text-white/40 uppercase tracking-widest block mb-3">
+                Format
+              </label>
+              <div className="grid grid-cols-2 gap-2">
+                {(["singles", "doubles"] as MatchType[]).map((t) => (
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() => setMatchType(t)}
+                    className={`py-3.5 rounded-2xl border text-sm font-bold capitalize transition-all active:scale-95 ${
+                      matchType === t
+                        ? "bg-lime-400/10 border-lime-400/50 text-lime-400"
+                        : "border-white/10 text-white/40 bg-white/[0.02] hover:border-white/20 hover:text-white/60"
+                    }`}
+                  >
+                    {t}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── STEP 2: Score ── */}
+        {step === "score" && (
+          <div className="space-y-5 animate-in fade-in slide-in-from-right-4 duration-300">
+            <SectionHeader
+              title="Enter the score"
+              sub="Log how many sets were played"
+            />
+
+            <div className="space-y-2">
+              {score.sets.map((set, i) => (
+                <SetInput
+                  key={i}
+                  setNum={i + 1}
+                  value={set}
+                  onChange={(v) => updateSet(i, v)}
+                />
+              ))}
+            </div>
+
+            {setsPlayed(score) > 0 && (
+              <div
+                className={`mt-4 rounded-2xl p-4 text-center border transition-all ${
+                  isWin
+                    ? "bg-lime-400/10  border-lime-400/30  text-lime-300"
+                    : "bg-red-500/10   border-red-500/30   text-red-400"
+                }`}
+              >
+                <div className="text-3xl font-black mb-0.5">
+                  {isWin ? "WIN" : "LOSS"}
+                </div>
+                <div className="text-sm opacity-60">{scoreLabel(score)}</div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ── STEP 3: Scout ── */}
+        {step === "scout" && (
+          <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+            <SectionHeader
+              title="Build your dossier"
+              sub="Strategic intel for the rematch"
+            />
+
+            <ScoutField
+              icon="⚡"
+              label="Their Weapon"
+              placeholder="What was their best shot?"
+              value={weapon}
+              onChange={setWeapon}
+            />
+            <ScoutField
+              icon="🎯"
+              label="Their Hole"
+              placeholder="Where was their weakness?"
+              value={hole}
+              onChange={setHole}
+            />
+            <ScoutField
+              icon="🔑"
+              label="Key to Win"
+              placeholder="One sentence strategy for next time…"
+              value={keyToWin}
+              onChange={setKeyToWin}
+            />
+
+            <div>
+              <label className="text-xs font-bold text-white/40 uppercase tracking-widest block mb-3">
+                Playstyle Tags
+              </label>
+              <div className="flex flex-wrap gap-2">
+                {PLAY_STYLES.map((ps) => (
+                  <Pill
+                    key={ps.value}
+                    active={styles.includes(ps.value)}
+                    onClick={() => toggleStyle(ps.value)}
+                  >
+                    {ps.label}
+                  </Pill>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── STEP 4: Review ── */}
+        {step === "review" && (
+          <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
+            <SectionHeader title="Review & save" sub="Everything look right?" />
+
+            {/* Result Hero */}
+            <div
+              className={`rounded-3xl p-5 border ${
+                isWin
+                  ? "bg-gradient-to-br from-lime-400/15 to-lime-400/5 border-lime-400/30"
+                  : "bg-gradient-to-br from-red-500/15 to-red-500/5 border-red-500/30"
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <div
+                    className={`text-xs font-black tracking-[0.2em] uppercase mb-1 ${
+                      isWin ? "text-lime-400" : "text-red-400"
+                    }`}
+                  >
+                    {isWin ? "Victory" : "Defeat"}
+                  </div>
+                  <div className="text-2xl font-black text-white">
+                    {opponentName}
+                  </div>
+                  <div className="text-white/40 text-sm mt-0.5">
+                    {scoreLabel(score)} · {
+                      SURFACES.find((s) => s.value === surface)?.emoji
+                    } {surface?.charAt(0).toUpperCase() ?? ""}
+                    {surface?.slice(1)} · {matchType}
+                  </div>
+                </div>
+                <div
+                  className={`text-5xl font-black ${
+                    isWin ? "text-lime-400" : "text-red-400"
+                  }`}
+                >
+                  {isWin ? "W" : "L"}
+                </div>
+              </div>
+            </div>
+
+            {/* Scouting Summary */}
+            {(weapon || hole || keyToWin) && (
+              <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 space-y-3">
+                <p className="text-xs font-black tracking-widest uppercase text-white/30">
+                  Scouting Intel
+                </p>
+                {weapon && (
+                  <div>
+                    <span className="text-xs text-white/30">⚡ Weapon — </span>
+                    <span className="text-sm text-white/80">{weapon}</span>
+                  </div>
+                )}
+                {hole && (
+                  <div>
+                    <span className="text-xs text-white/30">🎯 Hole — </span>
+                    <span className="text-sm text-white/80">{hole}</span>
+                  </div>
+                )}
+                {keyToWin && (
+                  <div>
+                    <span className="text-xs text-white/30">🔑 Key — </span>
+                    <span className="text-sm text-white font-medium">{keyToWin}</span>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Styles */}
+            {styles.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {styles.map((s) => (
+                  <span
+                    key={s}
+                    className="px-3 py-1 rounded-full bg-white/5 border border-white/15 text-white/60 text-xs font-semibold"
+                  >
+                    {PLAY_STYLES.find((p) => p.value === s)?.label}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Footer Navigation */}
+      <div className="sticky bottom-0 bg-[#0c0c0e]/95 backdrop-blur-xl border-t border-white/[0.06] px-5 py-4 pb-safe">
+        <div className="flex gap-3">
+          {stepIndex > 0 && (
+            <button
+              type="button"
+              onClick={() => setStep(STEPS[stepIndex - 1])}
+              className="flex-1 py-4 rounded-2xl border border-white/10 text-white/60 font-bold text-sm transition-all active:scale-95 hover:border-white/20 hover:text-white/80"
+            >
+              Back
+            </button>
+          )}
+          {step !== "review" ? (
+            <button
+              type="button"
+              disabled={!canAdvance()}
+              onClick={() => setStep(STEPS[stepIndex + 1])}
+              className="flex-[2] py-4 rounded-2xl font-black text-sm transition-all active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed bg-lime-400 text-black hover:bg-lime-300 shadow-lg shadow-lime-400/20"
+            >
+              Continue →
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={handleSave}
+              className={`flex-[2] py-4 rounded-2xl font-black text-sm transition-all active:scale-95 shadow-lg ${
+                isWin
+                  ? "bg-lime-400 text-black hover:bg-lime-300 shadow-lime-400/20"
+                  : "bg-red-500 text-white hover:bg-red-400 shadow-red-500/20"
+              }`}
+            >
+              {isWin ? "Save Win 🏆" : "Save Match"}
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
