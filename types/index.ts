@@ -19,6 +19,7 @@ export type MatchResult = "win" | "loss" | "unfinished";
 export interface SetScore {
   player: number | null;
   opponent: number | null;
+  tiebreak?: { player: number | null; opponent: number | null };
 }
 
 export interface MatchScore {

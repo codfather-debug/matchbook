@@ -48,6 +48,45 @@ const PLAY_STYLES: { value: PlayStyle; label: string; desc: string }[] = [
   { value: "moonballer",      label: "Moonballer",      desc: "High heavy topspin" },
 ];
 
+const STYLE_TIPS: Record<PlayStyle, string> = {
+  "pusher":          "Come to net on short balls. Use angles — don't try to out-steady them.",
+  "big-hitter":      "Keep the ball deep and high. Don't feed them pace — make them generate it.",
+  "serve-volley":    "Return low to their feet. Wide passing shots — avoid going down the line.",
+  "counter-puncher": "Vary pace and spin. Drop shots pull them out of rhythm.",
+  "all-court":       "Stay unpredictable — mix depths, spins, and net approaches.",
+  "moonballer":      "Step inside the baseline and attack the high ball early. Don't get pushed back.",
+};
+
+const WEAPON_TO_STYLE: Record<string, PlayStyle> = {
+  "Big serve":      "serve-volley",
+  "Forehand":       "big-hitter",
+  "Backhand":       "counter-puncher",
+  "Volleys":        "serve-volley",
+  "Drop shot":      "all-court",
+  "Heavy topspin":  "moonballer",
+  "Speed":          "counter-puncher",
+  "Consistency":    "pusher",
+};
+
+const HOLE_TO_STYLE: Record<string, PlayStyle> = {
+  "Backhand":       "big-hitter",
+  "Forehand":       "big-hitter",
+  "High balls":     "pusher",
+  "Second serve":   "big-hitter",
+  "Net game":       "pusher",
+  "Under pressure": "pusher",
+  "Movement":       "serve-volley",
+  "Short balls":    "moonballer",
+};
+
+function suggestStyle(weapon: string, hole: string): PlayStyle | null {
+  const w = WEAPON_TO_STYLE[weapon] ?? null;
+  const h = HOLE_TO_STYLE[hole] ?? null;
+  if (!w && !h) return null;
+  if (w === h) return w;
+  return w ?? h;
+}
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function emptySet(): SetScore { return { player: null, opponent: null }; }
@@ -67,7 +106,14 @@ function setsPlayed(score: MatchScore): number {
 function scoreLabel(score: MatchScore): string {
   return score.sets
     .filter(setIsPlayed)
-    .map(s => `${s.player}-${s.opponent}`)
+    .map(s => {
+      const base = `${s.player}-${s.opponent}`;
+      if (s.tiebreak && s.tiebreak.player !== null && s.tiebreak.opponent !== null) {
+        const loser = Math.min(s.tiebreak.player, s.tiebreak.opponent);
+        return `${base}(${loser})`;
+      }
+      return base;
+    })
     .join(", ") || "—";
 }
 
@@ -151,47 +197,95 @@ function SetInput({
   onChange: (v: SetScore) => void;
 }) {
   const played = setIsPlayed(value);
+  const isTiebreak =
+    played &&
+    ((value.player === 7 && value.opponent === 6) ||
+      (value.player === 6 && value.opponent === 7));
 
   return (
-    <div
-      className={`flex items-center gap-3 p-3 rounded-2xl border transition-all ${
-        played ? "border-white/20 bg-white/5" : "border-white/10 bg-white/[0.02]"
-      }`}
-    >
-      <span className="text-xs font-bold text-white/30 w-8 shrink-0">S{setNum}</span>
-      <div className="flex items-center gap-2 flex-1">
-        <input
-          type="number"
-          min={0}
-          max={7}
-          placeholder="You"
-          value={value.player ?? ""}
-          onChange={(e) =>
-            onChange({ ...value, player: e.target.value === "" ? null : Number(e.target.value) })
-          }
-          className="w-full bg-white/10 text-white text-center text-2xl font-black rounded-xl p-2 outline-none focus:ring-2 focus:ring-lime-400/60 placeholder:text-white/20 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-        />
-        <span className="text-white/30 font-bold text-lg">–</span>
-        <input
-          type="number"
-          min={0}
-          max={7}
-          placeholder="Them"
-          value={value.opponent ?? ""}
-          onChange={(e) =>
-            onChange({ ...value, opponent: e.target.value === "" ? null : Number(e.target.value) })
-          }
-          className="w-full bg-white/10 text-white text-center text-2xl font-black rounded-xl p-2 outline-none focus:ring-2 focus:ring-lime-400/60 placeholder:text-white/20 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-        />
+    <div className="space-y-1">
+      <div
+        className={`flex items-center gap-3 p-3 rounded-2xl border transition-all ${
+          played ? "border-white/20 bg-white/5" : "border-white/10 bg-white/[0.02]"
+        }`}
+      >
+        <span className="text-xs font-bold text-white/30 w-8 shrink-0">S{setNum}</span>
+        <div className="flex items-center gap-2 flex-1">
+          <input
+            type="number"
+            min={0}
+            max={7}
+            placeholder="You"
+            value={value.player ?? ""}
+            onChange={(e) =>
+              onChange({ ...value, player: e.target.value === "" ? null : Number(e.target.value) })
+            }
+            className="w-full bg-white/10 text-white text-center text-2xl font-black rounded-xl p-2 outline-none focus:ring-2 focus:ring-lime-400/60 placeholder:text-white/20 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+          />
+          <span className="text-white/30 font-bold text-lg">–</span>
+          <input
+            type="number"
+            min={0}
+            max={7}
+            placeholder="Them"
+            value={value.opponent ?? ""}
+            onChange={(e) =>
+              onChange({ ...value, opponent: e.target.value === "" ? null : Number(e.target.value) })
+            }
+            className="w-full bg-white/10 text-white text-center text-2xl font-black rounded-xl p-2 outline-none focus:ring-2 focus:ring-lime-400/60 placeholder:text-white/20 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+          />
+        </div>
+        {played && (
+          <span
+            className={`text-xs font-bold shrink-0 w-6 text-right ${
+              (value.player ?? 0) > (value.opponent ?? 0) ? "text-lime-400" : "text-red-400"
+            }`}
+          >
+            {(value.player ?? 0) > (value.opponent ?? 0) ? "W" : "L"}
+          </span>
+        )}
       </div>
-      {played && (
-        <span
-          className={`text-xs font-bold shrink-0 w-6 text-right ${
-            (value.player ?? 0) > (value.opponent ?? 0) ? "text-lime-400" : "text-red-400"
-          }`}
-        >
-          {(value.player ?? 0) > (value.opponent ?? 0) ? "W" : "L"}
-        </span>
+
+      {isTiebreak && (
+        <div className="flex items-center gap-3 px-3 py-2 rounded-2xl border border-lime-400/20 bg-lime-400/[0.04]">
+          <span className="text-xs font-bold text-lime-400/50 w-8 shrink-0">TB</span>
+          <div className="flex items-center gap-2 flex-1">
+            <input
+              type="number"
+              min={0}
+              placeholder="You"
+              value={value.tiebreak?.player ?? ""}
+              onChange={(e) =>
+                onChange({
+                  ...value,
+                  tiebreak: {
+                    player: e.target.value === "" ? null : Number(e.target.value),
+                    opponent: value.tiebreak?.opponent ?? null,
+                  },
+                })
+              }
+              className="w-full bg-white/10 text-white text-center text-lg font-black rounded-xl p-2 outline-none focus:ring-2 focus:ring-lime-400/60 placeholder:text-white/20 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+            />
+            <span className="text-white/30 font-bold">–</span>
+            <input
+              type="number"
+              min={0}
+              placeholder="Them"
+              value={value.tiebreak?.opponent ?? ""}
+              onChange={(e) =>
+                onChange({
+                  ...value,
+                  tiebreak: {
+                    player: value.tiebreak?.player ?? null,
+                    opponent: e.target.value === "" ? null : Number(e.target.value),
+                  },
+                })
+              }
+              className="w-full bg-white/10 text-white text-center text-lg font-black rounded-xl p-2 outline-none focus:ring-2 focus:ring-lime-400/60 placeholder:text-white/20 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+            />
+          </div>
+          <div className="w-6" />
+        </div>
       )}
     </div>
   );
@@ -540,10 +634,28 @@ export default function MatchEntry({ onSave, onCancel }: MatchEntryProps) {
               )}
             </div>
 
-            <div>
-              <label className="text-xs font-bold text-white/40 uppercase tracking-widest block mb-3">
+            <div className="space-y-3">
+              <label className="text-xs font-bold text-white/40 uppercase tracking-widest block">
                 Playstyle Tags
               </label>
+
+              {/* Auto-suggested style */}
+              {(() => {
+                const suggested = suggestStyle(weapon, hole);
+                if (!suggested || styles.includes(suggested)) return null;
+                const label = PLAY_STYLES.find(p => p.value === suggested)?.label;
+                return (
+                  <button
+                    type="button"
+                    onClick={() => toggleStyle(suggested)}
+                    className="flex items-center gap-2 px-3 py-2 rounded-2xl border border-lime-400/30 bg-lime-400/5 text-lime-400/80 text-xs font-semibold transition-all hover:bg-lime-400/10 active:scale-95"
+                  >
+                    <span>✨</span>
+                    Suggested: {label} — tap to add
+                  </button>
+                );
+              })()}
+
               <div className="flex flex-wrap gap-2">
                 {PLAY_STYLES.map((ps) => (
                   <Pill
@@ -555,6 +667,20 @@ export default function MatchEntry({ onSave, onCancel }: MatchEntryProps) {
                   </Pill>
                 ))}
               </div>
+
+              {/* Strategy tips for selected styles */}
+              {styles.length > 0 && (
+                <div className="space-y-2 pt-1">
+                  {styles.map((s) => (
+                    <div key={s} className="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3">
+                      <p className="text-xs font-black text-white/40 uppercase tracking-widest mb-1">
+                        vs {PLAY_STYLES.find(p => p.value === s)?.label}
+                      </p>
+                      <p className="text-sm text-white/70">{STYLE_TIPS[s]}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         )}
