@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
 import {
   Match,
   MatchFormData,
@@ -80,11 +80,18 @@ const HOLE_TO_STYLE: Record<string, PlayStyle> = {
 };
 
 function suggestStyle(weapon: string, hole: string): PlayStyle | null {
-  const w = WEAPON_TO_STYLE[weapon] ?? null;
-  const h = HOLE_TO_STYLE[hole] ?? null;
-  if (!w && !h) return null;
-  if (w === h) return w;
-  return w ?? h;
+  const scores: Partial<Record<PlayStyle, number>> = {};
+  for (const w of weapon.split(" / ").map(s => s.trim()).filter(Boolean)) {
+    const s = WEAPON_TO_STYLE[w];
+    if (s) scores[s] = (scores[s] ?? 0) + 1;
+  }
+  for (const h of hole.split(" / ").map(s => s.trim()).filter(Boolean)) {
+    const s = HOLE_TO_STYLE[h];
+    if (s) scores[s] = (scores[s] ?? 0) + 1;
+  }
+  const entries = Object.entries(scores) as [PlayStyle, number][];
+  if (entries.length === 0) return null;
+  return entries.sort((a, b) => b[1] - a[1])[0][0];
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -339,12 +346,21 @@ export default function MatchEntry({ onSave, onCancel }: MatchEntryProps) {
   const [matchType, setMatchType]       = useState<MatchType>("singles");
   const [score, setScore]               = useState<MatchScore>(emptyScore());
   const [styles, setStyles]             = useState<PlayStyle[]>([]);
-  const [weapon, setWeapon]             = useState("");
-  const [weaponChip, setWeaponChip]     = useState<string | null>(null);
-  const [hole, setHole]                 = useState("");
-  const [holeChip, setHoleChip]         = useState<string | null>(null);
+  const [weaponChips, setWeaponChips]   = useState<string[]>([]);
+  const [weaponCustom, setWeaponCustom] = useState("");
+  const [holeChips, setHoleChips]       = useState<string[]>([]);
+  const [holeCustom, setHoleCustom]     = useState("");
   const [keyToWin, setKeyToWin]         = useState("");
   const [keyToWinEdited, setKeyToWinEdited] = useState(false);
+
+  const weapon = useMemo(
+    () => weaponChips.length > 0 ? weaponChips.join(" / ") : weaponCustom,
+    [weaponChips, weaponCustom]
+  );
+  const hole = useMemo(
+    () => holeChips.length > 0 ? holeChips.join(" / ") : holeCustom,
+    [holeChips, holeCustom]
+  );
 
   // Derived
   const result     = deriveResult(score);
@@ -532,72 +548,68 @@ export default function MatchEntry({ onSave, onCancel }: MatchEntryProps) {
             <div className="space-y-3">
               <label className="flex items-center gap-2 text-sm font-bold text-white/70">
                 <span>⚡</span> Their Weapon
+                {weaponChips.length > 0 && (
+                  <span className="text-xs font-normal text-white/30">({weaponChips.length} selected)</span>
+                )}
               </label>
               <div className="flex flex-wrap gap-2">
                 {WEAPON_OPTIONS.map((opt) => (
                   <Pill
                     key={opt}
-                    active={weaponChip === opt}
-                    onClick={() => {
-                      if (weaponChip === opt) {
-                        setWeaponChip(null);
-                        setWeapon("");
-                      } else {
-                        setWeaponChip(opt);
-                        setWeapon(opt);
-                      }
-                    }}
+                    active={weaponChips.includes(opt)}
+                    onClick={() =>
+                      setWeaponChips(prev =>
+                        prev.includes(opt) ? prev.filter(w => w !== opt) : [...prev, opt]
+                      )
+                    }
                   >
                     {opt}
                   </Pill>
                 ))}
               </div>
-              <input
-                type="text"
-                placeholder="Or describe it yourself…"
-                value={weaponChip ? "" : weapon}
-                onChange={(e) => {
-                  setWeaponChip(null);
-                  setWeapon(e.target.value);
-                }}
-                className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white text-sm placeholder:text-white/25 outline-none focus:ring-2 focus:ring-lime-400/50 focus:border-lime-400/30 transition-all"
-              />
+              {weaponChips.length === 0 && (
+                <input
+                  type="text"
+                  placeholder="Or describe it yourself…"
+                  value={weaponCustom}
+                  onChange={(e) => setWeaponCustom(e.target.value)}
+                  className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white text-sm placeholder:text-white/25 outline-none focus:ring-2 focus:ring-lime-400/50 focus:border-lime-400/30 transition-all"
+                />
+              )}
             </div>
 
             {/* Their Hole */}
             <div className="space-y-3">
               <label className="flex items-center gap-2 text-sm font-bold text-white/70">
                 <span>🎯</span> Their Hole
+                {holeChips.length > 0 && (
+                  <span className="text-xs font-normal text-white/30">({holeChips.length} selected)</span>
+                )}
               </label>
               <div className="flex flex-wrap gap-2">
                 {HOLE_OPTIONS.map((opt) => (
                   <Pill
                     key={opt}
-                    active={holeChip === opt}
-                    onClick={() => {
-                      if (holeChip === opt) {
-                        setHoleChip(null);
-                        setHole("");
-                      } else {
-                        setHoleChip(opt);
-                        setHole(opt);
-                      }
-                    }}
+                    active={holeChips.includes(opt)}
+                    onClick={() =>
+                      setHoleChips(prev =>
+                        prev.includes(opt) ? prev.filter(h => h !== opt) : [...prev, opt]
+                      )
+                    }
                   >
                     {opt}
                   </Pill>
                 ))}
               </div>
-              <input
-                type="text"
-                placeholder="Or describe it yourself…"
-                value={holeChip ? "" : hole}
-                onChange={(e) => {
-                  setHoleChip(null);
-                  setHole(e.target.value);
-                }}
-                className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white text-sm placeholder:text-white/25 outline-none focus:ring-2 focus:ring-lime-400/50 focus:border-lime-400/30 transition-all"
-              />
+              {holeChips.length === 0 && (
+                <input
+                  type="text"
+                  placeholder="Or describe it yourself…"
+                  value={holeCustom}
+                  onChange={(e) => setHoleCustom(e.target.value)}
+                  className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white text-sm placeholder:text-white/25 outline-none focus:ring-2 focus:ring-lime-400/50 focus:border-lime-400/30 transition-all"
+                />
+              )}
             </div>
 
             {/* Key to Win */}
@@ -656,29 +668,46 @@ export default function MatchEntry({ onSave, onCancel }: MatchEntryProps) {
                 );
               })()}
 
-              <div className="flex flex-wrap gap-2">
-                {PLAY_STYLES.map((ps) => (
-                  <Pill
-                    key={ps.value}
-                    active={styles.includes(ps.value)}
-                    onClick={() => toggleStyle(ps.value)}
-                  >
-                    {ps.label}
-                  </Pill>
-                ))}
+              <div className="grid grid-cols-2 gap-2">
+                {PLAY_STYLES.map((ps) => {
+                  const active = styles.includes(ps.value);
+                  return (
+                    <button
+                      key={ps.value}
+                      type="button"
+                      onClick={() => toggleStyle(ps.value)}
+                      className={`p-3 rounded-2xl border text-left transition-all active:scale-95 ${
+                        active
+                          ? "bg-lime-400/10 border-lime-400/40"
+                          : "border-white/10 bg-white/[0.02] hover:border-white/20"
+                      }`}
+                    >
+                      <p className={`text-sm font-bold ${active ? "text-lime-400" : "text-white/70"}`}>
+                        {ps.label}
+                      </p>
+                      <p className="text-xs text-white/30 mt-0.5">{ps.desc}</p>
+                    </button>
+                  );
+                })}
               </div>
 
               {/* Strategy tips for selected styles */}
               {styles.length > 0 && (
                 <div className="space-y-2 pt-1">
-                  {styles.map((s) => (
-                    <div key={s} className="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3">
-                      <p className="text-xs font-black text-white/40 uppercase tracking-widest mb-1">
-                        vs {PLAY_STYLES.find(p => p.value === s)?.label}
-                      </p>
-                      <p className="text-sm text-white/70">{STYLE_TIPS[s]}</p>
-                    </div>
-                  ))}
+                  {styles.map((s) => {
+                    const ps = PLAY_STYLES.find(p => p.value === s)!;
+                    return (
+                      <div key={s} className="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3">
+                        <div className="flex items-baseline gap-2 mb-1">
+                          <p className="text-xs font-black text-white/40 uppercase tracking-widest">
+                            vs {ps.label}
+                          </p>
+                          <p className="text-xs text-white/25">{ps.desc}</p>
+                        </div>
+                        <p className="text-sm text-white/70">{STYLE_TIPS[s]}</p>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </div>
