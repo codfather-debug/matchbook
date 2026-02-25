@@ -1,12 +1,12 @@
 import { useState, useCallback, useEffect, useMemo } from "react";
 import {
   Match,
-  MatchFormData,
   Surface,
   MatchType,
   PlayStyle,
   SetScore,
   MatchScore,
+  ScoutingNotes,
   deriveResult,
 } from "../types";
 
@@ -39,7 +39,7 @@ function generateKeyToWin(w: string, h: string): string {
   return "";
 }
 
-const PLAY_STYLES: { value: PlayStyle; label: string; desc: string }[] = [
+export const PLAY_STYLES: { value: PlayStyle; label: string; desc: string }[] = [
   { value: "pusher",          label: "Pusher",         desc: "Retrieves everything" },
   { value: "big-hitter",      label: "Big Hitter",     desc: "Massive groundstrokes" },
   { value: "serve-volley",    label: "Serve & Volley",  desc: "Net rusher" },
@@ -48,7 +48,7 @@ const PLAY_STYLES: { value: PlayStyle; label: string; desc: string }[] = [
   { value: "moonballer",      label: "Moonballer",      desc: "High heavy topspin" },
 ];
 
-const STYLE_TIPS: Record<PlayStyle, string> = {
+export const STYLE_TIPS: Record<PlayStyle, string> = {
   "pusher":          "Come to net on short balls. Use angles — don't try to out-steady them.",
   "big-hitter":      "Keep the ball deep and high. Don't feed them pace — make them generate it.",
   "serve-volley":    "Return low to their feet. Wide passing shots — avoid going down the line.",
@@ -94,6 +94,49 @@ function suggestStyle(weapon: string, hole: string): PlayStyle | null {
   return entries.sort((a, b) => b[1] - a[1])[0][0];
 }
 
+// ─── Scout State Hook ─────────────────────────────────────────────────────────
+
+function useScoutState() {
+  const [weaponChips, setWeaponChips] = useState<string[]>([]);
+  const [weaponCustom, setWeaponCustom] = useState("");
+  const [holeChips, setHoleChips]     = useState<string[]>([]);
+  const [holeCustom, setHoleCustom]   = useState("");
+  const [keyToWin, setKeyToWin]       = useState("");
+  const [keyToWinEdited, setKeyToWinEdited] = useState(false);
+  const [styles, setStyles]           = useState<PlayStyle[]>([]);
+
+  const weapon = useMemo(
+    () => weaponChips.length > 0 ? weaponChips.join(" / ") : weaponCustom,
+    [weaponChips, weaponCustom]
+  );
+  const hole = useMemo(
+    () => holeChips.length > 0 ? holeChips.join(" / ") : holeCustom,
+    [holeChips, holeCustom]
+  );
+
+  useEffect(() => {
+    if (keyToWinEdited) return;
+    setKeyToWin(generateKeyToWin(weapon, hole));
+  }, [weapon, hole, keyToWinEdited]);
+
+  function toggleStyle(s: PlayStyle) {
+    setStyles(prev => prev.includes(s) ? prev.filter(x => x !== s) : [...prev, s]);
+  }
+
+  return {
+    weaponChips, setWeaponChips,
+    weaponCustom, setWeaponCustom,
+    holeChips, setHoleChips,
+    holeCustom, setHoleCustom,
+    keyToWin, setKeyToWin,
+    keyToWinEdited, setKeyToWinEdited,
+    styles, toggleStyle,
+    weapon, hole,
+  };
+}
+
+type ScoutState = ReturnType<typeof useScoutState>;
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function emptySet(): SetScore { return { player: null, opponent: null }; }
@@ -110,7 +153,7 @@ function setsPlayed(score: MatchScore): number {
   return score.sets.filter(setIsPlayed).length;
 }
 
-function scoreLabel(score: MatchScore): string {
+export function scoreLabel(score: MatchScore): string {
   return score.sets
     .filter(setIsPlayed)
     .map(s => {
@@ -298,34 +341,234 @@ function SetInput({
   );
 }
 
-// ─── Scouting Text Area ───────────────────────────────────────────────────────
+// ─── Scout Panel ─────────────────────────────────────────────────────────────
 
-function ScoutField({
-  icon,
-  label,
-  placeholder,
-  value,
-  onChange,
-}: {
-  icon: string;
-  label: string;
-  placeholder: string;
-  value: string;
-  onChange: (v: string) => void;
-}) {
+function ScoutPanel({ scout }: { scout: ScoutState }) {
+  const {
+    weaponChips, setWeaponChips, weaponCustom, setWeaponCustom,
+    holeChips, setHoleChips, holeCustom, setHoleCustom,
+    keyToWin, setKeyToWin, keyToWinEdited, setKeyToWinEdited,
+    styles, toggleStyle, weapon, hole,
+  } = scout;
+
+  const suggested = suggestStyle(weapon, hole);
+
   return (
-    <div className="space-y-2">
-      <label className="flex items-center gap-2 text-sm font-bold text-white/70">
-        <span className="text-base">{icon}</span>
-        {label}
-      </label>
-      <textarea
-        rows={2}
-        placeholder={placeholder}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="w-full bg-white/5 border border-white/10 rounded-2xl p-3 text-white text-sm placeholder:text-white/25 outline-none focus:ring-2 focus:ring-lime-400/50 focus:border-lime-400/30 resize-none transition-all"
-      />
+    <div className="space-y-6">
+      {/* Their Weapon */}
+      <div className="space-y-3">
+        <label className="flex items-center gap-2 text-sm font-bold text-white/70">
+          <span>⚡</span> Their Weapon
+          {weaponChips.length > 0 && (
+            <span className="text-xs font-normal text-white/30">({weaponChips.length} selected)</span>
+          )}
+        </label>
+        <div className="flex flex-wrap gap-2">
+          {WEAPON_OPTIONS.map((opt) => (
+            <Pill
+              key={opt}
+              active={weaponChips.includes(opt)}
+              onClick={() =>
+                setWeaponChips(prev =>
+                  prev.includes(opt) ? prev.filter(w => w !== opt) : [...prev, opt]
+                )
+              }
+            >
+              {opt}
+            </Pill>
+          ))}
+        </div>
+        {weaponChips.length === 0 && (
+          <input
+            type="text"
+            placeholder="Or describe it yourself…"
+            value={weaponCustom}
+            onChange={(e) => setWeaponCustom(e.target.value)}
+            className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white text-sm placeholder:text-white/25 outline-none focus:ring-2 focus:ring-lime-400/50 focus:border-lime-400/30 transition-all"
+          />
+        )}
+      </div>
+
+      {/* Their Hole */}
+      <div className="space-y-3">
+        <label className="flex items-center gap-2 text-sm font-bold text-white/70">
+          <span>🎯</span> Their Hole
+          {holeChips.length > 0 && (
+            <span className="text-xs font-normal text-white/30">({holeChips.length} selected)</span>
+          )}
+        </label>
+        <div className="flex flex-wrap gap-2">
+          {HOLE_OPTIONS.map((opt) => (
+            <Pill
+              key={opt}
+              active={holeChips.includes(opt)}
+              onClick={() =>
+                setHoleChips(prev =>
+                  prev.includes(opt) ? prev.filter(h => h !== opt) : [...prev, opt]
+                )
+              }
+            >
+              {opt}
+            </Pill>
+          ))}
+        </div>
+        {holeChips.length === 0 && (
+          <input
+            type="text"
+            placeholder="Or describe it yourself…"
+            value={holeCustom}
+            onChange={(e) => setHoleCustom(e.target.value)}
+            className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white text-sm placeholder:text-white/25 outline-none focus:ring-2 focus:ring-lime-400/50 focus:border-lime-400/30 transition-all"
+          />
+        )}
+      </div>
+
+      {/* Key to Win */}
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
+          <label className="flex items-center gap-2 text-sm font-bold text-white/70">
+            <span>🔑</span> Key to Win
+          </label>
+          {keyToWinEdited && (weapon || hole) && (
+            <button
+              type="button"
+              onClick={() => {
+                setKeyToWinEdited(false);
+                setKeyToWin(generateKeyToWin(weapon, hole));
+              }}
+              className="text-xs text-lime-400/70 hover:text-lime-400 transition-colors"
+            >
+              ↺ Regenerate
+            </button>
+          )}
+        </div>
+        <textarea
+          rows={2}
+          placeholder="One sentence strategy for next time…"
+          value={keyToWin}
+          onChange={(e) => {
+            setKeyToWin(e.target.value);
+            setKeyToWinEdited(true);
+          }}
+          className="w-full bg-white/5 border border-white/10 rounded-2xl p-3 text-white text-sm placeholder:text-white/25 outline-none focus:ring-2 focus:ring-lime-400/50 focus:border-lime-400/30 resize-none transition-all"
+        />
+        {keyToWin && !keyToWinEdited && (
+          <p className="text-xs text-lime-400/50">✨ Auto-generated — tap to edit</p>
+        )}
+      </div>
+
+      {/* Playstyle Tags */}
+      <div className="space-y-3">
+        <label className="text-xs font-bold text-white/40 uppercase tracking-widest block">
+          Playstyle Tags
+        </label>
+
+        {suggested && !styles.includes(suggested) && (
+          <button
+            type="button"
+            onClick={() => toggleStyle(suggested)}
+            className="flex items-center gap-2 px-3 py-2 rounded-2xl border border-lime-400/30 bg-lime-400/5 text-lime-400/80 text-xs font-semibold transition-all hover:bg-lime-400/10 active:scale-95"
+          >
+            <span>✨</span>
+            Suggested: {PLAY_STYLES.find(p => p.value === suggested)?.label} — tap to add
+          </button>
+        )}
+
+        <div className="grid grid-cols-2 gap-2">
+          {PLAY_STYLES.map((ps) => {
+            const active = styles.includes(ps.value);
+            return (
+              <button
+                key={ps.value}
+                type="button"
+                onClick={() => toggleStyle(ps.value)}
+                className={`p-3 rounded-2xl border text-left transition-all active:scale-95 ${
+                  active
+                    ? "bg-lime-400/10 border-lime-400/40"
+                    : "border-white/10 bg-white/[0.02] hover:border-white/20"
+                }`}
+              >
+                <p className={`text-sm font-bold ${active ? "text-lime-400" : "text-white/70"}`}>
+                  {ps.label}
+                </p>
+                <p className="text-xs text-white/30 mt-0.5">{ps.desc}</p>
+              </button>
+            );
+          })}
+        </div>
+
+        {styles.length > 0 && (
+          <div className="space-y-2 pt-1">
+            {styles.map((s) => {
+              const ps = PLAY_STYLES.find(p => p.value === s)!;
+              return (
+                <div key={s} className="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3">
+                  <div className="flex items-baseline gap-2 mb-1">
+                    <p className="text-xs font-black text-white/40 uppercase tracking-widest">
+                      vs {ps.label}
+                    </p>
+                    <p className="text-xs text-white/25">{ps.desc}</p>
+                  </div>
+                  <p className="text-sm text-white/70">{STYLE_TIPS[s]}</p>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── Scout Review Block ───────────────────────────────────────────────────────
+
+function ScoutReviewBlock({
+  label,
+  weapon,
+  hole,
+  keyToWin,
+  styles,
+}: {
+  label: string;
+  weapon: string;
+  hole: string;
+  keyToWin: string;
+  styles: PlayStyle[];
+}) {
+  if (!weapon && !hole && !keyToWin && styles.length === 0) return null;
+  return (
+    <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 space-y-3">
+      <p className="text-xs font-black tracking-widest uppercase text-white/30">{label}</p>
+      {weapon && (
+        <div>
+          <span className="text-xs text-white/30">⚡ Weapon — </span>
+          <span className="text-sm text-white/80">{weapon}</span>
+        </div>
+      )}
+      {hole && (
+        <div>
+          <span className="text-xs text-white/30">🎯 Hole — </span>
+          <span className="text-sm text-white/80">{hole}</span>
+        </div>
+      )}
+      {keyToWin && (
+        <div>
+          <span className="text-xs text-white/30">🔑 Key — </span>
+          <span className="text-sm text-white font-medium">{keyToWin}</span>
+        </div>
+      )}
+      {styles.length > 0 && (
+        <div className="flex flex-wrap gap-1.5 pt-0.5">
+          {styles.map((s) => (
+            <span
+              key={s}
+              className="px-3 py-1 rounded-full bg-white/5 border border-white/15 text-white/60 text-xs font-semibold"
+            >
+              {PLAY_STYLES.find((p) => p.value === s)?.label}
+            </span>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -340,42 +583,35 @@ interface MatchEntryProps {
 export default function MatchEntry({ onSave, onCancel }: MatchEntryProps) {
   const [step, setStep] = useState<Step>("info");
 
-  // Form state
-  const [opponentName, setOpponentName] = useState("");
-  const [surface, setSurface]           = useState<Surface | null>(null);
-  const [matchType, setMatchType]       = useState<MatchType>("singles");
-  const [score, setScore]               = useState<MatchScore>(emptyScore());
-  const [styles, setStyles]             = useState<PlayStyle[]>([]);
-  const [weaponChips, setWeaponChips]   = useState<string[]>([]);
-  const [weaponCustom, setWeaponCustom] = useState("");
-  const [holeChips, setHoleChips]       = useState<string[]>([]);
-  const [holeCustom, setHoleCustom]     = useState("");
-  const [keyToWin, setKeyToWin]         = useState("");
-  const [keyToWinEdited, setKeyToWinEdited] = useState(false);
+  // Match info
+  const [opponentName, setOpponentName]   = useState("");
+  const [opponent2Name, setOpponent2Name] = useState("");
+  const [surface, setSurface]             = useState<Surface | null>(null);
+  const [matchType, setMatchType]         = useState<MatchType>("singles");
+  const [score, setScore]                 = useState<MatchScore>(emptyScore());
 
-  const weapon = useMemo(
-    () => weaponChips.length > 0 ? weaponChips.join(" / ") : weaponCustom,
-    [weaponChips, weaponCustom]
-  );
-  const hole = useMemo(
-    () => holeChips.length > 0 ? holeChips.join(" / ") : holeCustom,
-    [holeChips, holeCustom]
-  );
+  // Scouting state — one per opponent
+  const scout1 = useScoutState();
+  const scout2 = useScoutState();
+
+  // Which tab is active in the scout step (doubles only)
+  const [scoutTab, setScoutTab] = useState<1 | 2>(1);
 
   // Derived
-  const result     = deriveResult(score);
-  const isWin      = result === "win";
-  const stepIndex  = STEPS.indexOf(step);
+  const result    = deriveResult(score);
+  const isWin     = result === "win";
+  const stepIndex = STEPS.indexOf(step);
+  const isDoubles = matchType === "doubles";
+
   const canAdvance = useCallback(() => {
-    if (step === "info")  return opponentName.trim().length > 0 && surface !== null;
+    if (step === "info") {
+      return opponentName.trim().length > 0 &&
+             surface !== null &&
+             (!isDoubles || opponent2Name.trim().length > 0);
+    }
     if (step === "score") return setsPlayed(score) >= 1;
     return true;
-  }, [step, opponentName, surface, score]);
-
-  useEffect(() => {
-    if (keyToWinEdited) return;
-    setKeyToWin(generateKeyToWin(weapon, hole));
-  }, [weapon, hole, keyToWinEdited]);
+  }, [step, opponentName, opponent2Name, surface, score, isDoubles]);
 
   function updateSet(i: number, val: SetScore) {
     const sets = [...score.sets] as [SetScore, SetScore, SetScore];
@@ -383,24 +619,24 @@ export default function MatchEntry({ onSave, onCancel }: MatchEntryProps) {
     setScore({ sets });
   }
 
-  function toggleStyle(s: PlayStyle) {
-    setStyles((prev) =>
-      prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s]
-    );
-  }
-
   function handleSave() {
     if (!surface) return;
-    onSave?.({
+    const base: Omit<Match, "id" | "opponentId"> = {
       createdAt: new Date().toISOString(),
       opponentName,
       surface,
       matchType,
       score,
       result,
-      opponentStyle: styles,
-      scouting: { weapon, hole, keyToWin },
-    });
+      opponentStyle: scout1.styles,
+      scouting: { weapon: scout1.weapon, hole: scout1.hole, keyToWin: scout1.keyToWin },
+    };
+    if (isDoubles) {
+      base.opponent2Name = opponent2Name;
+      base.opponentStyle2 = scout2.styles;
+      base.scouting2 = { weapon: scout2.weapon, hole: scout2.hole, keyToWin: scout2.keyToWin };
+    }
+    onSave?.(base);
   }
 
   return (
@@ -441,7 +677,7 @@ export default function MatchEntry({ onSave, onCancel }: MatchEntryProps) {
 
             <div>
               <label className="text-xs font-bold text-white/40 uppercase tracking-widest block mb-2">
-                Opponent
+                {isDoubles ? "Opponent 1" : "Opponent"}
               </label>
               <input
                 autoFocus
@@ -452,6 +688,21 @@ export default function MatchEntry({ onSave, onCancel }: MatchEntryProps) {
                 className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3.5 text-white text-base placeholder:text-white/25 outline-none focus:ring-2 focus:ring-lime-400/50 focus:border-lime-400/30 transition-all font-medium"
               />
             </div>
+
+            {isDoubles && (
+              <div>
+                <label className="text-xs font-bold text-white/40 uppercase tracking-widest block mb-2">
+                  Opponent 2
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. Roger Federer"
+                  value={opponent2Name}
+                  onChange={(e) => setOpponent2Name(e.target.value)}
+                  className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3.5 text-white text-base placeholder:text-white/25 outline-none focus:ring-2 focus:ring-lime-400/50 focus:border-lime-400/30 transition-all font-medium"
+                />
+              </div>
+            )}
 
             <div>
               <label className="text-xs font-bold text-white/40 uppercase tracking-widest block mb-3">
@@ -544,173 +795,27 @@ export default function MatchEntry({ onSave, onCancel }: MatchEntryProps) {
               sub="Strategic intel for the rematch"
             />
 
-            {/* Their Weapon */}
-            <div className="space-y-3">
-              <label className="flex items-center gap-2 text-sm font-bold text-white/70">
-                <span>⚡</span> Their Weapon
-                {weaponChips.length > 0 && (
-                  <span className="text-xs font-normal text-white/30">({weaponChips.length} selected)</span>
-                )}
-              </label>
-              <div className="flex flex-wrap gap-2">
-                {WEAPON_OPTIONS.map((opt) => (
-                  <Pill
-                    key={opt}
-                    active={weaponChips.includes(opt)}
-                    onClick={() =>
-                      setWeaponChips(prev =>
-                        prev.includes(opt) ? prev.filter(w => w !== opt) : [...prev, opt]
-                      )
-                    }
+            {/* Doubles tab switcher */}
+            {isDoubles && (
+              <div className="flex gap-2 p-1 rounded-2xl bg-white/[0.04] border border-white/10">
+                {([1, 2] as const).map((tab) => (
+                  <button
+                    key={tab}
+                    type="button"
+                    onClick={() => setScoutTab(tab)}
+                    className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all ${
+                      scoutTab === tab
+                        ? "bg-lime-400 text-black shadow"
+                        : "text-white/40 hover:text-white/70"
+                    }`}
                   >
-                    {opt}
-                  </Pill>
+                    {tab === 1 ? opponentName || "Opponent 1" : opponent2Name || "Opponent 2"}
+                  </button>
                 ))}
               </div>
-              {weaponChips.length === 0 && (
-                <input
-                  type="text"
-                  placeholder="Or describe it yourself…"
-                  value={weaponCustom}
-                  onChange={(e) => setWeaponCustom(e.target.value)}
-                  className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white text-sm placeholder:text-white/25 outline-none focus:ring-2 focus:ring-lime-400/50 focus:border-lime-400/30 transition-all"
-                />
-              )}
-            </div>
+            )}
 
-            {/* Their Hole */}
-            <div className="space-y-3">
-              <label className="flex items-center gap-2 text-sm font-bold text-white/70">
-                <span>🎯</span> Their Hole
-                {holeChips.length > 0 && (
-                  <span className="text-xs font-normal text-white/30">({holeChips.length} selected)</span>
-                )}
-              </label>
-              <div className="flex flex-wrap gap-2">
-                {HOLE_OPTIONS.map((opt) => (
-                  <Pill
-                    key={opt}
-                    active={holeChips.includes(opt)}
-                    onClick={() =>
-                      setHoleChips(prev =>
-                        prev.includes(opt) ? prev.filter(h => h !== opt) : [...prev, opt]
-                      )
-                    }
-                  >
-                    {opt}
-                  </Pill>
-                ))}
-              </div>
-              {holeChips.length === 0 && (
-                <input
-                  type="text"
-                  placeholder="Or describe it yourself…"
-                  value={holeCustom}
-                  onChange={(e) => setHoleCustom(e.target.value)}
-                  className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white text-sm placeholder:text-white/25 outline-none focus:ring-2 focus:ring-lime-400/50 focus:border-lime-400/30 transition-all"
-                />
-              )}
-            </div>
-
-            {/* Key to Win */}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <label className="flex items-center gap-2 text-sm font-bold text-white/70">
-                  <span>🔑</span> Key to Win
-                </label>
-                {keyToWinEdited && (weapon || hole) && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setKeyToWinEdited(false);
-                      setKeyToWin(generateKeyToWin(weapon, hole));
-                    }}
-                    className="text-xs text-lime-400/70 hover:text-lime-400 transition-colors"
-                  >
-                    ↺ Regenerate
-                  </button>
-                )}
-              </div>
-              <textarea
-                rows={2}
-                placeholder="One sentence strategy for next time…"
-                value={keyToWin}
-                onChange={(e) => {
-                  setKeyToWin(e.target.value);
-                  setKeyToWinEdited(true);
-                }}
-                className="w-full bg-white/5 border border-white/10 rounded-2xl p-3 text-white text-sm placeholder:text-white/25 outline-none focus:ring-2 focus:ring-lime-400/50 focus:border-lime-400/30 resize-none transition-all"
-              />
-              {keyToWin && !keyToWinEdited && (
-                <p className="text-xs text-lime-400/50">✨ Auto-generated — tap to edit</p>
-              )}
-            </div>
-
-            <div className="space-y-3">
-              <label className="text-xs font-bold text-white/40 uppercase tracking-widest block">
-                Playstyle Tags
-              </label>
-
-              {/* Auto-suggested style */}
-              {(() => {
-                const suggested = suggestStyle(weapon, hole);
-                if (!suggested || styles.includes(suggested)) return null;
-                const label = PLAY_STYLES.find(p => p.value === suggested)?.label;
-                return (
-                  <button
-                    type="button"
-                    onClick={() => toggleStyle(suggested)}
-                    className="flex items-center gap-2 px-3 py-2 rounded-2xl border border-lime-400/30 bg-lime-400/5 text-lime-400/80 text-xs font-semibold transition-all hover:bg-lime-400/10 active:scale-95"
-                  >
-                    <span>✨</span>
-                    Suggested: {label} — tap to add
-                  </button>
-                );
-              })()}
-
-              <div className="grid grid-cols-2 gap-2">
-                {PLAY_STYLES.map((ps) => {
-                  const active = styles.includes(ps.value);
-                  return (
-                    <button
-                      key={ps.value}
-                      type="button"
-                      onClick={() => toggleStyle(ps.value)}
-                      className={`p-3 rounded-2xl border text-left transition-all active:scale-95 ${
-                        active
-                          ? "bg-lime-400/10 border-lime-400/40"
-                          : "border-white/10 bg-white/[0.02] hover:border-white/20"
-                      }`}
-                    >
-                      <p className={`text-sm font-bold ${active ? "text-lime-400" : "text-white/70"}`}>
-                        {ps.label}
-                      </p>
-                      <p className="text-xs text-white/30 mt-0.5">{ps.desc}</p>
-                    </button>
-                  );
-                })}
-              </div>
-
-              {/* Strategy tips for selected styles */}
-              {styles.length > 0 && (
-                <div className="space-y-2 pt-1">
-                  {styles.map((s) => {
-                    const ps = PLAY_STYLES.find(p => p.value === s)!;
-                    return (
-                      <div key={s} className="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3">
-                        <div className="flex items-baseline gap-2 mb-1">
-                          <p className="text-xs font-black text-white/40 uppercase tracking-widest">
-                            vs {ps.label}
-                          </p>
-                          <p className="text-xs text-white/25">{ps.desc}</p>
-                        </div>
-                        <p className="text-sm text-white/70">{STYLE_TIPS[s]}</p>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
+            <ScoutPanel scout={isDoubles && scoutTab === 2 ? scout2 : scout1} />
           </div>
         )}
 
@@ -737,7 +842,7 @@ export default function MatchEntry({ onSave, onCancel }: MatchEntryProps) {
                     {isWin ? "Victory" : "Defeat"}
                   </div>
                   <div className="text-2xl font-black text-white">
-                    {opponentName}
+                    {isDoubles ? `${opponentName} & ${opponent2Name}` : opponentName}
                   </div>
                   <div className="text-white/40 text-sm mt-0.5">
                     {scoreLabel(score)} · {
@@ -756,45 +861,22 @@ export default function MatchEntry({ onSave, onCancel }: MatchEntryProps) {
               </div>
             </div>
 
-            {/* Scouting Summary */}
-            {(weapon || hole || keyToWin) && (
-              <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 space-y-3">
-                <p className="text-xs font-black tracking-widest uppercase text-white/30">
-                  Scouting Intel
-                </p>
-                {weapon && (
-                  <div>
-                    <span className="text-xs text-white/30">⚡ Weapon — </span>
-                    <span className="text-sm text-white/80">{weapon}</span>
-                  </div>
-                )}
-                {hole && (
-                  <div>
-                    <span className="text-xs text-white/30">🎯 Hole — </span>
-                    <span className="text-sm text-white/80">{hole}</span>
-                  </div>
-                )}
-                {keyToWin && (
-                  <div>
-                    <span className="text-xs text-white/30">🔑 Key — </span>
-                    <span className="text-sm text-white font-medium">{keyToWin}</span>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Styles */}
-            {styles.length > 0 && (
-              <div className="flex flex-wrap gap-2">
-                {styles.map((s) => (
-                  <span
-                    key={s}
-                    className="px-3 py-1 rounded-full bg-white/5 border border-white/15 text-white/60 text-xs font-semibold"
-                  >
-                    {PLAY_STYLES.find((p) => p.value === s)?.label}
-                  </span>
-                ))}
-              </div>
+            {/* Scouting summaries */}
+            <ScoutReviewBlock
+              label={isDoubles ? `Scouting — ${opponentName}` : "Scouting Intel"}
+              weapon={scout1.weapon}
+              hole={scout1.hole}
+              keyToWin={scout1.keyToWin}
+              styles={scout1.styles}
+            />
+            {isDoubles && (
+              <ScoutReviewBlock
+                label={`Scouting — ${opponent2Name}`}
+                weapon={scout2.weapon}
+                hole={scout2.hole}
+                keyToWin={scout2.keyToWin}
+                styles={scout2.styles}
+              />
             )}
           </div>
         )}

@@ -91,9 +91,10 @@ export default function Home() {
               })
               .join(", ");
             return (
-              <div
+              <Link
                 key={m.id}
-                className={`rounded-2xl border p-4 space-y-2 ${
+                href={`/match/${m.id}`}
+                className={`block rounded-2xl border p-4 space-y-2 transition-all active:scale-[0.98] hover:brightness-110 ${
                   win ? "border-lime-400/20 bg-lime-400/5" : "border-red-500/20 bg-red-500/5"
                 }`}
               >
@@ -127,7 +128,7 @@ export default function Home() {
                 {m.scouting.keyToWin && (
                   <p className="text-xs text-white/30 italic">🔑 {m.scouting.keyToWin}</p>
                 )}
-              </div>
+              </Link>
             );
           })
         )}

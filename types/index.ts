@@ -48,6 +48,10 @@ export interface Match {
   opponentStyle: PlayStyle[];  // Multi-tag
   scouting: ScoutingNotes;
   notes?: string;              // Free-form post-match notes
+  // Doubles — second opponent
+  opponent2Name?: string;
+  opponentStyle2?: PlayStyle[];
+  scouting2?: ScoutingNotes;
 }
 
 // ─── Opponent ─────────────────────────────────────────────────────────────────
