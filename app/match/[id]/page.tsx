@@ -109,6 +109,12 @@ export default function MatchDetailPage() {
   const router = useRouter();
   const [match, setMatch] = useState<Match | null>(null);
   const [loading, setLoading] = useState(true);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+
+  async function handleDelete() {
+    await supabase.from("matches").delete().eq("id", id);
+    router.push("/");
+  }
 
   useEffect(() => {
     async function load() {
@@ -174,7 +180,12 @@ export default function MatchDetailPage() {
           <span className="text-xs font-bold tracking-[0.2em] uppercase text-white/30">
             Match Detail
           </span>
-          <div className="w-12" />
+          <Link
+            href={`/match/${id}/edit`}
+            className="text-sm font-bold text-lime-400 hover:text-lime-300 transition-colors"
+          >
+            Edit
+          </Link>
         </div>
       </div>
 
@@ -292,6 +303,33 @@ export default function MatchDetailPage() {
             )}
           </>
         )}
+
+        {/* Delete */}
+        <div className="pt-4 border-t border-white/[0.06]">
+          {confirmDelete ? (
+            <div className="flex gap-3">
+              <button
+                onClick={() => setConfirmDelete(false)}
+                className="flex-1 py-3 rounded-2xl border border-white/10 text-white/50 text-sm font-bold transition-all active:scale-95"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDelete}
+                className="flex-1 py-3 rounded-2xl bg-red-500/20 border border-red-500/40 text-red-400 text-sm font-black transition-all active:scale-95"
+              >
+                Yes, Delete
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => setConfirmDelete(true)}
+              className="w-full py-3 rounded-2xl border border-white/[0.06] text-white/20 text-sm font-semibold hover:border-red-500/30 hover:text-red-400/60 transition-all active:scale-95"
+            >
+              Delete Match
+            </button>
+          )}
+        </div>
       </div>
     </main>
   );

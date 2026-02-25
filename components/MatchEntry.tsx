@@ -6,7 +6,6 @@ import {
   PlayStyle,
   SetScore,
   MatchScore,
-  ScoutingNotes,
   deriveResult,
 } from "../types";
 
@@ -23,13 +22,15 @@ const SURFACES: { value: Surface; label: string; emoji: string; color: string }[
 ];
 
 const WEAPON_OPTIONS = [
-  "Big serve", "Forehand", "Backhand", "Volleys",
-  "Drop shot", "Heavy topspin", "Speed", "Consistency",
+  "Fast Serve", "Spinny Serve", "Serve Location", "Forehand", "Backhand",
+  "Volleys", "Drop Shot", "Heavy Topspin", "Lobs", "Overheads",
+  "Deep Groundstrokes", "Return of Serve", "Court Movement", "Consistency", "Mental Toughness",
 ];
 
 const HOLE_OPTIONS = [
-  "Backhand", "Forehand", "High balls", "Second serve",
-  "Net game", "Under pressure", "Movement", "Short balls",
+  "1st Serve %", "2nd Serve", "Backhand", "Forehand", "Volleys",
+  "High Balls", "Net Game", "Pressure Points", "Court Movement", "Consistency",
+  "Short Balls", "Return", "Mental Toughness",
 ];
 
 function generateKeyToWin(w: string, h: string): string {
@@ -58,25 +59,37 @@ export const STYLE_TIPS: Record<PlayStyle, string> = {
 };
 
 const WEAPON_TO_STYLE: Record<string, PlayStyle> = {
-  "Big serve":      "serve-volley",
-  "Forehand":       "big-hitter",
-  "Backhand":       "counter-puncher",
-  "Volleys":        "serve-volley",
-  "Drop shot":      "all-court",
-  "Heavy topspin":  "moonballer",
-  "Speed":          "counter-puncher",
-  "Consistency":    "pusher",
+  "Fast Serve":         "serve-volley",
+  "Spinny Serve":       "moonballer",
+  "Serve Location":     "serve-volley",
+  "Forehand":           "big-hitter",
+  "Backhand":           "counter-puncher",
+  "Volleys":            "serve-volley",
+  "Drop Shot":          "all-court",
+  "Heavy Topspin":      "moonballer",
+  "Lobs":               "pusher",
+  "Overheads":          "serve-volley",
+  "Deep Groundstrokes": "counter-puncher",
+  "Return of Serve":    "counter-puncher",
+  "Court Movement":     "counter-puncher",
+  "Consistency":        "pusher",
+  "Mental Toughness":   "pusher",
 };
 
 const HOLE_TO_STYLE: Record<string, PlayStyle> = {
-  "Backhand":       "big-hitter",
-  "Forehand":       "big-hitter",
-  "High balls":     "pusher",
-  "Second serve":   "big-hitter",
-  "Net game":       "pusher",
-  "Under pressure": "pusher",
-  "Movement":       "serve-volley",
-  "Short balls":    "moonballer",
+  "1st Serve %":      "big-hitter",
+  "2nd Serve":        "big-hitter",
+  "Backhand":         "big-hitter",
+  "Forehand":         "big-hitter",
+  "Volleys":          "pusher",
+  "High Balls":       "pusher",
+  "Net Game":         "pusher",
+  "Pressure Points":  "counter-puncher",
+  "Court Movement":   "serve-volley",
+  "Consistency":      "big-hitter",
+  "Short Balls":      "moonballer",
+  "Return":           "big-hitter",
+  "Mental Toughness": "pusher",
 };
 
 function suggestStyle(weapon: string, hole: string): PlayStyle | null {
@@ -96,14 +109,31 @@ function suggestStyle(weapon: string, hole: string): PlayStyle | null {
 
 // ─── Scout State Hook ─────────────────────────────────────────────────────────
 
-function useScoutState() {
-  const [weaponChips, setWeaponChips] = useState<string[]>([]);
-  const [weaponCustom, setWeaponCustom] = useState("");
-  const [holeChips, setHoleChips]     = useState<string[]>([]);
-  const [holeCustom, setHoleCustom]   = useState("");
-  const [keyToWin, setKeyToWin]       = useState("");
-  const [keyToWinEdited, setKeyToWinEdited] = useState(false);
-  const [styles, setStyles]           = useState<PlayStyle[]>([]);
+interface ScoutInitial {
+  weapon?: string;
+  hole?: string;
+  keyToWin?: string;
+  styles?: PlayStyle[];
+  keyToWinEdited?: boolean;
+}
+
+function useScoutState(initial: ScoutInitial = {}) {
+  // Reconstruct chips from saved weapon/hole strings
+  const initWeaponParts = initial.weapon?.split(" / ").map(s => s.trim()).filter(Boolean) ?? [];
+  const initWeaponChips = initWeaponParts.filter(p => WEAPON_OPTIONS.includes(p));
+  const initWeaponCustom = initWeaponParts.filter(p => !WEAPON_OPTIONS.includes(p)).join(" / ");
+
+  const initHoleParts = initial.hole?.split(" / ").map(s => s.trim()).filter(Boolean) ?? [];
+  const initHoleChips = initHoleParts.filter(p => HOLE_OPTIONS.includes(p));
+  const initHoleCustom = initHoleParts.filter(p => !HOLE_OPTIONS.includes(p)).join(" / ");
+
+  const [weaponChips, setWeaponChips] = useState<string[]>(() => initWeaponChips);
+  const [weaponCustom, setWeaponCustom] = useState(() => initWeaponCustom);
+  const [holeChips, setHoleChips]     = useState<string[]>(() => initHoleChips);
+  const [holeCustom, setHoleCustom]   = useState(() => initHoleCustom);
+  const [keyToWin, setKeyToWin]       = useState(() => initial.keyToWin ?? "");
+  const [keyToWinEdited, setKeyToWinEdited] = useState(() => initial.keyToWinEdited ?? false);
+  const [styles, setStyles]           = useState<PlayStyle[]>(() => initial.styles ?? []);
 
   const weapon = useMemo(
     () => weaponChips.length > 0 ? weaponChips.join(" / ") : weaponCustom,
@@ -224,7 +254,7 @@ function Pill({
     <button
       type="button"
       onClick={onClick}
-      className={`px-4 py-2 rounded-full border text-sm font-semibold transition-all active:scale-95 ${
+      className={`px-3 py-1.5 rounded-full border text-xs font-semibold transition-all active:scale-95 ${
         active
           ? activeClass
           : "border-white/20 text-white/50 bg-white/5 hover:border-white/40 hover:text-white/80"
@@ -363,7 +393,7 @@ function ScoutPanel({ scout }: { scout: ScoutState }) {
             <span className="text-xs font-normal text-white/30">({weaponChips.length} selected)</span>
           )}
         </label>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-1.5">
           {WEAPON_OPTIONS.map((opt) => (
             <Pill
               key={opt}
@@ -392,12 +422,12 @@ function ScoutPanel({ scout }: { scout: ScoutState }) {
       {/* Their Hole */}
       <div className="space-y-3">
         <label className="flex items-center gap-2 text-sm font-bold text-white/70">
-          <span>🎯</span> Their Hole
+          <span>🎯</span> Their Weakness
           {holeChips.length > 0 && (
             <span className="text-xs font-normal text-white/30">({holeChips.length} selected)</span>
           )}
         </label>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-1.5">
           {HOLE_OPTIONS.map((opt) => (
             <Pill
               key={opt}
@@ -547,7 +577,7 @@ function ScoutReviewBlock({
       )}
       {hole && (
         <div>
-          <span className="text-xs text-white/30">🎯 Hole — </span>
+          <span className="text-xs text-white/30">🎯 Weakness — </span>
           <span className="text-sm text-white/80">{hole}</span>
         </div>
       )}
@@ -576,23 +606,36 @@ function ScoutReviewBlock({
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 interface MatchEntryProps {
+  initialData?: Match;
   onSave?: (match: Omit<Match, "id" | "opponentId">) => void;
   onCancel?: () => void;
 }
 
-export default function MatchEntry({ onSave, onCancel }: MatchEntryProps) {
+export default function MatchEntry({ initialData, onSave, onCancel }: MatchEntryProps) {
   const [step, setStep] = useState<Step>("info");
 
   // Match info
-  const [opponentName, setOpponentName]   = useState("");
-  const [opponent2Name, setOpponent2Name] = useState("");
-  const [surface, setSurface]             = useState<Surface | null>(null);
-  const [matchType, setMatchType]         = useState<MatchType>("singles");
-  const [score, setScore]                 = useState<MatchScore>(emptyScore());
+  const [opponentName, setOpponentName]   = useState(initialData?.opponentName ?? "");
+  const [opponent2Name, setOpponent2Name] = useState(initialData?.opponent2Name ?? "");
+  const [surface, setSurface]             = useState<Surface | null>(initialData?.surface ?? null);
+  const [matchType, setMatchType]         = useState<MatchType>(initialData?.matchType ?? "singles");
+  const [score, setScore]                 = useState<MatchScore>(initialData?.score ?? emptyScore());
 
-  // Scouting state — one per opponent
-  const scout1 = useScoutState();
-  const scout2 = useScoutState();
+  // Scouting state — one per opponent, pre-filled when editing
+  const scout1 = useScoutState({
+    weapon: initialData?.scouting?.weapon,
+    hole:   initialData?.scouting?.hole,
+    keyToWin: initialData?.scouting?.keyToWin,
+    styles: initialData?.opponentStyle,
+    keyToWinEdited: !!initialData?.scouting?.keyToWin,
+  });
+  const scout2 = useScoutState({
+    weapon: initialData?.scouting2?.weapon,
+    hole:   initialData?.scouting2?.hole,
+    keyToWin: initialData?.scouting2?.keyToWin,
+    styles: initialData?.opponentStyle2,
+    keyToWinEdited: !!initialData?.scouting2?.keyToWin,
+  });
 
   // Which tab is active in the scout step (doubles only)
   const [scoutTab, setScoutTab] = useState<1 | 2>(1);
@@ -602,6 +645,7 @@ export default function MatchEntry({ onSave, onCancel }: MatchEntryProps) {
   const isWin     = result === "win";
   const stepIndex = STEPS.indexOf(step);
   const isDoubles = matchType === "doubles";
+  const isEditing = !!initialData;
 
   const canAdvance = useCallback(() => {
     if (step === "info") {
@@ -622,7 +666,7 @@ export default function MatchEntry({ onSave, onCancel }: MatchEntryProps) {
   function handleSave() {
     if (!surface) return;
     const base: Omit<Match, "id" | "opponentId"> = {
-      createdAt: new Date().toISOString(),
+      createdAt: initialData?.createdAt ?? new Date().toISOString(),
       opponentName,
       surface,
       matchType,
@@ -632,9 +676,9 @@ export default function MatchEntry({ onSave, onCancel }: MatchEntryProps) {
       scouting: { weapon: scout1.weapon, hole: scout1.hole, keyToWin: scout1.keyToWin },
     };
     if (isDoubles) {
-      base.opponent2Name = opponent2Name;
+      base.opponent2Name  = opponent2Name;
       base.opponentStyle2 = scout2.styles;
-      base.scouting2 = { weapon: scout2.weapon, hole: scout2.hole, keyToWin: scout2.keyToWin };
+      base.scouting2      = { weapon: scout2.weapon, hole: scout2.hole, keyToWin: scout2.keyToWin };
     }
     onSave?.(base);
   }
@@ -651,14 +695,14 @@ export default function MatchEntry({ onSave, onCancel }: MatchEntryProps) {
             Cancel
           </button>
           <span className="text-xs font-bold tracking-[0.2em] uppercase text-white/30">
-            Log Match
+            {isEditing ? "Edit Match" : "Log Match"}
           </span>
           {step === "review" ? (
             <button
               onClick={handleSave}
               className="text-sm font-black text-lime-400 hover:text-lime-300 transition-colors active:scale-95"
             >
-              Save
+              {isEditing ? "Update" : "Save"}
             </button>
           ) : (
             <div className="w-12" />
@@ -754,10 +798,7 @@ export default function MatchEntry({ onSave, onCancel }: MatchEntryProps) {
         {/* ── STEP 2: Score ── */}
         {step === "score" && (
           <div className="space-y-5 animate-in fade-in slide-in-from-right-4 duration-300">
-            <SectionHeader
-              title="Enter the score"
-              sub="Log how many sets were played"
-            />
+            <SectionHeader title="Enter the score" sub="Log how many sets were played" />
 
             <div className="space-y-2">
               {score.sets.map((set, i) => (
@@ -778,9 +819,7 @@ export default function MatchEntry({ onSave, onCancel }: MatchEntryProps) {
                     : "bg-red-500/10   border-red-500/30   text-red-400"
                 }`}
               >
-                <div className="text-3xl font-black mb-0.5">
-                  {isWin ? "WIN" : "LOSS"}
-                </div>
+                <div className="text-3xl font-black mb-0.5">{isWin ? "WIN" : "LOSS"}</div>
                 <div className="text-sm opacity-60">{scoreLabel(score)}</div>
               </div>
             )}
@@ -790,12 +829,8 @@ export default function MatchEntry({ onSave, onCancel }: MatchEntryProps) {
         {/* ── STEP 3: Scout ── */}
         {step === "scout" && (
           <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
-            <SectionHeader
-              title="Build your dossier"
-              sub="Strategic intel for the rematch"
-            />
+            <SectionHeader title="Build your dossier" sub="Strategic intel for the rematch" />
 
-            {/* Doubles tab switcher */}
             {isDoubles && (
               <div className="flex gap-2 p-1 rounded-2xl bg-white/[0.04] border border-white/10">
                 {([1, 2] as const).map((tab) => (
@@ -824,7 +859,6 @@ export default function MatchEntry({ onSave, onCancel }: MatchEntryProps) {
           <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
             <SectionHeader title="Review & save" sub="Everything look right?" />
 
-            {/* Result Hero */}
             <div
               className={`rounded-3xl p-5 border ${
                 isWin
@@ -845,23 +879,16 @@ export default function MatchEntry({ onSave, onCancel }: MatchEntryProps) {
                     {isDoubles ? `${opponentName} & ${opponent2Name}` : opponentName}
                   </div>
                   <div className="text-white/40 text-sm mt-0.5">
-                    {scoreLabel(score)} · {
-                      SURFACES.find((s) => s.value === surface)?.emoji
-                    } {surface?.charAt(0).toUpperCase() ?? ""}
-                    {surface?.slice(1)} · {matchType}
+                    {scoreLabel(score)} · {SURFACES.find((s) => s.value === surface)?.emoji}{" "}
+                    {surface?.charAt(0).toUpperCase() ?? ""}{surface?.slice(1)} · {matchType}
                   </div>
                 </div>
-                <div
-                  className={`text-5xl font-black ${
-                    isWin ? "text-lime-400" : "text-red-400"
-                  }`}
-                >
+                <div className={`text-5xl font-black ${isWin ? "text-lime-400" : "text-red-400"}`}>
                   {isWin ? "W" : "L"}
                 </div>
               </div>
             </div>
 
-            {/* Scouting summaries */}
             <ScoutReviewBlock
               label={isDoubles ? `Scouting — ${opponentName}` : "Scouting Intel"}
               weapon={scout1.weapon}
@@ -913,7 +940,7 @@ export default function MatchEntry({ onSave, onCancel }: MatchEntryProps) {
                   : "bg-red-500 text-white hover:bg-red-400 shadow-red-500/20"
               }`}
             >
-              {isWin ? "Save Win 🏆" : "Save Match"}
+              {isEditing ? (isWin ? "Update Win 🏆" : "Update Match") : (isWin ? "Save Win 🏆" : "Save Match")}
             </button>
           )}
         </div>
