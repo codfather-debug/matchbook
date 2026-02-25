@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import {
   Match,
   MatchFormData,
@@ -21,6 +21,23 @@ const SURFACES: { value: Surface; label: string; emoji: string; color: string }[
   { value: "clay",  label: "Clay",  emoji: "🟫", color: "bg-amber-500/20 border-amber-400 text-amber-300" },
   { value: "grass", label: "Grass", emoji: "🟩", color: "bg-green-500/20 border-green-400 text-green-300" },
 ];
+
+const WEAPON_OPTIONS = [
+  "Big serve", "Forehand", "Backhand", "Volleys",
+  "Drop shot", "Heavy topspin", "Speed", "Consistency",
+];
+
+const HOLE_OPTIONS = [
+  "Backhand", "Forehand", "High balls", "Second serve",
+  "Net game", "Under pressure", "Movement", "Short balls",
+];
+
+function generateKeyToWin(w: string, h: string): string {
+  if (w && h) return `Stay away from their ${w.toLowerCase()} — keep attacking their ${h.toLowerCase()}.`;
+  if (w) return `Neutralize their ${w.toLowerCase()} — make them play on your terms.`;
+  if (h) return `Attack their ${h.toLowerCase()} early and often.`;
+  return "";
+}
 
 const PLAY_STYLES: { value: PlayStyle; label: string; desc: string }[] = [
   { value: "pusher",          label: "Pusher",         desc: "Retrieves everything" },
@@ -229,8 +246,11 @@ export default function MatchEntry({ onSave, onCancel }: MatchEntryProps) {
   const [score, setScore]               = useState<MatchScore>(emptyScore());
   const [styles, setStyles]             = useState<PlayStyle[]>([]);
   const [weapon, setWeapon]             = useState("");
+  const [weaponChip, setWeaponChip]     = useState<string | null>(null);
   const [hole, setHole]                 = useState("");
+  const [holeChip, setHoleChip]         = useState<string | null>(null);
   const [keyToWin, setKeyToWin]         = useState("");
+  const [keyToWinEdited, setKeyToWinEdited] = useState(false);
 
   // Derived
   const result     = deriveResult(score);
@@ -241,6 +261,11 @@ export default function MatchEntry({ onSave, onCancel }: MatchEntryProps) {
     if (step === "score") return setsPlayed(score) >= 1;
     return true;
   }, [step, opponentName, surface, score]);
+
+  useEffect(() => {
+    if (keyToWinEdited) return;
+    setKeyToWin(generateKeyToWin(weapon, hole));
+  }, [weapon, hole, keyToWinEdited]);
 
   function updateSet(i: number, val: SetScore) {
     const sets = [...score.sets] as [SetScore, SetScore, SetScore];
@@ -409,27 +434,111 @@ export default function MatchEntry({ onSave, onCancel }: MatchEntryProps) {
               sub="Strategic intel for the rematch"
             />
 
-            <ScoutField
-              icon="⚡"
-              label="Their Weapon"
-              placeholder="What was their best shot?"
-              value={weapon}
-              onChange={setWeapon}
-            />
-            <ScoutField
-              icon="🎯"
-              label="Their Hole"
-              placeholder="Where was their weakness?"
-              value={hole}
-              onChange={setHole}
-            />
-            <ScoutField
-              icon="🔑"
-              label="Key to Win"
-              placeholder="One sentence strategy for next time…"
-              value={keyToWin}
-              onChange={setKeyToWin}
-            />
+            {/* Their Weapon */}
+            <div className="space-y-3">
+              <label className="flex items-center gap-2 text-sm font-bold text-white/70">
+                <span>⚡</span> Their Weapon
+              </label>
+              <div className="flex flex-wrap gap-2">
+                {WEAPON_OPTIONS.map((opt) => (
+                  <Pill
+                    key={opt}
+                    active={weaponChip === opt}
+                    onClick={() => {
+                      if (weaponChip === opt) {
+                        setWeaponChip(null);
+                        setWeapon("");
+                      } else {
+                        setWeaponChip(opt);
+                        setWeapon(opt);
+                      }
+                    }}
+                  >
+                    {opt}
+                  </Pill>
+                ))}
+              </div>
+              <input
+                type="text"
+                placeholder="Or describe it yourself…"
+                value={weaponChip ? "" : weapon}
+                onChange={(e) => {
+                  setWeaponChip(null);
+                  setWeapon(e.target.value);
+                }}
+                className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white text-sm placeholder:text-white/25 outline-none focus:ring-2 focus:ring-lime-400/50 focus:border-lime-400/30 transition-all"
+              />
+            </div>
+
+            {/* Their Hole */}
+            <div className="space-y-3">
+              <label className="flex items-center gap-2 text-sm font-bold text-white/70">
+                <span>🎯</span> Their Hole
+              </label>
+              <div className="flex flex-wrap gap-2">
+                {HOLE_OPTIONS.map((opt) => (
+                  <Pill
+                    key={opt}
+                    active={holeChip === opt}
+                    onClick={() => {
+                      if (holeChip === opt) {
+                        setHoleChip(null);
+                        setHole("");
+                      } else {
+                        setHoleChip(opt);
+                        setHole(opt);
+                      }
+                    }}
+                  >
+                    {opt}
+                  </Pill>
+                ))}
+              </div>
+              <input
+                type="text"
+                placeholder="Or describe it yourself…"
+                value={holeChip ? "" : hole}
+                onChange={(e) => {
+                  setHoleChip(null);
+                  setHole(e.target.value);
+                }}
+                className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white text-sm placeholder:text-white/25 outline-none focus:ring-2 focus:ring-lime-400/50 focus:border-lime-400/30 transition-all"
+              />
+            </div>
+
+            {/* Key to Win */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="flex items-center gap-2 text-sm font-bold text-white/70">
+                  <span>🔑</span> Key to Win
+                </label>
+                {keyToWinEdited && (weapon || hole) && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setKeyToWinEdited(false);
+                      setKeyToWin(generateKeyToWin(weapon, hole));
+                    }}
+                    className="text-xs text-lime-400/70 hover:text-lime-400 transition-colors"
+                  >
+                    ↺ Regenerate
+                  </button>
+                )}
+              </div>
+              <textarea
+                rows={2}
+                placeholder="One sentence strategy for next time…"
+                value={keyToWin}
+                onChange={(e) => {
+                  setKeyToWin(e.target.value);
+                  setKeyToWinEdited(true);
+                }}
+                className="w-full bg-white/5 border border-white/10 rounded-2xl p-3 text-white text-sm placeholder:text-white/25 outline-none focus:ring-2 focus:ring-lime-400/50 focus:border-lime-400/30 resize-none transition-all"
+              />
+              {keyToWin && !keyToWinEdited && (
+                <p className="text-xs text-lime-400/50">✨ Auto-generated — tap to edit</p>
+              )}
+            </div>
 
             <div>
               <label className="text-xs font-bold text-white/40 uppercase tracking-widest block mb-3">
