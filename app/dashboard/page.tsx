@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Match } from "@/types";
 import { supabase } from "@/lib/supabase";
 import BottomNav from "@/components/BottomNav";
+import Onboarding from "@/components/Onboarding";
 import {
   getRecord, getCurrentStreak, getWinRate,
   getMentalAverage, getExecutionAverage,
@@ -45,6 +46,7 @@ export default function DashboardPage() {
   const router = useRouter();
   const [matches, setMatches] = useState<Match[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -55,15 +57,24 @@ export default function DashboardPage() {
         .select("id, created_at, data")
         .order("created_at", { ascending: false });
       if (data) {
-        setMatches(data.map(row => ({
+        const loaded = data.map(row => ({
           ...(row.data as Omit<Match, "id" | "createdAt">),
           id: row.id, createdAt: row.created_at,
-        })));
+        }));
+        setMatches(loaded);
+        if (loaded.length === 0 && !localStorage.getItem("mb_onboarded")) {
+          setShowOnboarding(true);
+        }
       }
       setLoading(false);
     }
     load();
   }, [router]);
+
+  function dismissOnboarding() {
+    localStorage.setItem("mb_onboarded", "1");
+    setShowOnboarding(false);
+  }
 
   if (loading) {
     return (
@@ -87,6 +98,8 @@ export default function DashboardPage() {
   const streakColor = streak > 0 ? "text-lime-400" : streak < 0 ? "text-red-400" : "text-white/40";
 
   return (
+    <>
+      {showOnboarding && <Onboarding onDismiss={dismissOnboarding} />}
     <main className="min-h-screen bg-[#0c0c0e] max-w-sm mx-auto pb-24">
       {/* Header */}
       <div className="px-5 pt-5 pb-4 border-b border-white/[0.06]">
@@ -187,5 +200,6 @@ export default function DashboardPage() {
 
       <BottomNav active="dashboard" />
     </main>
+    </>
   );
 }

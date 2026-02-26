@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect, useMemo } from "react";
+import Link from "next/link";
 import {
   Match,
   Surface,
@@ -10,6 +11,7 @@ import {
   ReflectionData,
   deriveResult,
 } from "../types";
+import { supabase } from "@/lib/supabase";
 
 // ─── Sub-types ────────────────────────────────────────────────────────────────
 
@@ -469,6 +471,16 @@ export default function MatchEntry({ initialData, onSave, onCancel }: MatchEntry
   // ── Match info ──────────────────────────────────────────────────────────────
   const [opponentName,  setOpponentName]  = useState(initialData?.opponentName ?? "");
   const [opponent2Name, setOpponent2Name] = useState(initialData?.opponent2Name ?? "");
+  const [prevOpponents, setPrevOpponents] = useState<string[]>([]);
+  const [nameFocused, setNameFocused] = useState(false);
+
+  useEffect(() => {
+    supabase.from("matches").select("data").then(({ data }) => {
+      if (!data) return;
+      const names = [...new Set(data.map(r => (r.data as { opponentName?: string }).opponentName).filter(Boolean))] as string[];
+      setPrevOpponents(names);
+    });
+  }, []);
   const [surface,  setSurface]  = useState<Surface | null>(initialData?.surface ?? null);
   const [matchType, setMatchType] = useState<MatchType>(initialData?.matchType ?? "singles");
   const [score, setScore] = useState<MatchScore>(initialData?.score ?? emptyScore());
@@ -616,6 +628,12 @@ export default function MatchEntry({ initialData, onSave, onCancel }: MatchEntry
             </div>
 
             <RatingPicker label="Pre-Match Confidence" value={planConfidence} onChange={setPlanConfidence} />
+
+            <Link href="/playbook/singles" target="_blank"
+              className="flex items-center justify-between w-full rounded-2xl border border-white/[0.08] bg-white/[0.02] px-4 py-3 hover:border-white/20 transition-all">
+              <span className="text-sm text-white/40 font-semibold">Need strategy ideas?</span>
+              <span className="text-sm text-lime-400 font-black">Browse strategies →</span>
+            </Link>
           </div>
         )}
 
@@ -627,7 +645,34 @@ export default function MatchEntry({ initialData, onSave, onCancel }: MatchEntry
             <div>
               <label className="text-xs font-bold text-white/40 uppercase tracking-widest block mb-2">{isDoubles ? "Opponent 1" : "Opponent"}</label>
               <input autoFocus type="text" placeholder="e.g. Rafael Nadal"
-                value={opponentName} onChange={e => setOpponentName(e.target.value)} className={inputCls} />
+                value={opponentName}
+                onChange={e => setOpponentName(e.target.value)}
+                onFocus={() => setNameFocused(true)}
+                onBlur={() => setTimeout(() => setNameFocused(false), 150)}
+                className={inputCls} />
+              {nameFocused && opponentName.length >= 1 && prevOpponents.filter(n => n.toLowerCase().includes(opponentName.toLowerCase()) && n !== opponentName).length > 0 && (
+                <div className="flex flex-wrap gap-1.5 mt-2">
+                  {prevOpponents
+                    .filter(n => n.toLowerCase().includes(opponentName.toLowerCase()) && n !== opponentName)
+                    .slice(0, 5)
+                    .map(n => (
+                      <button key={n} type="button" onMouseDown={() => setOpponentName(n)}
+                        className="px-3 py-1 rounded-full bg-white/[0.06] border border-white/10 text-white/60 text-xs font-semibold hover:bg-white/10 transition-all">
+                        {n}
+                      </button>
+                    ))}
+                </div>
+              )}
+              {nameFocused && opponentName.length === 0 && prevOpponents.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 mt-2">
+                  {prevOpponents.slice(0, 6).map(n => (
+                    <button key={n} type="button" onMouseDown={() => setOpponentName(n)}
+                      className="px-3 py-1 rounded-full bg-white/[0.06] border border-white/10 text-white/60 text-xs font-semibold hover:bg-white/10 transition-all">
+                      {n}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
             {isDoubles && (
               <div>

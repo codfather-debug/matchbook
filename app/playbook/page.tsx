@@ -28,6 +28,22 @@ const BOOKS = [
     badge: "text-amber-400",
   },
   {
+    href: "/playbook/return",
+    icon: "↩️",
+    title: "Return Game",
+    sub: "Positioning · patterns · reading serves",
+    accent: "border-sky-400/20 hover:border-sky-400/40",
+    badge: "text-sky-300",
+  },
+  {
+    href: "/playbook/warmup",
+    icon: "🔥",
+    title: "Warm-Up Routine",
+    sub: "10-min protocol · dynamic prep · mental checklist",
+    accent: "border-orange-400/20 hover:border-orange-400/40",
+    badge: "text-orange-400",
+  },
+  {
     href: "/playbook/scoring",
     icon: "📊",
     title: "Match Scoring",

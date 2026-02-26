@@ -260,47 +260,69 @@ export default function MatchDetailPage() {
           );
         })()}
 
-        {/* Score Breakdown */}
+        {/* Score Breakdown — TV-style scorecard */}
         <section className="space-y-3">
           <p className="text-xs font-black tracking-widest uppercase text-white/30">Score</p>
-          <div className="space-y-2">
-            {playedSets.map((s, i) => {
-              const playerWon = (s.player ?? 0) > (s.opponent ?? 0);
-              const hasTb = s.tiebreak &&
-                s.tiebreak.player !== null &&
-                s.tiebreak.opponent !== null;
-              return (
-                <div
-                  key={i}
-                  className={`flex items-center gap-3 p-3 rounded-2xl border ${
-                    playerWon
-                      ? "border-lime-400/20 bg-lime-400/[0.04]"
-                      : "border-red-500/20 bg-red-500/[0.04]"
-                  }`}
-                >
-                  <span className="text-xs font-bold text-white/30 w-6 shrink-0">S{i + 1}</span>
-                  <span className="text-xl font-black text-white flex-1">
-                    {s.player}
-                    <span className="text-white/30 mx-1">–</span>
-                    {s.opponent}
-                    {hasTb && (
-                      <span className="text-sm font-semibold text-white/40 ml-1">
-                        ({Math.min(s.tiebreak!.player!, s.tiebreak!.opponent!)})
-                      </span>
-                    )}
-                  </span>
-                  <span
-                    className={`text-xs font-black px-2.5 py-0.5 rounded-full ${
-                      playerWon
-                        ? "bg-lime-400/15 text-lime-400"
-                        : "bg-red-500/15 text-red-400"
-                    }`}
-                  >
-                    {playerWon ? "W" : "L"}
-                  </span>
+          <div className="rounded-2xl border border-white/10 bg-white/[0.03] overflow-hidden">
+            {/* Header row */}
+            <div className="flex items-center border-b border-white/[0.06] px-4 py-2">
+              <div className="flex-1" />
+              {playedSets.map((_, i) => (
+                <div key={i} className="w-12 text-center text-[10px] font-black tracking-widest uppercase text-white/25">
+                  S{i + 1}
                 </div>
-              );
-            })}
+              ))}
+            </div>
+            {/* You row */}
+            <div className={`flex items-center px-4 py-3 ${win ? "bg-lime-400/[0.06]" : ""}`}>
+              <div className="flex-1">
+                <span className={`text-sm font-black ${win ? "text-lime-400" : "text-white/50"}`}>You</span>
+                {win && <span className="ml-2 text-[10px] font-black text-lime-400 bg-lime-400/15 px-1.5 py-0.5 rounded-full">WIN</span>}
+              </div>
+              {playedSets.map((s, i) => {
+                const playerWon = (s.player ?? 0) > (s.opponent ?? 0);
+                const hasTb = s.tiebreak?.player !== null && s.tiebreak?.opponent !== null && s.tiebreak;
+                return (
+                  <div key={i} className="w-12 text-center">
+                    <span className={`text-lg font-black ${playerWon ? "text-white" : "text-white/30"}`}>
+                      {s.player}
+                    </span>
+                    {hasTb && playerWon && (
+                      <sup className="text-[9px] text-white/30 ml-0.5">
+                        {Math.min(s.tiebreak!.player!, s.tiebreak!.opponent!)}
+                      </sup>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+            {/* Divider */}
+            <div className="h-px bg-white/[0.06]" />
+            {/* Opponent row */}
+            <div className={`flex items-center px-4 py-3 ${!win ? "bg-red-500/[0.06]" : ""}`}>
+              <div className="flex-1">
+                <span className={`text-sm font-black ${!win ? "text-red-400" : "text-white/50"}`}>
+                  {isDoubles ? `${match.opponentName} & ${match.opponent2Name ?? ""}` : match.opponentName}
+                </span>
+                {!win && <span className="ml-2 text-[10px] font-black text-red-400 bg-red-400/15 px-1.5 py-0.5 rounded-full">WIN</span>}
+              </div>
+              {playedSets.map((s, i) => {
+                const opponentWon = (s.opponent ?? 0) > (s.player ?? 0);
+                const hasTb = s.tiebreak?.player !== null && s.tiebreak?.opponent !== null && s.tiebreak;
+                return (
+                  <div key={i} className="w-12 text-center">
+                    <span className={`text-lg font-black ${opponentWon ? "text-white" : "text-white/30"}`}>
+                      {s.opponent}
+                    </span>
+                    {hasTb && opponentWon && (
+                      <sup className="text-[9px] text-white/30 ml-0.5">
+                        {Math.min(s.tiebreak!.player!, s.tiebreak!.opponent!)}
+                      </sup>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </section>
 

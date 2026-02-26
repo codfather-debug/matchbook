@@ -5,7 +5,7 @@ import { Match } from "@/types";
 import { supabase } from "@/lib/supabase";
 import BottomNav from "@/components/BottomNav";
 import {
-  getWinRate, getRecord, getSurfaceWinRates,
+  getWinRate, getRecord, getSurfaceWinRates, getStyleWinRates,
   getMentalAverage, getExecutionAverage,
   getWinRateSeries, getMentalSeries, getExecutionSeries,
   generateInsights, ChartPoint,
@@ -110,6 +110,7 @@ export default function AnalyticsPage() {
   const mentalAvg  = getMentalAverage(filtered);
   const execAvg    = getExecutionAverage(filtered);
   const surfRates  = getSurfaceWinRates(filtered);
+  const styleRates = getStyleWinRates(filtered);
   const insights   = generateInsights(filtered);
 
   // Chart series always use all matches (shows full trend), sliced to filter window
@@ -258,6 +259,34 @@ export default function AnalyticsPage() {
                 })}
               </div>
             </section>
+
+            {/* Opponent Style Breakdown */}
+            {Object.keys(styleRates).length > 0 && (
+              <section className="space-y-2">
+                <p className="text-xs font-black tracking-widest uppercase text-white/30">By Opponent Style</p>
+                <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 space-y-3">
+                  {(Object.entries(styleRates) as [string, { wins: number; total: number; rate: number }][])
+                    .sort((a, b) => b[1].rate - a[1].rate)
+                    .map(([style, d]) => (
+                      <div key={style}>
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-xs font-semibold text-white/60 capitalize">{style.replace("-", " ")}</span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs text-white/30">{d.wins}W – {d.total - d.wins}L</span>
+                            <span className={`text-xs font-black ${d.rate >= 60 ? "text-lime-400" : d.rate >= 40 ? "text-amber-400" : "text-red-400"}`}>{d.rate}%</span>
+                          </div>
+                        </div>
+                        <div className="h-1.5 rounded-full bg-white/[0.06] overflow-hidden">
+                          <div
+                            className={`h-full rounded-full transition-all ${d.rate >= 60 ? "bg-lime-400" : d.rate >= 40 ? "bg-amber-400" : "bg-red-400"}`}
+                            style={{ width: `${d.rate}%` }}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              </section>
+            )}
 
             {/* Insights */}
             {insights.length > 0 && (

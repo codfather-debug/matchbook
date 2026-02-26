@@ -1,4 +1,4 @@
-import { Match, Surface } from "@/types";
+import { Match, PlayStyle, Surface } from "@/types";
 
 // ─── Core Stats ───────────────────────────────────────────────────────────────
 
@@ -38,6 +38,24 @@ export function getSurfaceWinRates(
   }
   const result: Partial<Record<Surface, { wins: number; total: number; rate: number }>> = {};
   for (const [s, d] of Object.entries(map) as [Surface, { wins: number; total: number }][]) {
+    result[s] = { ...d, rate: Math.round((d.wins / d.total) * 100) };
+  }
+  return result;
+}
+
+export function getStyleWinRates(
+  matches: Match[]
+): Partial<Record<PlayStyle, { wins: number; total: number; rate: number }>> {
+  const map: Partial<Record<PlayStyle, { wins: number; total: number }>> = {};
+  for (const m of matches) {
+    const style = m.opponentStyle[0];
+    if (!style) continue;
+    if (!map[style]) map[style] = { wins: 0, total: 0 };
+    map[style]!.total++;
+    if (m.result === "win") map[style]!.wins++;
+  }
+  const result: Partial<Record<PlayStyle, { wins: number; total: number; rate: number }>> = {};
+  for (const [s, d] of Object.entries(map) as [PlayStyle, { wins: number; total: number }][]) {
     result[s] = { ...d, rate: Math.round((d.wins / d.total) * 100) };
   }
   return result;

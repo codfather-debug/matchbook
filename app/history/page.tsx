@@ -13,9 +13,14 @@ const SURFACE_EMOJI: Record<string, string> = {
   grass: "🟩",
 };
 
+type SurfaceFilter = "all" | "hard" | "clay" | "grass";
+type ResultFilter = "all" | "win" | "loss";
+
 export default function HistoryPage() {
   const [matches, setMatches] = useState<Match[]>([]);
   const [loading, setLoading] = useState(true);
+  const [surfaceFilter, setSurfaceFilter] = useState<SurfaceFilter>("all");
+  const [resultFilter, setResultFilter] = useState<ResultFilter>("all");
   const router = useRouter();
 
   useEffect(() => {
@@ -48,6 +53,12 @@ export default function HistoryPage() {
     router.push("/auth");
   }
 
+  const visible = matches.filter(m => {
+    if (surfaceFilter !== "all" && m.surface !== surfaceFilter) return false;
+    if (resultFilter !== "all" && m.result !== resultFilter) return false;
+    return true;
+  });
+
   return (
     <main className="min-h-screen bg-[#0c0c0e] max-w-sm mx-auto pb-24">
       {/* Header */}
@@ -66,6 +77,49 @@ export default function HistoryPage() {
         </div>
       </div>
 
+      {/* Filters */}
+      {!loading && matches.length > 0 && (
+        <div className="px-5 pt-3 pb-1 space-y-2">
+          {/* Surface filter */}
+          <div className="flex gap-1.5">
+            {(["all", "hard", "clay", "grass"] as SurfaceFilter[]).map(f => (
+              <button
+                key={f}
+                onClick={() => setSurfaceFilter(f)}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                  surfaceFilter === f
+                    ? "bg-lime-400 text-black"
+                    : "bg-white/[0.05] text-white/40 hover:text-white/70"
+                }`}
+              >
+                {f === "all" ? "All Surfaces" : `${SURFACE_EMOJI[f]} ${f.charAt(0).toUpperCase() + f.slice(1)}`}
+              </button>
+            ))}
+          </div>
+          {/* Result filter */}
+          <div className="flex gap-1.5">
+            {(["all", "win", "loss"] as ResultFilter[]).map(f => (
+              <button
+                key={f}
+                onClick={() => setResultFilter(f)}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                  resultFilter === f
+                    ? f === "win" ? "bg-lime-400 text-black"
+                    : f === "loss" ? "bg-red-500 text-white"
+                    : "bg-lime-400 text-black"
+                    : "bg-white/[0.05] text-white/40 hover:text-white/70"
+                }`}
+              >
+                {f === "all" ? "All Results" : f === "win" ? "Wins" : "Losses"}
+              </button>
+            ))}
+          </div>
+          {(surfaceFilter !== "all" || resultFilter !== "all") && (
+            <p className="text-xs text-white/30 pb-1">{visible.length} match{visible.length !== 1 ? "es" : ""} shown</p>
+          )}
+        </div>
+      )}
+
       {/* Feed */}
       <div className="px-5 py-4 space-y-3">
         {loading ? (
@@ -77,8 +131,18 @@ export default function HistoryPage() {
               + Log your first match
             </Link>
           </div>
+        ) : visible.length === 0 ? (
+          <div className="text-center py-12 space-y-2">
+            <p className="text-white/30">No matches match the current filters.</p>
+            <button
+              onClick={() => { setSurfaceFilter("all"); setResultFilter("all"); }}
+              className="text-lime-400 text-sm font-semibold"
+            >
+              Clear filters
+            </button>
+          </div>
         ) : (
-          matches.map((m) => {
+          visible.map((m) => {
             const win = m.result === "win";
             const scoreSets = m.score.sets
               .filter((s) => s.player !== null && s.opponent !== null)
@@ -100,7 +164,13 @@ export default function HistoryPage() {
               >
                 <div className="flex items-center justify-between">
                   <div>
-                    <span className="text-white font-black text-base">{m.opponentName}</span>
+                    <Link
+                      href={`/opponent/${encodeURIComponent(m.opponentName)}`}
+                      onClick={e => e.stopPropagation()}
+                      className="text-white font-black text-base hover:text-lime-300 transition-colors"
+                    >
+                      {m.opponentName}
+                    </Link>
                     <span className="ml-2 text-white/40 text-sm">
                       {SURFACE_EMOJI[m.surface]} {scoreSets}
                     </span>
