@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 
-type Tab = "home" | "dashboard" | "log" | "analytics" | "profile";
+type Tab = "home" | "dashboard" | "log" | "playbook" | "profile";
 
 export default function BottomNav({ active }: { active: Tab }) {
   const base   = "flex flex-col items-center justify-center gap-1 text-[10px] font-bold transition-colors";
@@ -43,12 +43,13 @@ export default function BottomNav({ active }: { active: Tab }) {
           <span className="text-[10px] font-bold text-lime-400 mt-0.5">Log</span>
         </Link>
 
-        {/* Analytics */}
-        <Link href="/analytics" className={`${base} ${active === "analytics" ? on : off} flex-1 py-2`}>
+        {/* Playbook */}
+        <Link href="/playbook" className={`${base} ${active === "playbook" ? on : off} flex-1 py-2`}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+            <path d="M4 19.5A2.5 2.5 0 016.5 17H20"/>
+            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/>
           </svg>
-          Analytics
+          Playbook
         </Link>
 
         {/* Profile */}

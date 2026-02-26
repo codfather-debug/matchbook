@@ -156,6 +156,18 @@ export default function DashboardPage() {
                 <p className="text-sm font-bold text-white">Profile</p>
                 <p className="text-xs text-white/30">Grades & identity</p>
               </Link>
+              <Link href="/friends"
+                className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-center hover:border-white/20 transition-all active:scale-[0.98]">
+                <p className="text-2xl mb-1">👥</p>
+                <p className="text-sm font-bold text-white">Friends</p>
+                <p className="text-xs text-white/30">Find & view players</p>
+              </Link>
+              <Link href="/achievements"
+                className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-center hover:border-white/20 transition-all active:scale-[0.98]">
+                <p className="text-2xl mb-1">🏅</p>
+                <p className="text-sm font-bold text-white">Achievements</p>
+                <p className="text-xs text-white/30">Badges & progress</p>
+              </Link>
             </div>
           </>
         )}

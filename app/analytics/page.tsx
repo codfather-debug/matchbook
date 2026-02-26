@@ -288,7 +288,7 @@ export default function AnalyticsPage() {
 
       </div>
 
-      <BottomNav active="analytics" />
+      <BottomNav active="profile" />
     </main>
   );
 }
