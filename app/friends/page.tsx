@@ -562,21 +562,25 @@ export default function FriendsPage() {
             {/* Create Group Modal */}
             {showCreateGroup && (
               <div className="fixed inset-0 z-50 bg-black/70 flex items-end justify-center" onClick={() => setShowCreateGroup(false)}>
-                <div className="bg-[#141416] border border-white/10 rounded-t-3xl w-full max-w-sm p-6 space-y-4" onClick={e => e.stopPropagation()}>
-                  <h2 className="text-lg font-black text-white">Create Group</h2>
-                  <input
-                    type="text"
-                    placeholder="Group name…"
-                    value={newGroupName}
-                    onChange={e => setNewGroupName(e.target.value)}
-                    className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white text-sm placeholder:text-white/25 outline-none focus:ring-2 focus:ring-lime-400/50 focus:border-lime-400/30 transition-all"
-                  />
-                  <div className="space-y-2">
+                <div className="bg-[#141416] border border-white/10 rounded-t-3xl w-full max-w-sm flex flex-col max-h-[80vh]" onClick={e => e.stopPropagation()}>
+                  {/* Fixed header */}
+                  <div className="px-6 pt-6 pb-4 space-y-4 flex-shrink-0">
+                    <h2 className="text-lg font-black text-white">Create Group</h2>
+                    <input
+                      type="text"
+                      placeholder="Group name…"
+                      value={newGroupName}
+                      onChange={e => setNewGroupName(e.target.value)}
+                      className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white text-sm placeholder:text-white/25 outline-none focus:ring-2 focus:ring-lime-400/50 focus:border-lime-400/30 transition-all"
+                    />
                     <p className="text-xs font-black tracking-widest uppercase text-white/30">Add Friends</p>
+                  </div>
+                  {/* Scrollable friends list */}
+                  <div className="px-6 overflow-y-auto flex-1 min-h-0">
                     {friends.length === 0 ? (
-                      <p className="text-xs text-white/25">You need friends to create a group</p>
+                      <p className="text-xs text-white/25 pb-4">You need friends to create a group</p>
                     ) : (
-                      <div className="flex flex-wrap gap-2">
+                      <div className="flex flex-wrap gap-2 pb-4">
                         {friends.map(f => {
                           const sel = selectedFriendIds.has(f.userId);
                           return (
@@ -597,6 +601,8 @@ export default function FriendsPage() {
                       </div>
                     )}
                   </div>
+                  {/* Fixed footer */}
+                  <div className="px-6 pt-3 pb-6 flex-shrink-0 space-y-3">
                   {groupError && <p className="text-xs text-red-400/80">{groupError}</p>}
                   <div className="flex gap-3">
                     <button
@@ -612,6 +618,7 @@ export default function FriendsPage() {
                     >
                       {groupBusy ? "Creating…" : "Create"}
                     </button>
+                  </div>
                   </div>
                 </div>
               </div>
