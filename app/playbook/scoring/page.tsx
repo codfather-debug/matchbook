@@ -50,7 +50,7 @@ const FORMATS = [
       "Players change ends after every 6 total points.",
       "If the score reaches 6–6, change ends and keep serving in sequence until one player leads by 2.",
       "The set is recorded as 7–6.",
-      "After the tiebreak, the opponent of the tiebreak server serves first in the next set.",
+      "After the tiebreak the team who received the first point in the tiebreaker is now the first to serve in the next set.",
     ],
   },
   {
@@ -65,7 +65,7 @@ const FORMATS = [
       "Same serving rotation as a 7-point tiebreaker.",
       "Change ends when the total point score equals a multiple of 6 (e.g. 3–3, 0–6, 7–5, 6–6…).",
       "Doubles partners preserve their serving sequence throughout.",
-      "After the super tiebreaker, the opposing team serves first in the next set.",
+      "You may change doubles service order for 10-point tiebreakers.",
     ],
   },
 ];
