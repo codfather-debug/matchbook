@@ -202,13 +202,14 @@ export default function FriendsPage() {
     if (!newTeamName.trim()) return;
     setTeamBusy(true);
     setTeamError("");
-    const { data: team, error } = await supabase
+    // Generate ID + invite code client-side to avoid RLS select-after-insert issue
+    const teamId = crypto.randomUUID();
+    const inviteCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+    const { error } = await supabase
       .from("teams")
-      .insert({ name: newTeamName.trim(), description: newTeamDesc.trim() || null, created_by: userId })
-      .select()
-      .single();
-    if (error || !team) { setTeamError("Failed to create team."); setTeamBusy(false); return; }
-    await supabase.from("team_members").insert({ team_id: team.id, user_id: userId, role: "admin" });
+      .insert({ id: teamId, name: newTeamName.trim(), description: newTeamDesc.trim() || null, created_by: userId, invite_code: inviteCode });
+    if (error) { setTeamError("Failed to create team."); setTeamBusy(false); return; }
+    await supabase.from("team_members").insert({ team_id: teamId, user_id: userId, role: "admin" });
     setNewTeamName(""); setNewTeamDesc(""); setShowCreateTeam(false);
     await loadTeams(userId);
     setTeamBusy(false);
@@ -219,7 +220,8 @@ export default function FriendsPage() {
     if (!code) return;
     setTeamBusy(true);
     setTeamError("");
-    const { data: team } = await supabase.from("teams").select("id").eq("invite_code", code).single();
+    // Use maybeSingle to avoid 406 on no match; RLS allows select by invite_code lookup needs creator policy
+    const { data: team } = await supabase.from("teams").select("id").eq("invite_code", code).maybeSingle();
     if (!team) { setTeamError("Invalid code — no team found."); setTeamBusy(false); return; }
     const { error } = await supabase.from("team_members").insert({ team_id: team.id, user_id: userId, role: "member" });
     if (error) { setTeamError("You're already in this team."); setTeamBusy(false); return; }
@@ -232,14 +234,14 @@ export default function FriendsPage() {
     if (!newGroupName.trim() || selectedFriendIds.size === 0) return;
     setGroupBusy(true);
     setGroupError("");
-    const { data: group, error } = await supabase
+    // Generate ID client-side to avoid RLS select-after-insert issue
+    const groupId = crypto.randomUUID();
+    const { error } = await supabase
       .from("friend_groups")
-      .insert({ name: newGroupName.trim(), created_by: userId })
-      .select()
-      .single();
-    if (error || !group) { setGroupError("Failed to create group."); setGroupBusy(false); return; }
+      .insert({ id: groupId, name: newGroupName.trim(), created_by: userId });
+    if (error) { setGroupError("Failed to create group."); setGroupBusy(false); return; }
     const memberInserts = [userId, ...Array.from(selectedFriendIds)].map(uid => ({
-      group_id: group.id, user_id: uid,
+      group_id: groupId, user_id: uid,
     }));
     await supabase.from("friend_group_members").insert(memberInserts);
     setNewGroupName(""); setSelectedFriendIds(new Set()); setShowCreateGroup(false);
