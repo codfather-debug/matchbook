@@ -629,11 +629,19 @@ export default function MatchEntry({ initialData, onSave, onCancel }: MatchEntry
 
             <RatingPicker label="Pre-Match Confidence" value={planConfidence} onChange={setPlanConfidence} />
 
-            <Link href="/playbook/singles" target="_blank"
-              className="flex items-center justify-between w-full rounded-2xl border border-white/[0.08] bg-white/[0.02] px-4 py-3 hover:border-white/20 transition-all">
-              <span className="text-sm text-white/40 font-semibold">Need strategy ideas?</span>
-              <span className="text-sm text-lime-400 font-black">Browse strategies →</span>
-            </Link>
+            <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] px-4 py-3 space-y-2">
+              <p className="text-xs text-white/30 font-semibold">Need strategy ideas?</p>
+              <div className="flex gap-2">
+                <Link href="/playbook/singles" target="_blank"
+                  className="flex-1 text-center py-2 rounded-xl bg-lime-400/10 border border-lime-400/20 text-lime-400 text-xs font-black hover:bg-lime-400/20 transition-all">
+                  Singles →
+                </Link>
+                <Link href="/playbook/doubles" target="_blank"
+                  className="flex-1 text-center py-2 rounded-xl bg-sky-400/10 border border-sky-400/20 text-sky-400 text-xs font-black hover:bg-sky-400/20 transition-all">
+                  Doubles →
+                </Link>
+              </div>
+            </div>
           </div>
         )}
 
