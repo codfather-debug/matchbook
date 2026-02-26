@@ -154,50 +154,57 @@ export default function HistoryPage() {
                 return base;
               })
               .join(", ");
+            const date = new Date(m.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric" });
             return (
               <Link
                 key={m.id}
                 href={`/match/${m.id}`}
-                className={`block rounded-2xl border p-4 space-y-2 transition-all active:scale-[0.98] hover:brightness-110 ${
-                  win ? "border-lime-400/20 bg-lime-400/5" : "border-red-500/20 bg-red-500/5"
-                }`}
+                className="flex rounded-2xl overflow-hidden bg-white/[0.03] border border-white/[0.06] transition-all active:scale-[0.98] hover:bg-white/[0.05]"
               >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Link
-                      href={`/opponent/${encodeURIComponent(m.opponentName)}`}
-                      onClick={e => e.stopPropagation()}
-                      className="text-white font-black text-base hover:text-lime-300 transition-colors"
-                    >
-                      {m.opponentName}
-                    </Link>
-                    <span className="ml-2 text-white/40 text-sm">
-                      {SURFACE_EMOJI[m.surface]} {scoreSets}
-                    </span>
-                  </div>
-                  <span
-                    className={`text-sm font-black px-3 py-1 rounded-full ${
-                      win ? "bg-lime-400/15 text-lime-400" : "bg-red-500/15 text-red-400"
-                    }`}
-                  >
-                    {win ? "W" : "L"}
-                  </span>
-                </div>
-                {m.opponentStyle.length > 0 && (
-                  <div className="flex flex-wrap gap-1.5">
-                    {m.opponentStyle.map((s) => (
-                      <span
-                        key={s}
-                        className="text-xs px-2.5 py-0.5 rounded-full bg-white/5 border border-white/10 text-white/50 font-medium"
+                {/* Left accent bar */}
+                <div className={`w-1 flex-shrink-0 ${win ? "bg-lime-400" : "bg-red-500"}`} />
+
+                <div className="flex-1 p-4 space-y-2 min-w-0">
+                  {/* Top row */}
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <Link
+                        href={`/opponent/${encodeURIComponent(m.opponentName)}`}
+                        onClick={e => e.stopPropagation()}
+                        className="text-white font-black text-base leading-tight hover:text-lime-300 transition-colors block truncate"
                       >
-                        {s}
+                        {m.opponentName}
+                      </Link>
+                      <p className="text-white/35 text-xs mt-0.5">
+                        {SURFACE_EMOJI[m.surface]} {scoreSets}
+                      </p>
+                    </div>
+                    <div className="flex flex-col items-end gap-1 flex-shrink-0">
+                      <span className={`text-sm font-black px-2.5 py-0.5 rounded-full ${
+                        win ? "bg-lime-400/15 text-lime-400" : "bg-red-500/15 text-red-400"
+                      }`}>
+                        {win ? "W" : "L"}
                       </span>
-                    ))}
+                      <span className="text-[10px] text-white/20 font-medium">{date}</span>
+                    </div>
                   </div>
-                )}
-                {m.scouting.keyToWin && (
-                  <p className="text-xs text-white/30 italic">🔑 {m.scouting.keyToWin}</p>
-                )}
+
+                  {/* Style tags */}
+                  {m.opponentStyle.length > 0 && (
+                    <div className="flex flex-wrap gap-1">
+                      {m.opponentStyle.map((s) => (
+                        <span key={s} className="text-[10px] px-2 py-0.5 rounded-full bg-white/[0.06] text-white/40 font-medium">
+                          {s}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Key to win */}
+                  {m.scouting.keyToWin && (
+                    <p className="text-xs text-white/25 italic truncate">🔑 {m.scouting.keyToWin}</p>
+                  )}
+                </div>
               </Link>
             );
           })

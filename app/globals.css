@@ -3,4 +3,24 @@
 body {
   background: #0c0c0e;
   color: #ffffff;
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
 }
+
+/* Subtle lime spotlight fixed at top of viewport */
+body::before {
+  content: '';
+  position: fixed;
+  top: -220px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 720px;
+  height: 720px;
+  background: radial-gradient(ellipse, rgba(163, 230, 53, 0.04) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Hide scrollbars, keep scroll */
+::-webkit-scrollbar { display: none; }
+* { scrollbar-width: none; }

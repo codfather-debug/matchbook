@@ -9,7 +9,7 @@ export default function BottomNav({ active }: { active: Tab }) {
   const off  = "text-white/30 hover:text-white/60";
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-[#0c0c0e]/95 backdrop-blur-xl border-t border-white/[0.06] pb-safe">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-[#0c0c0e]/90 backdrop-blur-2xl border-t border-white/[0.05] pb-safe shadow-[0_-12px_50px_rgba(0,0,0,0.85)]">
       <div className="max-w-sm mx-auto flex items-center justify-around h-16 px-2">
 
         {/* Log — left, retains lime accent pill */}
@@ -34,7 +34,7 @@ export default function BottomNav({ active }: { active: Tab }) {
 
         {/* Dashboard — center accent */}
         <Link href="/dashboard" className="flex-1 flex flex-col items-center justify-center -mt-4">
-          <div className={`w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-all active:scale-90 ${active === "dashboard" ? "bg-lime-300 shadow-lime-400/40" : "bg-lime-400 shadow-lime-400/30 hover:bg-lime-300"}`}>
+          <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-all active:scale-90 ${active === "dashboard" ? "bg-lime-300 shadow-[0_0_24px_rgba(163,230,53,0.5)]" : "bg-lime-400 shadow-[0_0_16px_rgba(163,230,53,0.3)] hover:bg-lime-300 hover:shadow-[0_0_24px_rgba(163,230,53,0.5)]"}`}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <rect x="3" y="3" width="7" height="7" rx="1"/>
               <rect x="14" y="3" width="7" height="7" rx="1"/>

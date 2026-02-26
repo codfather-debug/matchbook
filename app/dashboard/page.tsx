@@ -85,6 +85,7 @@ export default function DashboardPage() {
   }
 
   const record  = getRecord(matches);
+  const winRate = getWinRate(matches);
   const streak  = getCurrentStreak(matches);
   const last5   = matches.slice(0, 5);
   const l5rec   = getRecord(last5);
@@ -95,37 +96,79 @@ export default function DashboardPage() {
   const focus     = getRecommendedFocus(matches);
 
   const streakStr = streak === 0 ? "—" : streak > 0 ? `+${streak}W` : `${Math.abs(streak)}L`;
-  const streakColor = streak > 0 ? "text-lime-400" : streak < 0 ? "text-red-400" : "text-white/40";
+
+  // Arc geometry
+  const R = 56; const C = 2 * Math.PI * R;
+  const arcColor = winRate >= 60 ? "#a3e635" : winRate >= 40 ? "#f59e0b" : "#ef4444";
+  const glowColor = winRate >= 60 ? "rgba(163,230,53,0.55)" : winRate >= 40 ? "rgba(245,158,11,0.55)" : "rgba(239,68,68,0.55)";
+  const bgGlowColor = winRate >= 60 ? "#a3e635" : winRate >= 40 ? "#f59e0b" : "#ef4444";
 
   return (
     <>
       {showOnboarding && <Onboarding onDismiss={dismissOnboarding} />}
-    <main className="min-h-screen bg-[#0c0c0e] max-w-sm mx-auto pb-24">
-      {/* Header */}
-      <div className="px-5 pt-5 pb-4 border-b border-white/[0.06]">
-        <p className="text-white/30 text-xs font-bold tracking-widest uppercase">Matchbook</p>
-        <h1 className="text-2xl font-black text-white mt-0.5">Dashboard</h1>
-        <p className="text-white/30 text-sm mt-0.5">{record.wins}W – {record.losses}L overall</p>
-      </div>
+    <main className="min-h-screen bg-[#0c0c0e] max-w-sm mx-auto pb-24 relative z-10">
 
       <div className="px-5 py-5 space-y-5">
 
         {matches.length === 0 ? (
-          <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-8 text-center space-y-3">
-            <p className="text-4xl">🎾</p>
-            <p className="text-white font-bold">No matches yet</p>
-            <p className="text-white/40 text-sm">Log your first match to unlock your dashboard.</p>
-            <Link href="/log" className="inline-block mt-2 bg-lime-400 text-black px-5 py-2.5 rounded-2xl text-sm font-black hover:bg-lime-300 transition-all">
-              + Log a Match
-            </Link>
-          </div>
+          <>
+            {/* Empty hero */}
+            <div className="pt-6 pb-2 flex flex-col items-center text-center space-y-1">
+              <p className="text-white/20 text-xs font-black tracking-[0.3em] uppercase">Matchbook</p>
+              <h1 className="text-2xl font-black text-white mt-1">Dashboard</h1>
+            </div>
+            <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-8 text-center space-y-3">
+              <p className="text-4xl">🎾</p>
+              <p className="text-white font-bold">No matches yet</p>
+              <p className="text-white/40 text-sm">Log your first match to unlock your dashboard.</p>
+              <Link href="/log" className="inline-block mt-2 bg-lime-400 text-black px-5 py-2.5 rounded-2xl text-sm font-black hover:bg-lime-300 transition-all">
+                + Log a Match
+              </Link>
+            </div>
+          </>
         ) : (
           <>
-            {/* Current Status */}
+            {/* ── Hero ── */}
+            <div className="relative flex flex-col items-center pt-4 pb-2 overflow-hidden">
+              {/* Background glow blob */}
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-56 h-56 rounded-full blur-[70px] opacity-25 pointer-events-none"
+                style={{ background: bgGlowColor }} />
+
+              <p className="text-white/20 text-[10px] font-black tracking-[0.35em] uppercase mb-5 z-10">Matchbook</p>
+
+              {/* Win rate arc */}
+              <div className="relative w-36 h-36 flex items-center justify-center z-10">
+                <svg width="144" height="144" viewBox="0 0 144 144" className="absolute inset-0 -rotate-90">
+                  <circle cx="72" cy="72" r={R} fill="none" stroke="white" strokeOpacity="0.06" strokeWidth="10" />
+                  <circle
+                    cx="72" cy="72" r={R} fill="none"
+                    stroke={arcColor} strokeWidth="10" strokeLinecap="round"
+                    strokeDasharray={`${(winRate / 100) * C} ${C}`}
+                    style={{ filter: `drop-shadow(0 0 10px ${glowColor})` }}
+                  />
+                </svg>
+                <div className="text-center z-10">
+                  <p className="text-[2.6rem] font-black text-white leading-none tracking-tight">
+                    {winRate}<span className="text-xl text-white/30 ml-0.5">%</span>
+                  </p>
+                  <p className="text-[9px] font-black tracking-[0.2em] uppercase text-white/25 mt-1">Win Rate</p>
+                </div>
+              </div>
+
+              {/* Record + streak */}
+              <div className="flex items-center gap-3 mt-4 z-10">
+                <span className="text-white/40 text-sm font-bold">{record.wins}W – {record.losses}L</span>
+                {streak !== 0 && (
+                  <span className={`text-xs font-black px-2.5 py-0.5 rounded-full ${streak > 0 ? "bg-lime-400/15 text-lime-400" : "bg-red-500/15 text-red-400"}`}>
+                    {streakStr}
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* ── Quick stats ── */}
             <section className="space-y-3">
-              <p className="text-xs font-black tracking-widest uppercase text-white/30">Current Status</p>
               <div className="flex gap-3">
-                <StatCard label="Streak" value={streakStr} color={streakColor} />
                 <StatCard label="Last 5" value={`${l5rec.wins}–${l5rec.losses}`} sub={`${getWinRate(last5)}%`} />
                 <StatCard
                   label="Mental"
@@ -133,13 +176,17 @@ export default function DashboardPage() {
                   sub={mentalAvg !== null ? "avg score" : "no data yet"}
                   color={mentalAvg !== null ? (mentalAvg >= 7 ? "text-lime-400" : mentalAvg >= 5 ? "text-amber-400" : "text-red-400") : "text-white/40"}
                 />
+                {execAvg !== null ? (
+                  <StatCard
+                    label="Execution"
+                    value={`${execAvg}`}
+                    sub="/10 avg"
+                    color={execAvg >= 7 ? "text-lime-400" : execAvg >= 5 ? "text-amber-400" : "text-red-400"}
+                  />
+                ) : (
+                  <StatCard label="Matches" value={`${matches.length}`} sub="logged" />
+                )}
               </div>
-              {execAvg !== null && (
-                <div className="rounded-2xl bg-white/[0.03] border border-white/10 px-4 py-3 flex items-center justify-between">
-                  <p className="text-sm text-white/50">Avg Execution (last 5)</p>
-                  <p className={`text-lg font-black ${execAvg >= 7 ? "text-lime-400" : execAvg >= 5 ? "text-amber-400" : "text-red-400"}`}>{execAvg}/10</p>
-                </div>
-              )}
             </section>
 
             {/* Biggest Strength */}
