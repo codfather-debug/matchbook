@@ -477,7 +477,7 @@ export default function FriendsPage() {
 
             {/* Create Team Modal */}
             {showCreateTeam && (
-              <div className="fixed inset-0 z-50 bg-black/70 flex items-end justify-center" onClick={() => setShowCreateTeam(false)}>
+              <div className="fixed inset-0 z-[100] bg-black/70 flex items-end justify-center" onClick={() => setShowCreateTeam(false)}>
                 <div className="bg-[#141416] border border-white/10 rounded-t-3xl w-full max-w-sm p-6 space-y-4" onClick={e => e.stopPropagation()}>
                   <h2 className="text-lg font-black text-white">Create Team</h2>
                   <input
@@ -561,7 +561,7 @@ export default function FriendsPage() {
 
             {/* Create Group Modal */}
             {showCreateGroup && (
-              <div className="fixed inset-0 z-50 bg-black/70 flex items-end justify-center" onClick={() => setShowCreateGroup(false)}>
+              <div className="fixed inset-0 z-[100] bg-black/70 flex items-end justify-center" onClick={() => setShowCreateGroup(false)}>
                 <div className="bg-[#141416] border border-white/10 rounded-t-3xl w-full max-w-sm flex flex-col max-h-[80vh]" onClick={e => e.stopPropagation()}>
                   {/* Fixed header */}
                   <div className="px-6 pt-6 pb-4 space-y-4 flex-shrink-0">
