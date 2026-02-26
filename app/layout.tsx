@@ -22,7 +22,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-touch-fullscreen" content="yes" />
-        <link rel="apple-touch-icon" href="/icon-192.png" />
       </head>
       <body className={dmSans.className}>{children}</body>
     </html>
