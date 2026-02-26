@@ -70,6 +70,9 @@ export interface Match {
   notes?: string;              // Free-form post-match notes
   plan?: PlanData;
   reflection?: ReflectionData;
+  // Handedness
+  opponentHandedness?: "right" | "left";
+  opponent2Handedness?: "right" | "left";
   // Doubles — second opponent
   opponent2Name?: string;
   opponentStyle2?: PlayStyle[];

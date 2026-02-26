@@ -5,6 +5,7 @@ import { supabase } from "@/lib/supabase";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import BottomNav from "@/components/BottomNav";
+import { upsertProfile } from "@/lib/profile";
 
 const SURFACE_EMOJI: Record<string, string> = {
   hard: "🟦",
@@ -21,6 +22,7 @@ export default function Home() {
     async function load() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { router.push("/auth"); return; }
+      upsertProfile(user); // fire-and-forget — ensures profile row exists
 
       const { data } = await supabase
         .from("matches")

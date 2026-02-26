@@ -6,6 +6,7 @@ import { Match, PlayStyle } from "@/types";
 import { supabase } from "@/lib/supabase";
 import BottomNav from "@/components/BottomNav";
 import { PLAY_STYLES } from "@/components/MatchEntry";
+import { upsertProfile } from "@/lib/profile";
 import {
   getRecord, getCurrentStreak, getWinRate,
   getMentalAverage, getExecutionAverage,
@@ -31,12 +32,25 @@ export default function PlayerProfilePage() {
   const [matches, setMatches] = useState<Match[]>([]);
   const [loading, setLoading] = useState(true);
   const [email, setEmail] = useState("");
+  const [userId, setUserId] = useState("");
+  const [shareStats, setShareStats] = useState(true);
+  const [shareHistory, setShareHistory] = useState(true);
 
   useEffect(() => {
     async function load() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { router.push("/auth"); return; }
       setEmail(user.email?.split("@")[0] ?? "Player");
+      setUserId(user.id);
+      await upsertProfile(user);
+
+      // Load profile privacy settings
+      const { data: profile } = await supabase
+        .from("profiles").select("share_stats, share_history").eq("id", user.id).single();
+      if (profile) {
+        setShareStats(profile.share_stats ?? true);
+        setShareHistory(profile.share_history ?? true);
+      }
 
       const { data } = await supabase
         .from("matches")
@@ -52,6 +66,12 @@ export default function PlayerProfilePage() {
     }
     load();
   }, [router]);
+
+  async function updatePrivacy(field: "share_stats" | "share_history", value: boolean) {
+    if (field === "share_stats") setShareStats(value);
+    else setShareHistory(value);
+    await supabase.from("profiles").update({ [field]: value }).eq("id", userId);
+  }
 
   if (loading) {
     return (
@@ -209,6 +229,52 @@ export default function PlayerProfilePage() {
             <polyline points="9 18 15 12 9 6"/>
           </svg>
         </Link>
+
+        {/* Friends link */}
+        <Link href="/friends"
+          className="flex items-center justify-between p-4 rounded-2xl border border-white/10 bg-white/[0.03] hover:border-white/20 transition-all active:scale-[0.98]">
+          <div className="flex items-center gap-3">
+            <span className="text-2xl">👥</span>
+            <div>
+              <p className="text-sm font-bold text-white">Friends</p>
+              <p className="text-xs text-white/30">Find players & view their stats</p>
+            </div>
+          </div>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-white/30">
+            <polyline points="9 18 15 12 9 6"/>
+          </svg>
+        </Link>
+
+        {/* Privacy Settings */}
+        <section className="space-y-3">
+          <p className="text-xs font-black tracking-widest uppercase text-white/30">Privacy</p>
+          <div className="rounded-2xl border border-white/10 bg-white/[0.03] divide-y divide-white/[0.06]">
+            <div className="flex items-center justify-between px-4 py-3.5">
+              <div>
+                <p className="text-sm font-semibold text-white/80">Share my stats</p>
+                <p className="text-xs text-white/30 mt-0.5">Friends can see your grades & record</p>
+              </div>
+              <button
+                onClick={() => updatePrivacy("share_stats", !shareStats)}
+                className={`relative w-12 h-6 rounded-full transition-colors ${shareStats ? "bg-lime-400" : "bg-white/20"}`}
+              >
+                <span className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-transform ${shareStats ? "translate-x-7" : "translate-x-1"}`} />
+              </button>
+            </div>
+            <div className="flex items-center justify-between px-4 py-3.5">
+              <div>
+                <p className="text-sm font-semibold text-white/80">Share my match history</p>
+                <p className="text-xs text-white/30 mt-0.5">Friends can see your match feed</p>
+              </div>
+              <button
+                onClick={() => updatePrivacy("share_history", !shareHistory)}
+                className={`relative w-12 h-6 rounded-full transition-colors ${shareHistory ? "bg-lime-400" : "bg-white/20"}`}
+              >
+                <span className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-transform ${shareHistory ? "translate-x-7" : "translate-x-1"}`} />
+              </button>
+            </div>
+          </div>
+        </section>
 
       </div>
 

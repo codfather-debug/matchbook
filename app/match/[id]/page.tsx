@@ -26,20 +26,34 @@ function ScoutingSection({
   hole,
   keyToWin,
   styles,
+  handedness,
 }: {
   label?: string;
   weapon?: string;
   hole?: string;
   keyToWin?: string;
   styles: PlayStyle[];
+  handedness?: "right" | "left";
 }) {
-  const hasContent = weapon || hole || keyToWin || styles.length > 0;
+  const hasContent = weapon || hole || keyToWin || styles.length > 0 || handedness;
   if (!hasContent) return null;
 
   return (
     <section className="space-y-3">
       {label && (
-        <p className="text-xs font-black tracking-widest uppercase text-white/30">{label}</p>
+        <div className="flex items-center gap-2">
+          <p className="text-xs font-black tracking-widest uppercase text-white/30">{label}</p>
+          {handedness && (
+            <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${handedness === "right" ? "bg-blue-400/15 text-blue-300" : "bg-orange-400/15 text-orange-300"}`}>
+              {handedness === "right" ? "Righty" : "Lefty"}
+            </span>
+          )}
+        </div>
+      )}
+      {!label && handedness && (
+        <span className={`inline-block text-[10px] font-black px-2 py-0.5 rounded-full ${handedness === "right" ? "bg-blue-400/15 text-blue-300" : "bg-orange-400/15 text-orange-300"}`}>
+          {handedness === "right" ? "Righty" : "Lefty"}
+        </span>
       )}
 
       {weapon && (
@@ -298,6 +312,7 @@ export default function MatchDetailPage() {
             hole={match.scouting?.hole}
             keyToWin={match.scouting?.keyToWin}
             styles={match.opponentStyle ?? []}
+            handedness={match.opponentHandedness}
           />
         ) : (
           <>
@@ -307,6 +322,7 @@ export default function MatchDetailPage() {
               hole={match.scouting?.hole}
               keyToWin={match.scouting?.keyToWin}
               styles={match.opponentStyle ?? []}
+              handedness={match.opponentHandedness}
             />
             {match.scouting2 && (
               <ScoutingSection
@@ -315,6 +331,7 @@ export default function MatchDetailPage() {
                 hole={match.scouting2.hole}
                 keyToWin={match.scouting2.keyToWin}
                 styles={match.opponentStyle2 ?? []}
+                handedness={match.opponent2Handedness}
               />
             )}
           </>

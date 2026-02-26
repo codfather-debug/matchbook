@@ -301,7 +301,11 @@ function SetInput({ setNum, value, onChange }: { setNum: number; value: SetScore
 
 // ─── Scout Panel ─────────────────────────────────────────────────────────────
 
-function ScoutPanel({ scout }: { scout: ScoutState }) {
+function ScoutPanel({ scout, hand, setHand }: {
+  scout: ScoutState;
+  hand: "right" | "left" | null;
+  setHand: (h: "right" | "left" | null) => void;
+}) {
   const { weaponChips, setWeaponChips, weaponCustom, setWeaponCustom,
           holeChips, setHoleChips, holeCustom, setHoleCustom,
           keyToWin, setKeyToWin, keyToWinEdited, setKeyToWinEdited,
@@ -311,6 +315,21 @@ function ScoutPanel({ scout }: { scout: ScoutState }) {
 
   return (
     <div className="space-y-6">
+      {/* Handedness */}
+      <div className="space-y-2">
+        <label className="text-xs font-bold text-white/40 uppercase tracking-widest">Handedness</label>
+        <div className="flex gap-2">
+          <button type="button" onClick={() => setHand(hand === "right" ? null : "right")}
+            className={`flex-1 py-3 rounded-2xl border text-sm font-bold transition-all active:scale-95 ${hand === "right" ? "bg-lime-400 text-black border-lime-400" : "border-white/10 text-white/40 bg-white/[0.02] hover:border-white/20"}`}>
+            Righty
+          </button>
+          <button type="button" onClick={() => setHand(hand === "left" ? null : "left")}
+            className={`flex-1 py-3 rounded-2xl border text-sm font-bold transition-all active:scale-95 ${hand === "left" ? "bg-lime-400 text-black border-lime-400" : "border-white/10 text-white/40 bg-white/[0.02] hover:border-white/20"}`}>
+            Lefty
+          </button>
+        </div>
+      </div>
+
       <div className="space-y-3">
         <label className="flex items-center gap-2 text-sm font-bold text-white/70">
           <span>⚡</span> Their Weapon
@@ -405,13 +424,15 @@ function ScoutPanel({ scout }: { scout: ScoutState }) {
 
 // ─── Scout Review Block ───────────────────────────────────────────────────────
 
-function ScoutReviewBlock({ label, weapon, hole, keyToWin, styles }: {
+function ScoutReviewBlock({ label, weapon, hole, keyToWin, styles, handedness }: {
   label: string; weapon: string; hole: string; keyToWin: string; styles: PlayStyle[];
+  handedness?: "right" | "left" | null;
 }) {
-  if (!weapon && !hole && !keyToWin && styles.length === 0) return null;
+  if (!weapon && !hole && !keyToWin && styles.length === 0 && !handedness) return null;
   return (
     <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 space-y-2">
       <p className="text-xs font-black tracking-widest uppercase text-white/30">{label}</p>
+      {handedness && <div><span className="text-xs text-white/30">✋ Handedness — </span><span className="text-sm text-white/80">{handedness === "right" ? "Righty" : "Lefty"}</span></div>}
       {weapon  && <div><span className="text-xs text-white/30">⚡ Weapon — </span><span className="text-sm text-white/80">{weapon}</span></div>}
       {hole    && <div><span className="text-xs text-white/30">🎯 Weakness — </span><span className="text-sm text-white/80">{hole}</span></div>}
       {keyToWin && <div><span className="text-xs text-white/30">🔑 Key — </span><span className="text-sm text-white font-medium">{keyToWin}</span></div>}
@@ -464,6 +485,8 @@ export default function MatchEntry({ initialData, onSave, onCancel }: MatchEntry
     keyToWinEdited: !!initialData?.scouting2?.keyToWin,
   });
   const [scoutTab, setScoutTab] = useState<1 | 2>(1);
+  const [hand1, setHand1] = useState<"right" | "left" | null>(initialData?.opponentHandedness ?? null);
+  const [hand2, setHand2] = useState<"right" | "left" | null>(initialData?.opponent2Handedness ?? null);
 
   // ── Reflect state ───────────────────────────────────────────────────────────
   const [reflEnergy,    setReflEnergy]    = useState<number | null>(initialData?.reflection?.energy ?? null);
@@ -535,10 +558,13 @@ export default function MatchEntry({ initialData, onSave, onCancel }: MatchEntry
       notes: reflNotes || undefined,
     };
 
+    if (hand1) base.opponentHandedness = hand1;
+
     if (isDoubles) {
       base.opponent2Name  = opponent2Name;
       base.opponentStyle2 = scout2.styles;
       base.scouting2      = { weapon: scout2.weapon, hole: scout2.hole, keyToWin: scout2.keyToWin };
+      if (hand2) base.opponent2Handedness = hand2;
     }
 
     onSave?.(base);
@@ -669,7 +695,11 @@ export default function MatchEntry({ initialData, onSave, onCancel }: MatchEntry
                 ))}
               </div>
             )}
-            <ScoutPanel scout={isDoubles && scoutTab === 2 ? scout2 : scout1} />
+            <ScoutPanel
+              scout={isDoubles && scoutTab === 2 ? scout2 : scout1}
+              hand={isDoubles && scoutTab === 2 ? hand2 : hand1}
+              setHand={isDoubles && scoutTab === 2 ? setHand2 : setHand1}
+            />
           </div>
         )}
 
@@ -758,10 +788,10 @@ export default function MatchEntry({ initialData, onSave, onCancel }: MatchEntry
             )}
 
             <ScoutReviewBlock label={isDoubles ? `Scouting — ${opponentName}` : "Scouting Intel"}
-              weapon={scout1.weapon} hole={scout1.hole} keyToWin={scout1.keyToWin} styles={scout1.styles} />
+              weapon={scout1.weapon} hole={scout1.hole} keyToWin={scout1.keyToWin} styles={scout1.styles} handedness={hand1} />
             {isDoubles && (
               <ScoutReviewBlock label={`Scouting — ${opponent2Name}`}
-                weapon={scout2.weapon} hole={scout2.hole} keyToWin={scout2.keyToWin} styles={scout2.styles} />
+                weapon={scout2.weapon} hole={scout2.hole} keyToWin={scout2.keyToWin} styles={scout2.styles} handedness={hand2} />
             )}
           </div>
         )}
