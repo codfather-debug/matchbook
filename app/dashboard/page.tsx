@@ -144,6 +144,18 @@ export default function DashboardPage() {
 
             {/* Quick Links */}
             <div className="grid grid-cols-2 gap-3 pt-1">
+              <Link href="/history"
+                className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-center hover:border-white/20 transition-all active:scale-[0.98]">
+                <p className="text-2xl mb-1">📋</p>
+                <p className="text-sm font-bold text-white">History</p>
+                <p className="text-xs text-white/30">All your matches</p>
+              </Link>
+              <Link href="/playbook"
+                className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-center hover:border-white/20 transition-all active:scale-[0.98]">
+                <p className="text-2xl mb-1">📖</p>
+                <p className="text-sm font-bold text-white">Playbook</p>
+                <p className="text-xs text-white/30">Strategy guides</p>
+              </Link>
               <Link href="/analytics"
                 className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-center hover:border-white/20 transition-all active:scale-[0.98]">
                 <p className="text-2xl mb-1">📊</p>
