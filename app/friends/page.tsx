@@ -6,9 +6,9 @@ import { supabase } from "@/lib/supabase";
 import BottomNav from "@/components/BottomNav";
 import { upsertProfile } from "@/lib/profile";
 
-interface FriendProfile { friendshipId: string; userId: string; username: string; }
-interface PendingRequest { friendshipId: string; userId: string; username: string; }
-interface SearchResult { id: string; username: string; }
+interface FriendProfile { friendshipId: string; userId: string; username: string; displayName?: string; }
+interface PendingRequest { friendshipId: string; userId: string; username: string; displayName?: string; }
+interface SearchResult { id: string; username: string; display_name?: string; }
 interface FriendshipRow { id: string; requester_id: string; addressee_id: string; status: string; }
 
 export default function FriendsPage() {
@@ -34,17 +34,23 @@ export default function FriendsPage() {
 
     const otherIds = [...new Set(rows.map(r => r.requester_id === uid ? r.addressee_id : r.requester_id))];
 
-    let profileMap: Record<string, string> = {};
+    type ProfileRow = { id: string; username: string; display_name?: string };
+    let profileMap: Record<string, ProfileRow> = {};
     if (otherIds.length > 0) {
       const { data: profileRows } = await supabase
-        .from("profiles").select("id, username").in("id", otherIds);
-      profileMap = Object.fromEntries((profileRows ?? []).map(p => [p.id, p.username]));
+        .from("profiles").select("id, username, display_name").in("id", otherIds);
+      profileMap = Object.fromEntries((profileRows ?? []).map(p => [p.id, p]));
     }
 
     setPending(
       rows
         .filter(r => r.status === "pending" && r.addressee_id === uid)
-        .map(r => ({ friendshipId: r.id, userId: r.requester_id, username: profileMap[r.requester_id] ?? r.requester_id }))
+        .map(r => ({
+          friendshipId: r.id,
+          userId: r.requester_id,
+          username: profileMap[r.requester_id]?.username ?? r.requester_id,
+          displayName: profileMap[r.requester_id]?.display_name,
+        }))
     );
 
     setFriends(
@@ -52,7 +58,12 @@ export default function FriendsPage() {
         .filter(r => r.status === "accepted")
         .map(r => {
           const friendId = r.requester_id === uid ? r.addressee_id : r.requester_id;
-          return { friendshipId: r.id, userId: friendId, username: profileMap[friendId] ?? friendId };
+          return {
+            friendshipId: r.id,
+            userId: friendId,
+            username: profileMap[friendId]?.username ?? friendId,
+            displayName: profileMap[friendId]?.display_name,
+          };
         })
     );
   }, []);
@@ -73,9 +84,10 @@ export default function FriendsPage() {
   useEffect(() => {
     if (searchQuery.trim().length < 2) { setSearchResults([]); return; }
     const t = setTimeout(async () => {
+      const q = searchQuery.trim();
       const { data } = await supabase
-        .from("profiles").select("id, username")
-        .ilike("username", `%${searchQuery.trim()}%`)
+        .from("profiles").select("id, username, display_name")
+        .or(`username.ilike.%${q}%,display_name.ilike.%${q}%`)
         .neq("id", userId)
         .limit(10);
       const existingIds = new Set(
@@ -151,7 +163,7 @@ export default function FriendsPage() {
             </svg>
             <input
               type="text"
-              placeholder="Search by username…"
+              placeholder="Search by name or username…"
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
               className="w-full bg-white/5 border border-white/10 rounded-2xl pl-10 pr-4 py-3 text-white text-sm placeholder:text-white/25 outline-none focus:ring-2 focus:ring-lime-400/50 focus:border-lime-400/30 transition-all"
@@ -161,7 +173,10 @@ export default function FriendsPage() {
             <div className="rounded-2xl border border-white/10 bg-white/[0.03] divide-y divide-white/[0.06]">
               {searchResults.map(r => (
                 <div key={r.id} className="flex items-center justify-between px-4 py-3">
-                  <p className="text-sm font-semibold text-white/80">@{r.username}</p>
+                  <div>
+                    <p className="text-sm font-semibold text-white/80">{r.display_name ?? `@${r.username}`}</p>
+                    {r.display_name && <p className="text-xs text-white/30">@{r.username}</p>}
+                  </div>
                   {sentRequests.has(r.id) ? (
                     <span className="text-xs text-white/30 font-semibold">Sent ✓</span>
                   ) : (
@@ -191,7 +206,10 @@ export default function FriendsPage() {
             <div className="rounded-2xl border border-white/10 bg-white/[0.03] divide-y divide-white/[0.06]">
               {pending.map(p => (
                 <div key={p.friendshipId} className="flex items-center justify-between px-4 py-3">
-                  <p className="text-sm font-semibold text-white/80">@{p.username}</p>
+                  <div>
+                    <p className="text-sm font-semibold text-white/80">{p.displayName ?? `@${p.username}`}</p>
+                    {p.displayName && <p className="text-xs text-white/30">@{p.username}</p>}
+                  </div>
                   <div className="flex gap-2">
                     <button
                       onClick={() => declineRequest(p.friendshipId)}
@@ -228,7 +246,8 @@ export default function FriendsPage() {
               {friends.map(f => (
                 <div key={f.friendshipId} className="flex items-center justify-between px-4 py-3">
                   <div>
-                    <p className="text-sm font-semibold text-white/80">@{f.username}</p>
+                    <p className="text-sm font-semibold text-white/80">{f.displayName ?? `@${f.username}`}</p>
+                    {f.displayName && <p className="text-xs text-white/30">@{f.username}</p>}
                   </div>
                   <div className="flex items-center gap-2">
                     <Link

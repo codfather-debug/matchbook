@@ -20,6 +20,7 @@ export default function FriendProfilePage() {
 
   const [loading, setLoading] = useState(true);
   const [username, setUsername] = useState("");
+  const [displayName, setDisplayName] = useState("");
   const [shareStats, setShareStats] = useState(false);
   const [shareHistory, setShareHistory] = useState(false);
   const [isFriend, setIsFriend] = useState(false);
@@ -34,9 +35,10 @@ export default function FriendProfilePage() {
 
       // Load their profile
       const { data: profile } = await supabase
-        .from("profiles").select("username, share_stats, share_history").eq("id", friendId).single();
+        .from("profiles").select("username, display_name, share_stats, share_history").eq("id", friendId).single();
       if (!profile) { setError("Player not found."); setLoading(false); return; }
       setUsername(profile.username);
+      setDisplayName(profile.display_name ?? "");
       setShareStats(profile.share_stats ?? false);
       setShareHistory(profile.share_history ?? false);
 
@@ -94,7 +96,8 @@ export default function FriendProfilePage() {
         </div>
         <div className="flex-1 flex flex-col items-center justify-center gap-3 p-8 text-center">
           <p className="text-4xl">🔒</p>
-          <p className="text-white font-bold">@{username}</p>
+          <p className="text-white font-bold">{displayName || `@${username}`}</p>
+          {displayName && <p className="text-white/40 text-xs">@{username}</p>}
           <p className="text-white/40 text-sm">You need to be friends to view this profile.</p>
         </div>
       </main>
@@ -136,7 +139,8 @@ export default function FriendProfilePage() {
       <div className="px-5 py-5 space-y-5">
         {/* Identity header */}
         <div className="border-b border-white/[0.06] pb-5">
-          <h1 className="text-2xl font-black text-white">@{username}</h1>
+          <h1 className="text-2xl font-black text-white">{displayName || `@${username}`}</h1>
+          {displayName && <p className="text-white/30 text-xs mt-0.5">@{username}</p>}
           {shareStats && matches.length > 0 && (
             <>
               <p className="text-white/40 text-sm mt-0.5">{record.wins}W – {record.losses}L · {winRate}% win rate</p>

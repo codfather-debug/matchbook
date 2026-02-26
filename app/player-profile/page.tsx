@@ -33,6 +33,10 @@ export default function PlayerProfilePage() {
   const [loading, setLoading] = useState(true);
   const [email, setEmail] = useState("");
   const [userId, setUserId] = useState("");
+  const [displayName, setDisplayName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [savingName, setSavingName] = useState(false);
   const [shareStats, setShareStats] = useState(true);
   const [shareHistory, setShareHistory] = useState(true);
 
@@ -44,12 +48,18 @@ export default function PlayerProfilePage() {
       setUserId(user.id);
       await upsertProfile(user);
 
-      // Load profile privacy settings
+      // Load profile settings
       const { data: profile } = await supabase
-        .from("profiles").select("share_stats, share_history").eq("id", user.id).single();
+        .from("profiles").select("share_stats, share_history, display_name").eq("id", user.id).single();
       if (profile) {
         setShareStats(profile.share_stats ?? true);
         setShareHistory(profile.share_history ?? true);
+        if (profile.display_name) {
+          setDisplayName(profile.display_name);
+          const parts = profile.display_name.split(" ");
+          setFirstName(parts[0] ?? "");
+          setLastName(parts.slice(1).join(" ") ?? "");
+        }
       }
 
       const { data } = await supabase
@@ -66,6 +76,15 @@ export default function PlayerProfilePage() {
     }
     load();
   }, [router]);
+
+  async function saveName() {
+    const full = [firstName.trim(), lastName.trim()].filter(Boolean).join(" ");
+    if (!full) return;
+    setSavingName(true);
+    await supabase.from("profiles").update({ display_name: full }).eq("id", userId);
+    setDisplayName(full);
+    setSavingName(false);
+  }
 
   async function updatePrivacy(field: "share_stats" | "share_history", value: boolean) {
     if (field === "share_stats") setShareStats(value);
@@ -154,7 +173,7 @@ export default function PlayerProfilePage() {
         <p className="text-white/30 text-xs font-bold tracking-widest uppercase mb-3">Player Profile</p>
         <div className="flex items-end justify-between">
           <div>
-            <h1 className="text-2xl font-black text-white capitalize">{email}</h1>
+            <h1 className="text-2xl font-black text-white">{displayName || email}</h1>
             <p className="text-white/40 text-sm mt-0.5">{record.wins}W – {record.losses}L · {winRate}% win rate</p>
             <p className="text-white/30 text-xs mt-0.5">{matches.length} matches logged</p>
           </div>
@@ -244,6 +263,35 @@ export default function PlayerProfilePage() {
             <polyline points="9 18 15 12 9 6"/>
           </svg>
         </Link>
+
+        {/* Name */}
+        <section className="space-y-3">
+          <p className="text-xs font-black tracking-widest uppercase text-white/30">Your Name</p>
+          <p className="text-xs text-white/20">Shown to friends when they search for you</p>
+          <div className="flex gap-2">
+            <input
+              type="text"
+              placeholder="First"
+              value={firstName}
+              onChange={e => setFirstName(e.target.value)}
+              className="flex-1 bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white text-sm placeholder:text-white/25 outline-none focus:ring-2 focus:ring-lime-400/50 focus:border-lime-400/30 transition-all"
+            />
+            <input
+              type="text"
+              placeholder="Last"
+              value={lastName}
+              onChange={e => setLastName(e.target.value)}
+              className="flex-1 bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white text-sm placeholder:text-white/25 outline-none focus:ring-2 focus:ring-lime-400/50 focus:border-lime-400/30 transition-all"
+            />
+          </div>
+          <button
+            onClick={saveName}
+            disabled={savingName || !firstName.trim()}
+            className="w-full py-3 rounded-2xl bg-lime-400 text-black text-sm font-black hover:bg-lime-300 transition-all active:scale-[0.98] disabled:opacity-40"
+          >
+            {savingName ? "Saving…" : "Save Name"}
+          </button>
+        </section>
 
         {/* Privacy Settings */}
         <section className="space-y-3">
