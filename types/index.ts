@@ -95,6 +95,56 @@ export interface Opponent {
   lastPlayed?: string;         // ISO 8601
 }
 
+// ─── Teams & Groups ───────────────────────────────────────────────────────────
+
+export interface Team {
+  id: string;
+  name: string;
+  description?: string;
+  invite_code: string;
+  created_by: string;
+  created_at: string;
+}
+
+export interface TeamMember {
+  id: string;
+  team_id: string;
+  user_id: string;
+  role: 'admin' | 'member';
+  joined_at: string;
+  username?: string;
+  display_name?: string;
+}
+
+export interface TeamPost {
+  id: string;
+  team_id: string;
+  user_id: string;
+  content: string;
+  created_at: string;
+  username?: string;
+  display_name?: string;
+}
+
+export interface Challenge {
+  id: string;
+  team_id: string;
+  challenger_id: string;
+  opponent_id: string;
+  status: 'pending' | 'accepted' | 'completed';
+  match_id?: string;
+  created_at: string;
+  challenger_name?: string;
+  opponent_name?: string;
+}
+
+export interface FriendGroup {
+  id: string;
+  name: string;
+  created_by: string;
+  created_at: string;
+}
+
 // ─── App State ────────────────────────────────────────────────────────────────
 
 export interface AppState {
