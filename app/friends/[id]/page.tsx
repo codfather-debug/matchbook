@@ -14,6 +14,33 @@ const SURFACE_EMOJI: Record<string, string> = { hard: "🟦", clay: "🟫", gras
 
 type Tab = "stats" | "history";
 
+function Initials({ name }: { name: string }) {
+  const parts = name.trim().split(" ");
+  const letters = parts.length >= 2
+    ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+    : name.slice(0, 2).toUpperCase();
+  return <>{letters}</>;
+}
+
+function WinRateArc({ pct }: { pct: number }) {
+  const r = 36;
+  const circ = 2 * Math.PI * r;
+  const fill = (pct / 100) * circ;
+  const color = pct >= 60 ? "#a3e635" : pct >= 40 ? "#fbbf24" : "#f87171";
+  return (
+    <svg width="96" height="96" viewBox="0 0 96 96" className="rotate-[-90deg]">
+      <circle cx="48" cy="48" r={r} fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth="7" />
+      <circle
+        cx="48" cy="48" r={r} fill="none"
+        stroke={color} strokeWidth="7"
+        strokeDasharray={`${fill} ${circ}`}
+        strokeLinecap="round"
+        style={{ filter: `drop-shadow(0 0 6px ${color})` }}
+      />
+    </svg>
+  );
+}
+
 export default function FriendProfilePage() {
   const { id: friendId } = useParams<{ id: string }>();
   const router = useRouter();
@@ -33,7 +60,6 @@ export default function FriendProfilePage() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { router.push("/auth"); return; }
 
-      // Load their profile
       const { data: profile } = await supabase
         .from("profiles").select("username, display_name, share_stats, share_history").eq("id", friendId).single();
       if (!profile) { setError("Player not found."); setLoading(false); return; }
@@ -42,16 +68,12 @@ export default function FriendProfilePage() {
       setShareStats(profile.share_stats ?? false);
       setShareHistory(profile.share_history ?? false);
 
-      // Check friendship status
       const { data: friendships } = await supabase
         .from("friendships").select("id, status")
-        .or(
-          `and(requester_id.eq.${user.id},addressee_id.eq.${friendId}),and(requester_id.eq.${friendId},addressee_id.eq.${user.id})`
-        );
+        .or(`and(requester_id.eq.${user.id},addressee_id.eq.${friendId}),and(requester_id.eq.${friendId},addressee_id.eq.${user.id})`);
       const accepted = (friendships ?? []).some(f => f.status === "accepted");
       setIsFriend(accepted);
 
-      // Load matches via RPC if they're a friend and share either setting
       if (accepted && (profile.share_stats || profile.share_history)) {
         const { data: matchRows, error: rpcError } = await supabase
           .rpc("get_friend_matches", { friend_uid: friendId });
@@ -72,7 +94,10 @@ export default function FriendProfilePage() {
   if (loading) {
     return (
       <main className="min-h-screen bg-[#0c0c0e] flex items-center justify-center">
-        <p className="text-white/30 text-sm">Loading…</p>
+        <div className="space-y-3 text-center">
+          <div className="w-12 h-12 rounded-full border-2 border-white/10 border-t-lime-400 animate-spin mx-auto" />
+          <p className="text-white/20 text-xs">Loading profile…</p>
+        </div>
       </main>
     );
   }
@@ -86,19 +111,27 @@ export default function FriendProfilePage() {
     );
   }
 
+  const displayLabel = displayName || `@${username}`;
+
   if (!isFriend) {
     return (
       <main className="min-h-screen bg-[#0c0c0e] max-w-sm mx-auto flex flex-col">
-        <div className="sticky top-0 z-10 bg-[#0c0c0e]/90 backdrop-blur-xl border-b border-white/[0.06] px-5">
-          <div className="flex items-center gap-3 h-14">
+        <div className="sticky top-0 z-10 bg-[#0c0c0e]/80 backdrop-blur-xl border-b border-white/[0.06] px-5">
+          <div className="flex items-center h-14">
             <Link href="/friends" className="text-white/40 text-sm font-medium hover:text-white/80 transition-colors">← Back</Link>
           </div>
         </div>
-        <div className="flex-1 flex flex-col items-center justify-center gap-3 p-8 text-center">
-          <p className="text-4xl">🔒</p>
-          <p className="text-white font-bold">{displayName || `@${username}`}</p>
-          {displayName && <p className="text-white/40 text-xs">@{username}</p>}
-          <p className="text-white/40 text-sm">You need to be friends to view this profile.</p>
+        <div className="flex-1 flex flex-col items-center justify-center gap-4 p-8 text-center">
+          <div className="relative">
+            <div className="w-20 h-20 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
+              <span className="text-3xl">🔒</span>
+            </div>
+          </div>
+          <div>
+            <p className="text-white font-black text-lg">{displayLabel}</p>
+            {displayName && <p className="text-white/30 text-xs mt-0.5">@{username}</p>}
+            <p className="text-white/30 text-sm mt-2">You need to be friends to view this profile.</p>
+          </div>
         </div>
       </main>
     );
@@ -110,7 +143,6 @@ export default function FriendProfilePage() {
   const streak   = getCurrentStreak(matches);
   const last10   = matches.slice(0, 10);
 
-  // Grades (same logic as player-profile)
   const withExec = last10.filter(m => m.reflection?.executionScore !== undefined);
   const consistGrade = withExec.length >= 3
     ? grade(Math.round((withExec.filter(m => (m.reflection!.executionScore!) >= 7).length / withExec.length) * 100), 100) : null;
@@ -124,34 +156,104 @@ export default function FriendProfilePage() {
   const momentumGrade = last5.length >= 3 ? grade(getWinRate(last5), 100) : null;
 
   const showTabs = shareStats && shareHistory && matches.length > 0;
+  const streakPos = streak > 0;
+  const streakColor = streakPos ? "text-lime-400" : "text-red-400";
+  const streakGlow  = streakPos ? "shadow-lime-400/30" : "shadow-red-400/30";
+
+  // Pick spotlight color based on win rate
+  const spotlightColor = winRate >= 60
+    ? "rgba(132,204,22,0.12)"
+    : winRate >= 40
+    ? "rgba(251,191,36,0.10)"
+    : "rgba(248,113,113,0.10)";
 
   return (
     <main className="min-h-screen bg-[#0c0c0e] max-w-sm mx-auto pb-10">
-      {/* Header */}
-      <div className="sticky top-0 z-10 bg-[#0c0c0e]/90 backdrop-blur-xl border-b border-white/[0.06] px-5">
-        <div className="flex items-center justify-between h-14">
-          <Link href="/friends" className="text-white/40 text-sm font-medium hover:text-white/80 transition-colors">← Friends</Link>
-          <span className="text-xs font-bold tracking-[0.2em] uppercase text-white/30">Profile</span>
-          <div className="w-14" />
+
+      {/* Back nav — floats over hero */}
+      <div className="sticky top-0 z-20 px-5">
+        <div className="flex items-center h-14">
+          <Link href="/friends" className="flex items-center gap-1.5 text-white/40 text-sm font-medium hover:text-white/80 transition-colors">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <polyline points="15 18 9 12 15 6"/>
+            </svg>
+            Friends
+          </Link>
         </div>
       </div>
 
-      <div className="px-5 py-5 space-y-5">
-        {/* Identity header */}
-        <div className="border-b border-white/[0.06] pb-5">
-          <h1 className="text-2xl font-black text-white">{displayName || `@${username}`}</h1>
-          {displayName && <p className="text-white/30 text-xs mt-0.5">@{username}</p>}
+      {/* ─── SPOTLIGHT HERO ─────────────────────────────────────────────────── */}
+      <div className="relative -mt-14 px-5 pt-14 pb-8 overflow-hidden">
+        {/* Radial spotlight glow */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background: `radial-gradient(ellipse 80% 60% at 50% 0%, ${spotlightColor} 0%, transparent 70%)`,
+          }}
+        />
+        {/* Subtle grid lines */}
+        <div className="absolute inset-0 pointer-events-none opacity-[0.03]"
+          style={{
+            backgroundImage: "linear-gradient(rgba(255,255,255,0.8) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.8) 1px, transparent 1px)",
+            backgroundSize: "40px 40px",
+          }}
+        />
+
+        <div className="relative flex flex-col items-center gap-5 pt-6">
+          {/* Avatar ring */}
+          <div className="relative">
+            <div className="w-24 h-24 rounded-full bg-gradient-to-br from-white/10 to-white/5 border border-white/15 flex items-center justify-center shadow-xl"
+              style={{ boxShadow: `0 0 40px ${spotlightColor}, 0 0 0 1px rgba(255,255,255,0.08)` }}>
+              <span className="text-2xl font-black text-white/80 tracking-tight">
+                <Initials name={displayLabel} />
+              </span>
+            </div>
+            {streak !== 0 && (
+              <div className={`absolute -bottom-1 -right-1 px-2 py-0.5 rounded-full text-[10px] font-black shadow-lg ${streakGlow} ${streakPos ? "bg-lime-400 text-black" : "bg-red-400 text-black"}`}
+                style={{ boxShadow: streakPos ? "0 0 12px rgba(132,204,22,0.6)" : "0 0 12px rgba(248,113,113,0.6)" }}>
+                {streakPos ? `+${streak}W` : `${Math.abs(streak)}L`}
+              </div>
+            )}
+          </div>
+
+          {/* Name */}
+          <div className="text-center">
+            <h1 className="text-2xl font-black text-white tracking-tight">{displayLabel}</h1>
+            {displayName && <p className="text-white/30 text-xs mt-0.5">@{username}</p>}
+            <p className="text-white/25 text-xs mt-1">{matches.length} matches logged</p>
+          </div>
+
+          {/* Win rate arc + record */}
           {shareStats && matches.length > 0 && (
-            <>
-              <p className="text-white/40 text-sm mt-0.5">{record.wins}W – {record.losses}L · {winRate}% win rate</p>
-              {streak !== 0 && (
-                <p className={`text-sm font-black mt-1 ${streak > 0 ? "text-lime-400" : "text-red-400"}`}>
-                  {streak > 0 ? `+${streak}W` : `${Math.abs(streak)}L`} streak
-                </p>
-              )}
-            </>
+            <div className="flex items-center gap-8">
+              {/* Arc */}
+              <div className="relative flex items-center justify-center">
+                <WinRateArc pct={winRate} />
+                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                  <span className="text-xl font-black text-white">{winRate}%</span>
+                  <span className="text-[9px] text-white/30 uppercase tracking-widest">win rate</span>
+                </div>
+              </div>
+              {/* Record */}
+              <div className="space-y-2">
+                <div>
+                  <p className="text-[10px] text-white/30 uppercase tracking-widest">Overall</p>
+                  <p className="text-2xl font-black text-white">{record.wins}<span className="text-white/20 font-normal">–</span>{record.losses}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] text-white/30 uppercase tracking-widest">Last 5</p>
+                  <p className="text-base font-black text-white/70">
+                    {last5.filter(m => m.result === "win").length}<span className="text-white/20 font-normal">–</span>{last5.filter(m => m.result !== "win").length}
+                  </p>
+                </div>
+              </div>
+            </div>
           )}
         </div>
+      </div>
+
+      {/* ─── CONTENT ────────────────────────────────────────────────────────── */}
+      <div className="px-5 space-y-5">
 
         {neitherShared ? (
           <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-8 text-center space-y-2">
@@ -161,7 +263,7 @@ export default function FriendProfilePage() {
           </div>
         ) : (
           <>
-            {/* Tab switcher (only when both are available) */}
+            {/* Tab switcher */}
             {showTabs && (
               <div className="flex gap-2 p-1 rounded-2xl bg-white/[0.04] border border-white/10">
                 {(["stats", "history"] as Tab[]).map(t => (
@@ -173,29 +275,13 @@ export default function FriendProfilePage() {
               </div>
             )}
 
-            {/* Stats view */}
+            {/* ── Stats view ── */}
             {shareStats && (!showTabs || tab === "stats") && (
               <div className="space-y-5">
                 {matches.length === 0 ? (
                   <p className="text-white/30 text-sm text-center py-4">No matches logged yet.</p>
                 ) : (
                   <>
-                    {/* Quick stats */}
-                    <div className="grid grid-cols-3 gap-2">
-                      <div className="rounded-2xl bg-white/[0.03] border border-white/10 p-3 text-center">
-                        <p className="text-xs text-white/30 font-bold uppercase tracking-widest">Record</p>
-                        <p className="text-xl font-black text-white mt-0.5">{record.wins}–{record.losses}</p>
-                      </div>
-                      <div className="rounded-2xl bg-white/[0.03] border border-white/10 p-3 text-center">
-                        <p className="text-xs text-white/30 font-bold uppercase tracking-widest">Win %</p>
-                        <p className={`text-xl font-black mt-0.5 ${winRate >= 60 ? "text-lime-400" : winRate >= 40 ? "text-amber-400" : "text-red-400"}`}>{winRate}%</p>
-                      </div>
-                      <div className="rounded-2xl bg-white/[0.03] border border-white/10 p-3 text-center">
-                        <p className="text-xs text-white/30 font-bold uppercase tracking-widest">Matches</p>
-                        <p className="text-xl font-black text-white mt-0.5">{matches.length}</p>
-                      </div>
-                    </div>
-
                     {/* Performance Grades */}
                     {(consistGrade || clutchGrade || mentalGrade || execGrade || momentumGrade) && (
                       <section className="space-y-3">
@@ -211,7 +297,10 @@ export default function FriendProfilePage() {
                           ] as { label: string; g: string | null }[]).filter(r => r.g).map(({ label, g }) => (
                             <div key={label} className={`rounded-2xl border p-4 flex items-center justify-between ${gradeBg(g!)}`}>
                               <p className="text-sm font-bold text-white/70">{label}</p>
-                              <span className={`text-3xl font-black ${gradeColor(g!)}`}>{g}</span>
+                              <span className={`text-3xl font-black ${gradeColor(g!)}`}
+                                style={{ textShadow: `0 0 20px currentColor` }}>
+                                {g}
+                              </span>
                             </div>
                           ))}
                         </div>
@@ -222,36 +311,46 @@ export default function FriendProfilePage() {
               </div>
             )}
 
-            {/* Match history view */}
+            {/* ── History view ── */}
             {shareHistory && (!showTabs || tab === "history") && (
               <div className="space-y-3">
                 <p className="text-xs font-black tracking-widest uppercase text-white/30">Match History</p>
                 {matches.length === 0 ? (
                   <p className="text-white/30 text-sm text-center py-4">No matches logged yet.</p>
                 ) : (
-                  matches.map(m => {
-                    const win = m.result === "win";
-                    const scoreSets = m.score.sets
-                      .filter(s => s.player !== null && s.opponent !== null)
-                      .map(s => {
-                        const base = `${s.player}-${s.opponent}`;
-                        if (s.tiebreak?.player !== null && s.tiebreak?.opponent !== null && s.tiebreak)
-                          return `${base}(${Math.min(s.tiebreak.player!, s.tiebreak.opponent!)})`;
-                        return base;
-                      }).join(", ");
-                    return (
-                      <div key={m.id} className={`rounded-2xl border p-4 space-y-1 ${win ? "border-lime-400/20 bg-lime-400/5" : "border-red-500/20 bg-red-500/5"}`}>
-                        <div className="flex items-center justify-between">
-                          <span className="text-white font-black text-base">{m.opponentName}</span>
-                          <span className={`text-sm font-black px-3 py-1 rounded-full ${win ? "bg-lime-400/15 text-lime-400" : "bg-red-500/15 text-red-400"}`}>
-                            {win ? "W" : "L"}
-                          </span>
+                  <div className="space-y-2">
+                    {matches.map(m => {
+                      const win = m.result === "win";
+                      const scoreSets = m.score.sets
+                        .filter(s => s.player !== null && s.opponent !== null)
+                        .map(s => {
+                          const base = `${s.player}-${s.opponent}`;
+                          if (s.tiebreak?.player !== null && s.tiebreak?.opponent !== null && s.tiebreak)
+                            return `${base}(${Math.min(s.tiebreak.player!, s.tiebreak.opponent!)})`;
+                          return base;
+                        }).join(", ");
+                      return (
+                        <div key={m.id}
+                          className={`rounded-2xl border p-4 relative overflow-hidden ${win ? "border-lime-400/20 bg-lime-400/[0.04]" : "border-red-500/20 bg-red-500/[0.04]"}`}>
+                          {/* Subtle glow edge */}
+                          <div className={`absolute left-0 top-0 bottom-0 w-1 rounded-l-2xl ${win ? "bg-lime-400" : "bg-red-400"}`}
+                            style={{ boxShadow: win ? "2px 0 12px rgba(132,204,22,0.4)" : "2px 0 12px rgba(248,113,113,0.4)" }} />
+                          <div className="pl-3">
+                            <div className="flex items-center justify-between">
+                              <span className="text-white font-black text-base">{m.opponentName}</span>
+                              <span className={`text-xs font-black px-2.5 py-1 rounded-full ${win ? "bg-lime-400/15 text-lime-400" : "bg-red-500/15 text-red-400"}`}>
+                                {win ? "W" : "L"}
+                              </span>
+                            </div>
+                            <p className="text-xs text-white/40 mt-1">{SURFACE_EMOJI[m.surface]} {scoreSets}</p>
+                            <p className="text-[10px] text-white/20 mt-0.5">
+                              {new Date(m.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                            </p>
+                          </div>
                         </div>
-                        <p className="text-xs text-white/40">{SURFACE_EMOJI[m.surface]} {scoreSets}</p>
-                        <p className="text-[10px] text-white/20">{new Date(m.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</p>
-                      </div>
-                    );
-                  })
+                      );
+                    })}
+                  </div>
                 )}
               </div>
             )}

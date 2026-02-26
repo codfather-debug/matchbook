@@ -27,6 +27,22 @@ const BOOKS = [
     accent: "border-amber-400/20 hover:border-amber-400/40",
     badge: "text-amber-400",
   },
+  {
+    href: "/playbook/scoring",
+    icon: "📊",
+    title: "Match Scoring",
+    sub: "Ad scoring · tiebreaks · pro-set",
+    accent: "border-red-400/20 hover:border-red-400/40",
+    badge: "text-red-400",
+  },
+  {
+    href: "/playbook/rules",
+    icon: "📋",
+    title: "Rules & The Code",
+    sub: "Line calls · serving · hindrance",
+    accent: "border-white/10 hover:border-white/25",
+    badge: "text-white/70",
+  },
 ];
 
 export default function PlaybookIndexPage() {
