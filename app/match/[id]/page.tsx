@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Match, PlayStyle } from "@/types";
 import { supabase } from "@/lib/supabase";
 import { PLAY_STYLES, STYLE_TIPS, scoreLabel } from "@/components/MatchEntry";
+import { generateMatchSummary } from "@/lib/analytics";
 
 const SURFACE_LABEL: Record<string, string> = {
   hard: "Hard Court",
@@ -230,6 +231,21 @@ export default function MatchDetailPage() {
           <p className="text-xs text-white/25 mt-1">{date}</p>
         </div>
 
+        {/* AI Match Summary */}
+        {(() => {
+          const summary = generateMatchSummary(match);
+          return (
+            <section className="space-y-3">
+              <p className="text-xs font-black tracking-widest uppercase text-white/30">Match Summary</p>
+              <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 space-y-2">
+                {summary.map((p, i) => (
+                  <p key={i} className="text-sm text-white/70 leading-relaxed">{p}</p>
+                ))}
+              </div>
+            </section>
+          );
+        })()}
+
         {/* Score Breakdown */}
         <section className="space-y-3">
           <p className="text-xs font-black tracking-widest uppercase text-white/30">Score</p>
@@ -302,6 +318,102 @@ export default function MatchDetailPage() {
               />
             )}
           </>
+        )}
+
+        {/* Game Plan */}
+        {match.plan && (match.plan.strategy || match.plan.targetWeakness || match.plan.focusWord || match.plan.confidence !== undefined) && (
+          <section className="space-y-3">
+            <p className="text-xs font-black tracking-widest uppercase text-white/30">Game Plan</p>
+            <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 space-y-3">
+              {match.plan.strategy && (
+                <div>
+                  <p className="text-xs text-white/30 font-bold mb-0.5">Strategy</p>
+                  <p className="text-sm text-white/80">{match.plan.strategy}</p>
+                </div>
+              )}
+              {match.plan.targetWeakness && (
+                <div>
+                  <p className="text-xs text-white/30 font-bold mb-0.5">Target Weakness</p>
+                  <p className="text-sm text-white/80">{match.plan.targetWeakness}</p>
+                </div>
+              )}
+              <div className="flex gap-4">
+                {match.plan.focusWord && (
+                  <div>
+                    <p className="text-xs text-white/30 font-bold mb-0.5">Focus Word</p>
+                    <p className="text-sm font-black text-lime-400">{match.plan.focusWord}</p>
+                  </div>
+                )}
+                {match.plan.confidence !== undefined && (
+                  <div>
+                    <p className="text-xs text-white/30 font-bold mb-0.5">Confidence</p>
+                    <p className={`text-sm font-black ${match.plan.confidence >= 7 ? "text-lime-400" : match.plan.confidence >= 5 ? "text-amber-400" : "text-red-400"}`}>
+                      {match.plan.confidence}/10
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* Reflection */}
+        {match.reflection && (
+          match.reflection.energy !== undefined ||
+          match.reflection.focus !== undefined ||
+          match.reflection.emotionalControl !== undefined ||
+          match.reflection.executionScore !== undefined ||
+          match.reflection.notes
+        ) && (
+          <section className="space-y-3">
+            <p className="text-xs font-black tracking-widest uppercase text-white/30">Reflection</p>
+            <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 space-y-3">
+              {/* Scores grid */}
+              {(match.reflection.energy !== undefined || match.reflection.focus !== undefined ||
+                match.reflection.emotionalControl !== undefined || match.reflection.composite !== undefined) && (
+                <div className="grid grid-cols-2 gap-2">
+                  {([
+                    { label: "Energy", val: match.reflection.energy },
+                    { label: "Focus", val: match.reflection.focus },
+                    { label: "Emo. Control", val: match.reflection.emotionalControl },
+                    { label: "Mental", val: match.reflection.composite },
+                  ] as { label: string; val: number | undefined }[]).filter(r => r.val !== undefined).map(({ label, val }) => (
+                    <div key={label} className="rounded-xl bg-white/[0.04] px-3 py-2">
+                      <p className="text-[10px] text-white/30 font-bold">{label}</p>
+                      <p className={`text-lg font-black ${val! >= 7 ? "text-lime-400" : val! >= 5 ? "text-amber-400" : "text-red-400"}`}>
+                        {val}/10
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {/* Execution + Plan */}
+              <div className="flex gap-3">
+                {match.reflection.executionScore !== undefined && (
+                  <div className="flex-1 rounded-xl bg-white/[0.04] px-3 py-2">
+                    <p className="text-[10px] text-white/30 font-bold">Execution</p>
+                    <p className={`text-lg font-black ${match.reflection.executionScore >= 7 ? "text-lime-400" : match.reflection.executionScore >= 5 ? "text-amber-400" : "text-red-400"}`}>
+                      {match.reflection.executionScore}/10
+                    </p>
+                  </div>
+                )}
+                {match.reflection.stuckToPlan !== undefined && (
+                  <div className="flex-1 rounded-xl bg-white/[0.04] px-3 py-2">
+                    <p className="text-[10px] text-white/30 font-bold">Stuck to Plan</p>
+                    <p className={`text-sm font-black ${match.reflection.stuckToPlan ? "text-lime-400" : "text-red-400"}`}>
+                      {match.reflection.stuckToPlan ? "Yes ✓" : "No ✗"}
+                    </p>
+                  </div>
+                )}
+              </div>
+              {match.reflection.notes && (
+                <div>
+                  <p className="text-xs text-white/30 font-bold mb-0.5">Notes</p>
+                  <p className="text-sm text-white/70 leading-relaxed">{match.reflection.notes}</p>
+                </div>
+              )}
+            </div>
+          </section>
         )}
 
         {/* Delete */}

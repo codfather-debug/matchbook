@@ -34,6 +34,26 @@ export interface ScoutingNotes {
   keyToWin: string;     // One-sentence strategy for next time
 }
 
+// ─── Plan & Reflection ────────────────────────────────────────────────────────
+
+export interface PlanData {
+  strategy?: string;        // Primary strategy text
+  targetWeakness?: string;  // Opponent weakness to target
+  focusWord?: string;       // Single focus word
+  confidence?: number;      // 1–10 pre-match confidence
+}
+
+export interface ReflectionData {
+  energy?: number;            // 1–10
+  focus?: number;             // 1–10
+  emotionalControl?: number;  // 1–10
+  confidence?: number;        // 1–10 (post-match)
+  composite?: number;         // Auto-calculated avg of above 4
+  executionScore?: number;    // 1–10 game plan execution
+  stuckToPlan?: boolean;
+  notes?: string;
+}
+
 // ─── Match ────────────────────────────────────────────────────────────────────
 
 export interface Match {
@@ -48,6 +68,8 @@ export interface Match {
   opponentStyle: PlayStyle[];  // Multi-tag
   scouting: ScoutingNotes;
   notes?: string;              // Free-form post-match notes
+  plan?: PlanData;
+  reflection?: ReflectionData;
   // Doubles — second opponent
   opponent2Name?: string;
   opponentStyle2?: PlayStyle[];

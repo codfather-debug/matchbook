@@ -4,6 +4,7 @@ import { Match } from "@/types";
 import { supabase } from "@/lib/supabase";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import BottomNav from "@/components/BottomNav";
 
 const SURFACE_EMOJI: Record<string, string> = {
   hard: "🟦",
@@ -46,7 +47,7 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen bg-[#0c0c0e] max-w-sm mx-auto">
+    <main className="min-h-screen bg-[#0c0c0e] max-w-sm mx-auto pb-24">
       {/* Header */}
       <div className="px-5 pt-5 pb-4 border-b border-white/[0.06]">
         <div className="flex items-end justify-between">
@@ -133,6 +134,8 @@ export default function Home() {
           })
         )}
       </div>
+
+      <BottomNav active="home" />
     </main>
   );
 }
