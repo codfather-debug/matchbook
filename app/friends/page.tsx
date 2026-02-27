@@ -51,6 +51,7 @@ export default function FriendsPage() {
   // Discover tab
   const [discoverQuery, setDiscoverQuery] = useState("");
   const [discoverList, setDiscoverList] = useState<SearchResult[]>([]);
+  const [discoverLoading, setDiscoverLoading] = useState(false);
 
   const loadFriends = useCallback(async (uid: string) => {
     const { data: friendshipRows } = await supabase
@@ -159,16 +160,21 @@ export default function FriendsPage() {
   }, []);
 
   const loadDiscover = useCallback(async (uid: string, friendships: FriendshipRow[], q = "") => {
-    const existingIds = new Set([
+    setDiscoverLoading(true);
+    // Only exclude accepted friends — pending requests should still appear in discover
+    const acceptedIds = new Set([
       uid,
-      ...friendships.map(r => r.requester_id === uid ? r.addressee_id : r.requester_id),
+      ...friendships
+        .filter(r => r.status === "accepted")
+        .map(r => r.requester_id === uid ? r.addressee_id : r.requester_id),
     ]);
     let query = supabase.from("profiles").select("id, username, display_name").neq("id", uid);
     if (q.trim().length >= 2) {
       query = query.or(`username.ilike.%${q.trim()}%,display_name.ilike.%${q.trim()}%`);
     }
-    const { data } = await query.limit(40);
-    setDiscoverList((data ?? []).filter((p: SearchResult) => !existingIds.has(p.id)));
+    const { data } = await query.order("username").limit(50);
+    setDiscoverList((data ?? []).filter((p: SearchResult) => !acceptedIds.has(p.id)));
+    setDiscoverLoading(false);
   }, []);
 
   useEffect(() => {
@@ -485,10 +491,10 @@ export default function FriendsPage() {
                   className="w-full bg-white/5 border border-white/10 rounded-2xl pl-10 pr-4 py-3 text-white text-sm placeholder:text-white/25 outline-none focus:ring-2 focus:ring-lime-400/50 focus:border-lime-400/30 transition-all"
                 />
               </div>
-              {discoverList.length === 0 ? (
-                <p className="text-xs text-white/20 text-center py-4">
-                  {discoverQuery.trim().length >= 2 ? "No players found" : "Loading players…"}
-                </p>
+              {discoverLoading ? (
+                <p className="text-xs text-white/20 text-center py-4">Loading players…</p>
+              ) : discoverList.length === 0 ? (
+                <p className="text-xs text-white/20 text-center py-4">No players found</p>
               ) : (
                 <div className="rounded-2xl border border-white/10 bg-white/[0.03] divide-y divide-white/[0.06]">
                   {discoverList.map(r => (

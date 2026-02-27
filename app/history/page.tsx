@@ -211,7 +211,7 @@ export default function HistoryPage() {
         )}
       </div>
 
-      <BottomNav active="history" />
+      <BottomNav active="log" />
     </main>
   );
 }

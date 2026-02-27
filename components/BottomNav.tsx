@@ -1,9 +1,44 @@
 "use client";
 import Link from "next/link";
+import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase";
 
-type Tab = "log" | "history" | "dashboard" | "playbook" | "friends" | "profile";
+type Tab = "log" | "dashboard" | "playbook" | "friends" | "profile";
 
 export default function BottomNav({ active }: { active: Tab }) {
+  const [notifCount, setNotifCount] = useState(0);
+
+  useEffect(() => {
+    async function loadNotifications() {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        const results = await Promise.allSettled([
+          // Pending friend requests sent to me
+          supabase.from("friendships").select("id", { count: "exact", head: true })
+            .eq("addressee_id", user.id).eq("status", "pending"),
+          // Pending team challenges where I'm the opponent
+          supabase.from("challenges").select("id", { count: "exact", head: true })
+            .eq("opponent_id", user.id).eq("status", "pending"),
+          // Pending group challenges where I'm the opponent
+          supabase.from("group_challenges").select("id", { count: "exact", head: true })
+            .eq("opponent_id", user.id).eq("status", "pending"),
+        ]);
+
+        const total = results.reduce((sum, r) => {
+          if (r.status === "fulfilled") return sum + (r.value.count ?? 0);
+          return sum;
+        }, 0);
+
+        setNotifCount(total);
+      } catch {
+        // silently ignore — badge just won't show
+      }
+    }
+    loadNotifications();
+  }, []);
+
   const base = "flex flex-col items-center justify-center gap-0.5 text-[9px] font-bold transition-colors";
   const on   = "text-lime-400";
   const off  = "text-white/30 hover:text-white/60";
@@ -21,15 +56,6 @@ export default function BottomNav({ active }: { active: Tab }) {
             </svg>
           </div>
           Log
-        </Link>
-
-        {/* History */}
-        <Link href="/history" className={`${base} ${active === "history" ? on : off} flex-1 py-2`}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/>
-            <path d="M9 21V12h6v9"/>
-          </svg>
-          History
         </Link>
 
         {/* Dashboard — center accent */}
@@ -54,14 +80,21 @@ export default function BottomNav({ active }: { active: Tab }) {
           Playbook
         </Link>
 
-        {/* Friends */}
+        {/* Friends — with notification badge (friend requests + challenges) */}
         <Link href="/friends" className={`${base} ${active === "friends" ? on : off} flex-1 py-2`}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-            <circle cx="9" cy="7" r="4"/>
-            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-          </svg>
+          <div className="relative">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+            {notifCount > 0 && (
+              <span className="absolute -top-1.5 -right-2 min-w-[16px] h-4 bg-red-500 rounded-full text-[9px] font-black text-white flex items-center justify-center px-0.5 leading-none">
+                {notifCount > 9 ? "9+" : notifCount}
+              </span>
+            )}
+          </div>
           Friends
         </Link>
 
