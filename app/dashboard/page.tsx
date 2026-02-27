@@ -61,6 +61,9 @@ export default function DashboardPage() {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [dashChallenges, setDashChallenges] = useState<DashChallenge[]>([]);
   const [challengeBusy, setChallengeBusy] = useState<Set<string>>(new Set());
+  const [showProfileSetup, setShowProfileSetup] = useState(false);
+  const [profileSetupName, setProfileSetupName] = useState("");
+  const [profileSetupBusy, setProfileSetupBusy] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -68,7 +71,7 @@ export default function DashboardPage() {
       if (!user) { router.push("/auth"); return; }
       const uid = user.id;
 
-      const [matchRes, teamChalRes, grpChalRes] = await Promise.all([
+      const [matchRes, teamChalRes, grpChalRes, profileRes] = await Promise.all([
         supabase.from("matches").select("id, created_at, data").order("created_at", { ascending: false }),
         supabase.from("challenges")
           .select("id, challenger_id, opponent_id, status, created_at, team_id")
@@ -80,7 +83,15 @@ export default function DashboardPage() {
           .or(`challenger_id.eq.${uid},opponent_id.eq.${uid}`)
           .in("status", ["pending", "accepted"])
           .order("created_at", { ascending: false }),
+        supabase.from("profiles").select("display_name").eq("id", uid).maybeSingle(),
       ]);
+
+      // Show name setup if this is a new user or they haven't set a display name
+      if (!profileRes.data?.display_name) {
+        const username = user.email?.split("@")[0] ?? uid;
+        await supabase.from("profiles").upsert({ id: uid, username }, { onConflict: "id", ignoreDuplicates: true });
+        setShowProfileSetup(true);
+      }
 
       if (matchRes.data) {
         const loaded = matchRes.data.map(row => ({
@@ -143,6 +154,15 @@ export default function DashboardPage() {
     setChallengeBusy(s => { const n = new Set(s); n.delete(c.id); return n; });
   }
 
+  async function saveDisplayName() {
+    if (!profileSetupName.trim()) return;
+    setProfileSetupBusy(true);
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) await supabase.from("profiles").update({ display_name: profileSetupName.trim() }).eq("id", user.id);
+    setShowProfileSetup(false);
+    setProfileSetupBusy(false);
+  }
+
   function dismissOnboarding() {
     localStorage.setItem("mb_onboarded", "1");
     setShowOnboarding(false);
@@ -178,6 +198,46 @@ export default function DashboardPage() {
   return (
     <>
       {showOnboarding && <Onboarding onDismiss={dismissOnboarding} />}
+
+      {/* Profile setup modal — shown to new users who haven't set a display name */}
+      {showProfileSetup && (
+        <div className="fixed inset-0 z-[150] bg-black/80 backdrop-blur-sm flex items-end justify-center">
+          <div className="bg-[#141416] border border-white/10 rounded-t-3xl w-full max-w-sm p-6 space-y-5">
+            <div className="space-y-1">
+              <h2 className="text-xl font-black text-white">Welcome to Matchbook!</h2>
+              <p className="text-sm text-white/40">Add your name so teammates and friends can find you.</p>
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs font-black tracking-widest uppercase text-white/30">Display Name</label>
+              <input
+                autoFocus
+                type="text"
+                placeholder="e.g. John Smith or John S."
+                value={profileSetupName}
+                onChange={e => setProfileSetupName(e.target.value)}
+                onKeyDown={e => { if (e.key === "Enter") saveDisplayName(); }}
+                className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white text-sm placeholder:text-white/25 outline-none focus:ring-2 focus:ring-lime-400/50 focus:border-lime-400/30 transition-all"
+              />
+              <p className="text-[10px] text-white/20">This is how you appear in teams, groups, and challenges.</p>
+            </div>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowProfileSetup(false)}
+                className="flex-1 text-sm font-bold text-white/40 bg-white/5 border border-white/10 py-3 rounded-2xl hover:text-white/60 transition-all"
+              >
+                Skip for now
+              </button>
+              <button
+                onClick={saveDisplayName}
+                disabled={profileSetupBusy || !profileSetupName.trim()}
+                className="flex-1 text-sm font-black text-black bg-lime-400 py-3 rounded-2xl hover:bg-lime-300 transition-all active:scale-95 disabled:opacity-40"
+              >
+                {profileSetupBusy ? "Saving…" : "Save Name"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     <main className="min-h-screen bg-[#0c0c0e] max-w-sm mx-auto pb-24 relative z-10">
 
       <div className="px-5 py-5 space-y-5">
@@ -217,12 +277,22 @@ export default function DashboardPage() {
                         </div>
                         <div className="flex gap-2 flex-shrink-0">
                           {c.status === "accepted" ? (
-                            <Link
-                              href={`/log?opponent=${encodeURIComponent(c.isReceived ? c.challengerName : c.opponentName)}&challengeId=${c.id}&challengeType=${c.type}`}
-                              className="text-xs font-black text-lime-400 bg-lime-400/10 px-3 py-1.5 rounded-xl hover:bg-lime-400/20 transition-all"
-                            >
-                              Log Match
-                            </Link>
+                            <>
+                              <Link
+                                href={`/log?opponent=${encodeURIComponent(c.isReceived ? c.challengerName : c.opponentName)}&challengeId=${c.id}&challengeType=${c.type}`}
+                                className="text-xs font-black text-lime-400 bg-lime-400/10 px-3 py-1.5 rounded-xl hover:bg-lime-400/20 transition-all"
+                              >
+                                Log Match
+                              </Link>
+                              <button
+                                onClick={() => declineChallenge(c)}
+                                disabled={challengeBusy.has(c.id)}
+                                className="text-xs font-bold text-white/20 hover:text-red-400/60 transition-colors disabled:opacity-40"
+                                title="Cancel challenge"
+                              >
+                                ×
+                              </button>
+                            </>
                           ) : c.isReceived ? (
                             <>
                               <button
@@ -313,12 +383,22 @@ export default function DashboardPage() {
                         </div>
                         <div className="flex gap-2 flex-shrink-0">
                           {c.status === "accepted" ? (
-                            <Link
-                              href={`/log?opponent=${encodeURIComponent(c.isReceived ? c.challengerName : c.opponentName)}&challengeId=${c.id}&challengeType=${c.type}`}
-                              className="text-xs font-black text-lime-400 bg-lime-400/10 px-3 py-1.5 rounded-xl hover:bg-lime-400/20 transition-all"
-                            >
-                              Log Match
-                            </Link>
+                            <>
+                              <Link
+                                href={`/log?opponent=${encodeURIComponent(c.isReceived ? c.challengerName : c.opponentName)}&challengeId=${c.id}&challengeType=${c.type}`}
+                                className="text-xs font-black text-lime-400 bg-lime-400/10 px-3 py-1.5 rounded-xl hover:bg-lime-400/20 transition-all"
+                              >
+                                Log Match
+                              </Link>
+                              <button
+                                onClick={() => declineChallenge(c)}
+                                disabled={challengeBusy.has(c.id)}
+                                className="text-xs font-bold text-white/20 hover:text-red-400/60 transition-colors disabled:opacity-40"
+                                title="Cancel challenge"
+                              >
+                                ×
+                              </button>
+                            </>
                           ) : c.isReceived ? (
                             <>
                               <button

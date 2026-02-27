@@ -26,6 +26,15 @@ interface FeedMatch {
   player_name: string;
 }
 
+interface WallReply {
+  id: string;
+  user_id: string;
+  content: string;
+  created_at: string;
+  display_name?: string;
+  username?: string;
+}
+
 interface WallPost {
   id: string;
   user_id: string;
@@ -33,6 +42,7 @@ interface WallPost {
   created_at: string;
   display_name?: string;
   username?: string;
+  replies: WallReply[];
 }
 
 interface ChallengeRow {
@@ -79,6 +89,8 @@ export default function TeamPage() {
   const [posts, setPosts] = useState<WallPost[]>([]);
   const [postText, setPostText] = useState("");
   const [postBusy, setPostBusy] = useState(false);
+  const [replyingTo, setReplyingTo] = useState<string | null>(null);
+  const [replyText, setReplyText] = useState("");
   const [challenges, setChallenges] = useState<ChallengeRow[]>([]);
   const [challengeBusy, setChallengeBusy] = useState<Set<string>>(new Set());
   const [profileUserId, setProfileUserId] = useState<string | null>(null);
@@ -160,10 +172,10 @@ export default function TeamPage() {
   const loadWall = useCallback(async () => {
     const { data: postRows } = await supabase
       .from("team_posts")
-      .select("id, user_id, content, created_at")
+      .select("id, user_id, content, created_at, reply_to_id")
       .eq("team_id", teamId)
-      .order("created_at", { ascending: false })
-      .limit(50);
+      .order("created_at", { ascending: true })
+      .limit(200);
     if (!postRows || postRows.length === 0) { setPosts([]); return; }
 
     const uids = [...new Set(postRows.map(p => p.user_id))];
@@ -171,11 +183,33 @@ export default function TeamPage() {
       .from("profiles").select("id, display_name, username").in("id", uids);
     const profileMap = Object.fromEntries((profiles ?? []).map(p => [p.id, p]));
 
-    setPosts(postRows.map(p => ({
-      ...p,
-      display_name: profileMap[p.user_id]?.display_name,
-      username: profileMap[p.user_id]?.username ?? p.user_id,
-    })));
+    type RawPost = { id: string; user_id: string; content: string; created_at: string; reply_to_id?: string | null };
+    const postMap: Record<string, WallPost> = {};
+    const topLevel: WallPost[] = [];
+
+    for (const p of postRows as RawPost[]) {
+      if (!p.reply_to_id) {
+        const wp: WallPost = {
+          id: p.id, user_id: p.user_id, content: p.content, created_at: p.created_at,
+          display_name: profileMap[p.user_id]?.display_name,
+          username: profileMap[p.user_id]?.username ?? p.user_id,
+          replies: [],
+        };
+        postMap[p.id] = wp;
+        topLevel.push(wp);
+      }
+    }
+    for (const p of postRows as RawPost[]) {
+      if (p.reply_to_id && postMap[p.reply_to_id]) {
+        postMap[p.reply_to_id].replies.push({
+          id: p.id, user_id: p.user_id, content: p.content, created_at: p.created_at,
+          display_name: profileMap[p.user_id]?.display_name,
+          username: profileMap[p.user_id]?.username ?? p.user_id,
+        });
+      }
+    }
+    topLevel.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    setPosts(topLevel);
   }, [teamId]);
 
   const loadChallenges = useCallback(async (uid: string) => {
@@ -260,6 +294,18 @@ export default function TeamPage() {
     setPostBusy(true);
     await supabase.from("team_posts").insert({ team_id: teamId, user_id: userId, content: postText.trim() });
     setPostText("");
+    await loadWall();
+    setPostBusy(false);
+  }
+
+  async function submitReply(postId: string) {
+    if (!replyText.trim()) return;
+    setPostBusy(true);
+    await supabase.from("team_posts").insert({
+      team_id: teamId, user_id: userId, content: replyText.trim(), reply_to_id: postId,
+    });
+    setReplyText("");
+    setReplyingTo(null);
     await loadWall();
     setPostBusy(false);
   }
@@ -466,8 +512,9 @@ export default function TeamPage() {
             ) : (
               <div className="space-y-2">
                 {posts.map(p => (
-                  <div key={p.id} className="bg-white/[0.03] border border-white/[0.06] rounded-2xl px-4 py-3">
-                    <div className="flex items-center justify-between mb-1.5">
+                  <div key={p.id} className="bg-white/[0.03] border border-white/[0.06] rounded-2xl px-4 py-3 space-y-2">
+                    {/* Post header */}
+                    <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <div className="w-6 h-6 rounded-full bg-lime-400/20 flex items-center justify-center">
                           <span className="text-[10px] font-black text-lime-400">
@@ -481,7 +528,53 @@ export default function TeamPage() {
                       </div>
                       <span className="text-[10px] text-white/20">{relativeTime(p.created_at)}</span>
                     </div>
+                    {/* Post content */}
                     <p className="text-sm text-white/70 leading-relaxed">{p.content}</p>
+                    {/* Replies */}
+                    {p.replies.length > 0 && (
+                      <div className="ml-3 border-l border-white/10 pl-3 space-y-2 mt-1">
+                        {p.replies.map(r => (
+                          <div key={r.id}>
+                            <div className="flex items-center gap-1.5 mb-0.5">
+                              <span className="text-[10px] font-black text-white/40">
+                                {r.display_name ?? `@${r.username}`}
+                                {r.user_id === userId && <span className="text-lime-400/40 ml-1">· you</span>}
+                              </span>
+                              <span className="text-[9px] text-white/15">{relativeTime(r.created_at)}</span>
+                            </div>
+                            <p className="text-xs text-white/60 leading-relaxed">{r.content}</p>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    {/* Reply toggle */}
+                    <button
+                      onClick={() => { setReplyingTo(replyingTo === p.id ? null : p.id); setReplyText(""); }}
+                      className="text-[10px] font-bold text-white/20 hover:text-white/50 transition-colors"
+                    >
+                      {replyingTo === p.id ? "Cancel" : `Reply${p.replies.length > 0 ? ` (${p.replies.length})` : ""}`}
+                    </button>
+                    {/* Inline reply input */}
+                    {replyingTo === p.id && (
+                      <div className="flex gap-2 mt-1">
+                        <input
+                          autoFocus
+                          type="text"
+                          placeholder="Write a reply…"
+                          value={replyText}
+                          onChange={e => setReplyText(e.target.value)}
+                          onKeyDown={e => { if (e.key === "Enter") submitReply(p.id); }}
+                          className="flex-1 bg-white/5 border border-white/10 rounded-xl px-3 py-1.5 text-white text-xs placeholder:text-white/20 outline-none focus:ring-1 focus:ring-lime-400/50 transition-all"
+                        />
+                        <button
+                          onClick={() => submitReply(p.id)}
+                          disabled={postBusy || !replyText.trim()}
+                          className="text-xs font-black text-black bg-lime-400 px-3 py-1.5 rounded-xl hover:bg-lime-300 transition-all disabled:opacity-40"
+                        >
+                          Post
+                        </button>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -534,12 +627,22 @@ export default function TeamPage() {
                           </div>
                         )}
                         {c.status === "accepted" && (
-                          <Link
-                            href={`/log?opponent=${encodeURIComponent(isChallenger ? (c.opponent_name ?? "") : (c.challenger_name ?? ""))}&challengeId=${c.id}&challengeType=team`}
-                            className="text-xs font-black text-lime-400 bg-lime-400/10 px-3 py-1.5 rounded-xl hover:bg-lime-400/20 transition-all"
-                          >
-                            Log Match
-                          </Link>
+                          <div className="flex gap-2">
+                            <Link
+                              href={`/log?opponent=${encodeURIComponent(isChallenger ? (c.opponent_name ?? "") : (c.challenger_name ?? ""))}&challengeId=${c.id}&challengeType=team`}
+                              className="text-xs font-black text-lime-400 bg-lime-400/10 px-3 py-1.5 rounded-xl hover:bg-lime-400/20 transition-all"
+                            >
+                              Log Match
+                            </Link>
+                            <button
+                              onClick={() => respondChallenge(c.id, false)}
+                              disabled={challengeBusy.has(c.id)}
+                              className="text-xs font-bold text-white/25 hover:text-red-400/70 transition-colors disabled:opacity-40"
+                              title="Cancel challenge"
+                            >
+                              ×
+                            </button>
+                          </div>
                         )}
                         {c.status === "completed" && c.match_id && (
                           <Link

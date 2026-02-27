@@ -885,12 +885,22 @@ export default function FriendsPage() {
                               </p>
                             </div>
                             {c.status === "accepted" ? (
-                              <button
-                                onClick={() => router.push(`/log?opponent=${encodeURIComponent(c.challengerName)}&challengeId=${c.id}&challengeType=${c.type}`)}
-                                className="text-xs font-black text-lime-400 bg-lime-400/10 px-3 py-1.5 rounded-xl hover:bg-lime-400/20 transition-all active:scale-95 flex-shrink-0"
-                              >
-                                Log Match
-                              </button>
+                              <div className="flex gap-2 flex-shrink-0">
+                                <button
+                                  onClick={() => router.push(`/log?opponent=${encodeURIComponent(c.challengerName)}&challengeId=${c.id}&challengeType=${c.type}`)}
+                                  className="text-xs font-black text-lime-400 bg-lime-400/10 px-3 py-1.5 rounded-xl hover:bg-lime-400/20 transition-all active:scale-95"
+                                >
+                                  Log Match
+                                </button>
+                                <button
+                                  onClick={() => declineChallenge(c)}
+                                  disabled={challengeBusy.has(c.id)}
+                                  className="text-xs font-bold text-white/25 hover:text-red-400/70 transition-colors disabled:opacity-40"
+                                  title="Cancel challenge"
+                                >
+                                  ×
+                                </button>
+                              </div>
                             ) : (
                               <div className="flex gap-2 flex-shrink-0">
                                 <button

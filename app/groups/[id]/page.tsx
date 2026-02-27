@@ -24,6 +24,15 @@ interface FeedMatch {
   player_name: string;
 }
 
+interface WallReply {
+  id: string;
+  userId: string;
+  content: string;
+  created_at: string;
+  playerName: string;
+  initial: string;
+}
+
 interface WallPost {
   id: string;
   userId: string;
@@ -31,6 +40,7 @@ interface WallPost {
   created_at: string;
   playerName: string;
   initial: string;
+  replies: WallReply[];
 }
 
 interface GroupChallenge {
@@ -74,6 +84,8 @@ export default function GroupPage() {
   const [challenges, setChallenges] = useState<GroupChallenge[]>([]);
   const [postContent, setPostContent] = useState("");
   const [postBusy, setPostBusy] = useState(false);
+  const [replyingTo, setReplyingTo] = useState<string | null>(null);
+  const [replyText, setReplyText] = useState("");
   const [profileUserId, setProfileUserId] = useState<string | null>(null);
 
   const loadAll = useCallback(async () => {
@@ -136,10 +148,10 @@ export default function GroupPage() {
   const loadPosts = useCallback(async () => {
     const { data: rows } = await supabase
       .from("group_posts")
-      .select("id, user_id, content, created_at")
+      .select("id, user_id, content, created_at, reply_to_id")
       .eq("group_id", groupId)
-      .order("created_at", { ascending: false })
-      .limit(50);
+      .order("created_at", { ascending: true })
+      .limit(200);
 
     if (!rows || rows.length === 0) { setPosts([]); return; }
 
@@ -150,14 +162,33 @@ export default function GroupPage() {
       (profiles ?? []).map((p: { id: string; display_name?: string; username?: string }) => [p.id, p])
     );
 
-    setPosts((rows as { id: string; user_id: string; content: string; created_at: string }[]).map(r => ({
-      id: r.id,
-      userId: r.user_id,
-      content: r.content,
-      created_at: r.created_at,
-      playerName: pm[r.user_id]?.display_name ?? `@${pm[r.user_id]?.username ?? r.user_id}`,
-      initial: (pm[r.user_id]?.display_name || pm[r.user_id]?.username || "?")[0].toUpperCase(),
-    })));
+    type RawRow = { id: string; user_id: string; content: string; created_at: string; reply_to_id?: string | null };
+    const postMap: Record<string, WallPost> = {};
+    const topLevel: WallPost[] = [];
+
+    for (const r of rows as RawRow[]) {
+      if (!r.reply_to_id) {
+        const wp: WallPost = {
+          id: r.id, userId: r.user_id, content: r.content, created_at: r.created_at,
+          playerName: pm[r.user_id]?.display_name ?? `@${pm[r.user_id]?.username ?? r.user_id}`,
+          initial: (pm[r.user_id]?.display_name || pm[r.user_id]?.username || "?")[0].toUpperCase(),
+          replies: [],
+        };
+        postMap[r.id] = wp;
+        topLevel.push(wp);
+      }
+    }
+    for (const r of rows as RawRow[]) {
+      if (r.reply_to_id && postMap[r.reply_to_id]) {
+        postMap[r.reply_to_id].replies.push({
+          id: r.id, userId: r.user_id, content: r.content, created_at: r.created_at,
+          playerName: pm[r.user_id]?.display_name ?? `@${pm[r.user_id]?.username ?? r.user_id}`,
+          initial: (pm[r.user_id]?.display_name || pm[r.user_id]?.username || "?")[0].toUpperCase(),
+        });
+      }
+    }
+    topLevel.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    setPosts(topLevel);
   }, [groupId]);
 
   const loadChallenges = useCallback(async (uid: string) => {
@@ -260,6 +291,18 @@ export default function GroupPage() {
   async function deletePost(postId: string) {
     await supabase.from("group_posts").delete().eq("id", postId);
     await loadPosts();
+  }
+
+  async function submitReply(postId: string) {
+    if (!replyText.trim()) return;
+    setPostBusy(true);
+    await supabase.from("group_posts").insert({
+      group_id: groupId, user_id: userId, content: replyText.trim(), reply_to_id: postId,
+    });
+    setReplyText("");
+    setReplyingTo(null);
+    await loadPosts();
+    setPostBusy(false);
   }
 
   async function sendChallenge(opponentId: string) {
@@ -455,7 +498,8 @@ export default function GroupPage() {
             ) : (
               <div className="space-y-2">
                 {posts.map(p => (
-                  <div key={p.id} className="bg-white/[0.03] border border-white/[0.06] rounded-2xl px-4 py-3">
+                  <div key={p.id} className="bg-white/[0.03] border border-white/[0.06] rounded-2xl px-4 py-3 space-y-2">
+                    {/* Post */}
                     <div className="flex items-start gap-3">
                       <div className="w-8 h-8 rounded-full bg-lime-400/10 flex items-center justify-center flex-shrink-0">
                         <span className="text-xs font-black text-lime-400">{p.initial}</span>
@@ -476,6 +520,52 @@ export default function GroupPage() {
                         </button>
                       )}
                     </div>
+                    {/* Replies */}
+                    {p.replies.length > 0 && (
+                      <div className="ml-11 border-l border-white/10 pl-3 space-y-2">
+                        {p.replies.map(r => (
+                          <div key={r.id} className="flex items-start gap-2">
+                            <div className="w-5 h-5 rounded-full bg-lime-400/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                              <span className="text-[8px] font-black text-lime-400">{r.initial}</span>
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-1.5 mb-0.5">
+                                <span className="text-[10px] font-bold text-white/40">{r.playerName}</span>
+                                <span className="text-[9px] text-white/15">{relativeTime(r.created_at)}</span>
+                              </div>
+                              <p className="text-xs text-white/65 break-words">{r.content}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    {/* Reply toggle */}
+                    <button
+                      onClick={() => { setReplyingTo(replyingTo === p.id ? null : p.id); setReplyText(""); }}
+                      className="text-[10px] font-bold text-white/20 hover:text-white/50 transition-colors ml-11"
+                    >
+                      {replyingTo === p.id ? "Cancel" : `Reply${p.replies.length > 0 ? ` (${p.replies.length})` : ""}`}
+                    </button>
+                    {replyingTo === p.id && (
+                      <div className="flex gap-2 ml-11">
+                        <input
+                          autoFocus
+                          type="text"
+                          placeholder="Write a reply…"
+                          value={replyText}
+                          onChange={e => setReplyText(e.target.value)}
+                          onKeyDown={e => { if (e.key === "Enter") submitReply(p.id); }}
+                          className="flex-1 bg-white/5 border border-white/10 rounded-xl px-3 py-1.5 text-white text-xs placeholder:text-white/20 outline-none focus:ring-1 focus:ring-lime-400/50 transition-all"
+                        />
+                        <button
+                          onClick={() => submitReply(p.id)}
+                          disabled={postBusy || !replyText.trim()}
+                          className="text-xs font-black text-black bg-lime-400 px-3 py-1.5 rounded-xl hover:bg-lime-300 transition-all disabled:opacity-40"
+                        >
+                          Post
+                        </button>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -535,12 +625,22 @@ export default function GroupPage() {
                           <span className="text-xs text-white/25 flex-shrink-0">Waiting…</span>
                         )}
                         {c.status === "accepted" && (
-                          <Link
-                            href={`/log?opponent=${encodeURIComponent(isChallenger ? c.opponentName : c.challengerName)}&challengeId=${c.id}&challengeType=group`}
-                            className="text-xs font-black text-lime-400 bg-lime-400/10 px-2.5 py-1.5 rounded-xl hover:bg-lime-400/20 transition-all flex-shrink-0"
-                          >
-                            Log Match
-                          </Link>
+                          <div className="flex gap-2 flex-shrink-0">
+                            <Link
+                              href={`/log?opponent=${encodeURIComponent(isChallenger ? c.opponentName : c.challengerName)}&challengeId=${c.id}&challengeType=group`}
+                              className="text-xs font-black text-lime-400 bg-lime-400/10 px-2.5 py-1.5 rounded-xl hover:bg-lime-400/20 transition-all"
+                            >
+                              Log Match
+                            </Link>
+                            <button
+                              onClick={() => respondChallenge(c.id, false)}
+                              disabled={false}
+                              className="text-xs font-bold text-white/25 hover:text-red-400/70 transition-colors"
+                              title="Cancel challenge"
+                            >
+                              ×
+                            </button>
+                          </div>
                         )}
                       </div>
                     </div>
