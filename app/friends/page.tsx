@@ -26,7 +26,7 @@ interface ChallengeItem {
   createdAt: string;
 }
 
-type ActiveTab = "friends" | "discover" | "teams" | "groups" | "challenges";
+type ActiveTab = "friends" | "teams" | "groups" | "challenges";
 
 export default function FriendsPage() {
   const router = useRouter();
@@ -189,7 +189,7 @@ export default function FriendsPage() {
     if (q.trim().length >= 2) {
       query = query.or(`username.ilike.%${q.trim()}%,display_name.ilike.%${q.trim()}%`);
     }
-    const { data } = await query.order("username").limit(50);
+    const { data } = await query.order("username").limit(10);
     let results = (data ?? []).filter((p: SearchResult) => !acceptedIds.has(p.id));
 
     // Apply team/group filter
@@ -297,9 +297,9 @@ export default function FriendsPage() {
     loadChallenges(userId);
   }, [activeTab, userId, loadChallenges]);
 
-  // Refresh discover list whenever tab is active, query, or filter changes
+  // Refresh discover list whenever the friends tab is active, query, or filter changes
   useEffect(() => {
-    if (activeTab !== "discover" || !userId) return;
+    if (activeTab !== "friends" || !userId) return;
     const timer = setTimeout(() => {
       loadDiscover(userId, allFriendships, discoverQuery, discoverFilter);
     }, discoverQuery.trim().length >= 2 ? 300 : 0);
@@ -441,7 +441,7 @@ export default function FriendsPage() {
         <h1 className="text-2xl font-black text-white">Social</h1>
         {/* Tab switcher */}
         <div className="flex gap-1.5 mt-3 flex-wrap">
-          {(["friends", "discover", "teams", "groups", "challenges"] as ActiveTab[]).map(t => (
+          {(["friends", "teams", "groups", "challenges"] as ActiveTab[]).map(t => (
             <button
               key={t}
               onClick={() => setActiveTab(t)}
@@ -459,6 +459,61 @@ export default function FriendsPage() {
         {/* ── FRIENDS TAB ── */}
         {activeTab === "friends" && (
           <>
+            {/* ── Discover section (inline, always at top) ── */}
+            <section className="space-y-3">
+              <p className="text-xs font-black tracking-widest uppercase text-white/30">Discover Players</p>
+
+              {/* Search */}
+              <div className="relative">
+                <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/30" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                </svg>
+                <input
+                  type="text"
+                  placeholder="Search by name or username…"
+                  value={discoverQuery}
+                  onChange={e => setDiscoverQuery(e.target.value)}
+                  className="w-full bg-white/5 border border-white/10 rounded-2xl pl-10 pr-4 py-3 text-white text-sm placeholder:text-white/25 outline-none focus:ring-2 focus:ring-lime-400/50 focus:border-lime-400/30 transition-all"
+                />
+              </div>
+
+              {discoverLoading ? (
+                <p className="text-xs text-white/20 text-center py-3">Loading players…</p>
+              ) : discoverList.length === 0 ? (
+                <p className="text-xs text-white/20 text-center py-3">No players found</p>
+              ) : (
+                <div className="rounded-2xl border border-white/10 bg-white/[0.03] divide-y divide-white/[0.06]">
+                  {discoverList.map(r => (
+                    <div key={r.id} className="flex items-center gap-3 px-4 py-3">
+                      <button
+                        onClick={() => setProfileUserId(r.id)}
+                        className="w-9 h-9 rounded-full bg-white/[0.06] flex items-center justify-center flex-shrink-0 active:scale-90 transition-transform"
+                      >
+                        <span className="text-sm font-black text-white/50">
+                          {(r.display_name || r.username)[0].toUpperCase()}
+                        </span>
+                      </button>
+                      <button onClick={() => setProfileUserId(r.id)} className="flex-1 text-left min-w-0">
+                        <p className="text-sm font-semibold text-white/80 truncate">{r.display_name ?? `@${r.username}`}</p>
+                        {r.display_name && <p className="text-xs text-white/30">@{r.username}</p>}
+                      </button>
+                      {sentRequests.has(r.id) ? (
+                        <span className="text-xs text-white/30 font-semibold flex-shrink-0">Sent ✓</span>
+                      ) : (
+                        <button
+                          onClick={() => sendRequest(r.id)}
+                          disabled={busy.has(r.id)}
+                          className="text-xs font-black text-lime-400 bg-lime-400/10 px-3 py-1.5 rounded-xl hover:bg-lime-400/20 transition-all active:scale-95 disabled:opacity-40 flex-shrink-0"
+                        >
+                          Add
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </section>
+
             {/* Pending requests */}
             {pending.length > 0 && (
               <section className="space-y-3">
@@ -508,7 +563,7 @@ export default function FriendsPage() {
                 <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-8 text-center space-y-2">
                   <p className="text-3xl">👥</p>
                   <p className="text-sm text-white/50">No friends yet</p>
-                  <p className="text-xs text-white/25">Use Discover to find and add players</p>
+                  <p className="text-xs text-white/25">Search above to find and add players</p>
                 </div>
               ) : (
                 <div className="rounded-2xl border border-white/10 bg-white/[0.03] divide-y divide-white/[0.06]">
@@ -536,95 +591,6 @@ export default function FriendsPage() {
                       >
                         Remove
                       </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </section>
-          </>
-        )}
-
-        {/* ── DISCOVER TAB ── */}
-        {activeTab === "discover" && (
-          <>
-            <section className="space-y-3">
-              <p className="text-xs font-black tracking-widest uppercase text-white/30">Discover Players</p>
-
-              {/* Filter pills */}
-              {(teams.length > 0 || groups.length > 0) && (
-                <div className="flex gap-2 flex-wrap">
-                  <button
-                    onClick={() => setDiscoverFilter("all")}
-                    className={`text-xs font-bold px-3 py-1.5 rounded-xl transition-all ${discoverFilter === "all" ? "bg-lime-400/20 text-lime-400" : "bg-white/5 text-white/40 hover:text-white/60"}`}
-                  >
-                    All
-                  </button>
-                  {teams.map(t => (
-                    <button
-                      key={t.id}
-                      onClick={() => setDiscoverFilter(`team:${t.id}`)}
-                      className={`text-xs font-bold px-3 py-1.5 rounded-xl transition-all ${discoverFilter === `team:${t.id}` ? "bg-lime-400/20 text-lime-400" : "bg-white/5 text-white/40 hover:text-white/60"}`}
-                    >
-                      {t.name}
-                    </button>
-                  ))}
-                  {groups.map(g => (
-                    <button
-                      key={g.id}
-                      onClick={() => setDiscoverFilter(`group:${g.id}`)}
-                      className={`text-xs font-bold px-3 py-1.5 rounded-xl transition-all ${discoverFilter === `group:${g.id}` ? "bg-lime-400/20 text-lime-400" : "bg-white/5 text-white/40 hover:text-white/60"}`}
-                    >
-                      {g.name}
-                    </button>
-                  ))}
-                </div>
-              )}
-
-              {/* Search */}
-              <div className="relative">
-                <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/30" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-                </svg>
-                <input
-                  type="text"
-                  placeholder="Search by name or username…"
-                  value={discoverQuery}
-                  onChange={e => setDiscoverQuery(e.target.value)}
-                  className="w-full bg-white/5 border border-white/10 rounded-2xl pl-10 pr-4 py-3 text-white text-sm placeholder:text-white/25 outline-none focus:ring-2 focus:ring-lime-400/50 focus:border-lime-400/30 transition-all"
-                />
-              </div>
-
-              {discoverLoading ? (
-                <p className="text-xs text-white/20 text-center py-4">Loading players…</p>
-              ) : discoverList.length === 0 ? (
-                <p className="text-xs text-white/20 text-center py-4">No players found</p>
-              ) : (
-                <div className="rounded-2xl border border-white/10 bg-white/[0.03] divide-y divide-white/[0.06]">
-                  {discoverList.map(r => (
-                    <div key={r.id} className="flex items-center gap-3 px-4 py-3">
-                      <button
-                        onClick={() => setProfileUserId(r.id)}
-                        className="w-9 h-9 rounded-full bg-white/[0.06] flex items-center justify-center flex-shrink-0 active:scale-90 transition-transform"
-                      >
-                        <span className="text-sm font-black text-white/50">
-                          {(r.display_name || r.username)[0].toUpperCase()}
-                        </span>
-                      </button>
-                      <button onClick={() => setProfileUserId(r.id)} className="flex-1 text-left min-w-0">
-                        <p className="text-sm font-semibold text-white/80 truncate">{r.display_name ?? `@${r.username}`}</p>
-                        {r.display_name && <p className="text-xs text-white/30">@{r.username}</p>}
-                      </button>
-                      {sentRequests.has(r.id) ? (
-                        <span className="text-xs text-white/30 font-semibold flex-shrink-0">Sent ✓</span>
-                      ) : (
-                        <button
-                          onClick={() => sendRequest(r.id)}
-                          disabled={busy.has(r.id)}
-                          className="text-xs font-black text-lime-400 bg-lime-400/10 px-3 py-1.5 rounded-xl hover:bg-lime-400/20 transition-all active:scale-95 disabled:opacity-40 flex-shrink-0"
-                        >
-                          Add
-                        </button>
-                      )}
                     </div>
                   ))}
                 </div>

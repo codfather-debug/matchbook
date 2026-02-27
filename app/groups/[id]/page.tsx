@@ -293,6 +293,11 @@ export default function GroupPage() {
     await loadPosts();
   }
 
+  async function deleteReply(replyId: string) {
+    await supabase.from("group_posts").delete().eq("id", replyId);
+    await loadPosts();
+  }
+
   async function submitReply(postId: string) {
     if (!replyText.trim()) return;
     setPostBusy(true);
@@ -532,6 +537,15 @@ export default function GroupPage() {
                               <div className="flex items-center gap-1.5 mb-0.5">
                                 <span className="text-[10px] font-bold text-white/40">{r.playerName}</span>
                                 <span className="text-[9px] text-white/15">{relativeTime(r.created_at)}</span>
+                                {(r.userId === userId || isCreator) && (
+                                  <button
+                                    onClick={() => deleteReply(r.id)}
+                                    className="text-white/15 hover:text-red-400/60 transition-colors text-xs leading-none ml-auto"
+                                    title="Delete reply"
+                                  >
+                                    ×
+                                  </button>
+                                )}
                               </div>
                               <p className="text-xs text-white/65 break-words">{r.content}</p>
                             </div>

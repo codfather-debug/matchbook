@@ -61,6 +61,7 @@ export default function DashboardPage() {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [dashChallenges, setDashChallenges] = useState<DashChallenge[]>([]);
   const [challengeBusy, setChallengeBusy] = useState<Set<string>>(new Set());
+  const [dismissedChallengeIds, setDismissedChallengeIds] = useState<Set<string>>(new Set());
   const [showProfileSetup, setShowProfileSetup] = useState(false);
   const [profileSetupName, setProfileSetupName] = useState("");
   const [profileSetupBusy, setProfileSetupBusy] = useState(false);
@@ -258,13 +259,13 @@ export default function DashboardPage() {
               </Link>
             </div>
             {/* Still show challenges even if no matches */}
-            {dashChallenges.length > 0 && (
+            {dashChallenges.filter(c => !dismissedChallengeIds.has(c.id)).length > 0 && (
               <section className="space-y-3">
                 <p className="text-xs font-black tracking-widest uppercase text-white/30">
-                  Challenges <span className="text-lime-400">({dashChallenges.length})</span>
+                  Challenges <span className="text-lime-400">({dashChallenges.filter(c => !dismissedChallengeIds.has(c.id)).length})</span>
                 </p>
                 <div className="rounded-2xl border border-white/10 bg-white/[0.03] divide-y divide-white/[0.06]">
-                  {dashChallenges.map(c => (
+                  {dashChallenges.filter(c => !dismissedChallengeIds.has(c.id)).map(c => (
                     <div key={c.id} className="px-4 py-3">
                       <div className="flex items-start justify-between gap-2">
                         <div>
@@ -285,10 +286,9 @@ export default function DashboardPage() {
                                 Log Match
                               </Link>
                               <button
-                                onClick={() => declineChallenge(c)}
-                                disabled={challengeBusy.has(c.id)}
-                                className="text-xs font-bold text-white/20 hover:text-red-400/60 transition-colors disabled:opacity-40"
-                                title="Cancel challenge"
+                                onClick={() => setDismissedChallengeIds(s => new Set(s).add(c.id))}
+                                className="text-xs font-bold text-white/20 hover:text-white/40 transition-colors"
+                                title="Dismiss notification"
                               >
                                 ×
                               </button>
@@ -364,13 +364,13 @@ export default function DashboardPage() {
             </div>
 
             {/* ── Challenges ── */}
-            {dashChallenges.length > 0 && (
+            {dashChallenges.filter(c => !dismissedChallengeIds.has(c.id)).length > 0 && (
               <section className="space-y-3">
                 <p className="text-xs font-black tracking-widest uppercase text-white/30">
-                  Challenges <span className="text-lime-400">({dashChallenges.length})</span>
+                  Challenges <span className="text-lime-400">({dashChallenges.filter(c => !dismissedChallengeIds.has(c.id)).length})</span>
                 </p>
                 <div className="rounded-2xl border border-white/10 bg-white/[0.03] divide-y divide-white/[0.06]">
-                  {dashChallenges.map(c => (
+                  {dashChallenges.filter(c => !dismissedChallengeIds.has(c.id)).map(c => (
                     <div key={c.id} className="px-4 py-3">
                       <div className="flex items-start justify-between gap-2">
                         <div>
@@ -391,10 +391,9 @@ export default function DashboardPage() {
                                 Log Match
                               </Link>
                               <button
-                                onClick={() => declineChallenge(c)}
-                                disabled={challengeBusy.has(c.id)}
-                                className="text-xs font-bold text-white/20 hover:text-red-400/60 transition-colors disabled:opacity-40"
-                                title="Cancel challenge"
+                                onClick={() => setDismissedChallengeIds(s => new Set(s).add(c.id))}
+                                className="text-xs font-bold text-white/20 hover:text-white/40 transition-colors"
+                                title="Dismiss notification"
                               >
                                 ×
                               </button>
@@ -496,6 +495,17 @@ export default function DashboardPage() {
                 <p className="text-2xl mb-1">👥</p>
                 <p className="text-sm font-bold text-white">Friends</p>
                 <p className="text-xs text-white/30">Find & view players</p>
+              </Link>
+              <Link href="/friends?tab=challenges"
+                className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-center hover:border-white/20 transition-all active:scale-[0.98] relative">
+                <p className="text-2xl mb-1">⚔️</p>
+                <p className="text-sm font-bold text-white">Challenges</p>
+                <p className="text-xs text-white/30">Teams & groups</p>
+                {dashChallenges.length > 0 && (
+                  <span className="absolute top-2 right-2 w-4 h-4 rounded-full bg-lime-400 text-black text-[9px] font-black flex items-center justify-center">
+                    {dashChallenges.length}
+                  </span>
+                )}
               </Link>
               <Link href="/achievements"
                 className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-center hover:border-white/20 transition-all active:scale-[0.98]">

@@ -310,6 +310,16 @@ export default function TeamPage() {
     setPostBusy(false);
   }
 
+  async function deletePost(postId: string) {
+    await supabase.from("team_posts").delete().eq("id", postId);
+    await loadWall();
+  }
+
+  async function deleteReply(replyId: string) {
+    await supabase.from("team_posts").delete().eq("id", replyId);
+    await loadWall();
+  }
+
   async function sendChallenge(opponentId: string) {
     setChallengeBusy(s => new Set(s).add(opponentId));
     // Block if an active challenge already exists between these two users
@@ -526,7 +536,18 @@ export default function TeamPage() {
                           {p.user_id === userId && <span className="text-lime-400/50 ml-1">· you</span>}
                         </span>
                       </div>
-                      <span className="text-[10px] text-white/20">{relativeTime(p.created_at)}</span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] text-white/20">{relativeTime(p.created_at)}</span>
+                        {(p.user_id === userId || isAdmin) && (
+                          <button
+                            onClick={() => deletePost(p.id)}
+                            className="text-white/15 hover:text-red-400/60 transition-colors text-sm leading-none"
+                            title="Delete post"
+                          >
+                            ×
+                          </button>
+                        )}
+                      </div>
                     </div>
                     {/* Post content */}
                     <p className="text-sm text-white/70 leading-relaxed">{p.content}</p>
@@ -541,6 +562,15 @@ export default function TeamPage() {
                                 {r.user_id === userId && <span className="text-lime-400/40 ml-1">· you</span>}
                               </span>
                               <span className="text-[9px] text-white/15">{relativeTime(r.created_at)}</span>
+                              {(r.user_id === userId || isAdmin) && (
+                                <button
+                                  onClick={() => deleteReply(r.id)}
+                                  className="text-white/15 hover:text-red-400/60 transition-colors text-xs leading-none ml-auto"
+                                  title="Delete reply"
+                                >
+                                  ×
+                                </button>
+                              )}
                             </div>
                             <p className="text-xs text-white/60 leading-relaxed">{r.content}</p>
                           </div>
