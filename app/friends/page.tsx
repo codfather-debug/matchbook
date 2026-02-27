@@ -93,47 +93,66 @@ export default function FriendsPage() {
   }, []);
 
   const loadTeams = useCallback(async (uid: string) => {
-    const { data: memberRows } = await supabase
+    // Two-query approach to avoid relying on PostgREST FK join recognition
+    const { data: memberRows, error: memberErr } = await supabase
       .from("team_members")
-      .select("team_id, role, teams(id, name, invite_code)")
+      .select("team_id, role")
       .eq("user_id", uid);
 
-    if (!memberRows) return;
+    console.log("[loadTeams] memberRows:", memberRows, "error:", memberErr);
+
+    if (!memberRows || memberRows.length === 0) { setTeams([]); return; }
+
+    const teamIds = memberRows.map(r => r.team_id);
+    const roleMap = Object.fromEntries(memberRows.map(r => [r.team_id, r.role]));
+
+    const { data: teamRows, error: teamErr } = await supabase
+      .from("teams")
+      .select("id, name, invite_code")
+      .in("id", teamIds);
+
+    console.log("[loadTeams] teamRows:", teamRows, "error:", teamErr);
+
+    if (!teamRows) { setTeams([]); return; }
 
     const teamList: TeamRow[] = await Promise.all(
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      memberRows.map(async (row: any) => {
-        const t = Array.isArray(row.teams) ? row.teams[0] : row.teams;
-        if (!t) return null;
+      teamRows.map(async t => {
         const { count } = await supabase
           .from("team_members").select("id", { count: "exact", head: true })
           .eq("team_id", t.id);
-        return { id: t.id, name: t.name, invite_code: t.invite_code, member_count: count ?? 0, role: row.role };
+        return { id: t.id, name: t.name, invite_code: t.invite_code, member_count: count ?? 0, role: roleMap[t.id] };
       })
-    ).then(r => r.filter(Boolean) as TeamRow[]);
+    );
 
     setTeams(teamList);
   }, []);
 
   const loadGroups = useCallback(async (uid: string) => {
+    // Two-query approach to avoid relying on PostgREST FK join recognition
     const { data: memberRows } = await supabase
       .from("friend_group_members")
-      .select("group_id, friend_groups(id, name)")
+      .select("group_id")
       .eq("user_id", uid);
 
-    if (!memberRows) return;
+    if (!memberRows || memberRows.length === 0) { setGroups([]); return; }
+
+    const groupIds = memberRows.map(r => r.group_id);
+
+    const { data: groupRows } = await supabase
+      .from("friend_groups")
+      .select("id, name")
+      .in("id", groupIds);
+
+    if (!groupRows) { setGroups([]); return; }
 
     const groupList: GroupRow[] = await Promise.all(
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      memberRows.map(async (row: any) => {
-        const g = Array.isArray(row.friend_groups) ? row.friend_groups[0] : row.friend_groups;
-        if (!g) return null;
+      groupRows.map(async g => {
         const { count } = await supabase
           .from("friend_group_members").select("id", { count: "exact", head: true })
           .eq("group_id", g.id);
         return { id: g.id, name: g.name, member_count: count ?? 0 };
       })
-    ).then(r => r.filter(Boolean) as GroupRow[]);
+    );
 
     setGroups(groupList);
   }, []);
