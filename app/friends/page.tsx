@@ -447,7 +447,7 @@ export default function FriendsPage() {
         <h1 className="text-2xl font-black text-white">Social</h1>
         {/* Tab switcher */}
         <div className="flex gap-1.5 mt-3 flex-wrap">
-          {(["friends", "discover", "teams", "groups"] as ActiveTab[]).map(t => (
+          {(["friends", "discover", "teams", "groups", "challenges"] as ActiveTab[]).map(t => (
             <button
               key={t}
               onClick={() => setActiveTab(t)}
