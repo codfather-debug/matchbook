@@ -101,10 +101,10 @@ export default function TeamPage() {
     const stats = await Promise.all(userIds.map(async uid => {
       const { data: matchRows } = await supabase
         .from("matches")
-        .select("result")
+        .select("data")
         .eq("user_id", uid);
-      const wins = (matchRows ?? []).filter(m => m.result === "win").length;
-      const losses = (matchRows ?? []).filter(m => m.result === "loss").length;
+      const wins = (matchRows ?? []).filter(m => (m.data as { result?: string })?.result === "win").length;
+      const losses = (matchRows ?? []).filter(m => (m.data as { result?: string })?.result === "loss").length;
       const total = wins + losses;
       return {
         userId: uid,
@@ -136,20 +136,24 @@ export default function TeamPage() {
 
     const { data: matchRows } = await supabase
       .from("matches")
-      .select("id, opponent_name, result, surface, created_at, user_id")
+      .select("id, data, created_at, user_id")
       .in("user_id", userIds)
       .order("created_at", { ascending: false })
       .limit(30);
 
+    type MD = { opponentName?: string; result?: string; surface?: string };
     setFeed(
-      (matchRows ?? []).map(m => ({
-        id: m.id,
-        opponent_name: m.opponent_name,
-        result: m.result,
-        surface: m.surface,
-        created_at: m.created_at,
-        player_name: profileMap[m.user_id]?.display_name ?? `@${profileMap[m.user_id]?.username ?? m.user_id}`,
-      }))
+      (matchRows ?? []).map(m => {
+        const d = m.data as MD;
+        return {
+          id: m.id,
+          opponent_name: d?.opponentName ?? "Unknown",
+          result: d?.result ?? "unfinished",
+          surface: d?.surface ?? "",
+          created_at: m.created_at,
+          player_name: profileMap[m.user_id]?.display_name ?? `@${profileMap[m.user_id]?.username ?? m.user_id}`,
+        };
+      })
     );
   }, [teamId]);
 
@@ -230,6 +234,26 @@ export default function TeamPage() {
     }
     init();
   }, [router, teamId, loadLeaderboard, loadFeed, loadWall, loadChallenges]);
+
+  // Refresh data when switching tabs so new matches/challenges appear immediately
+  function switchTab(tab: SubTab) {
+    setSubTab(tab);
+    if (tab === "leaderboard") loadLeaderboard();
+    else if (tab === "feed") loadFeed();
+    else if (tab === "challenges" && userId) loadChallenges(userId);
+  }
+
+  // Also refresh leaderboard + feed when the user returns to this page
+  useEffect(() => {
+    function onVisible() {
+      if (document.visibilityState === "visible" && userId) {
+        loadLeaderboard();
+        loadFeed();
+      }
+    }
+    document.addEventListener("visibilitychange", onVisible);
+    return () => document.removeEventListener("visibilitychange", onVisible);
+  }, [userId, loadLeaderboard, loadFeed]);
 
   async function submitPost() {
     if (!postText.trim()) return;
@@ -337,7 +361,7 @@ export default function TeamPage() {
           {subTabs.map(t => (
             <button
               key={t}
-              onClick={() => setSubTab(t)}
+              onClick={() => switchTab(t)}
               className={`text-[10px] font-black tracking-widest uppercase px-3 py-1.5 rounded-xl whitespace-nowrap transition-all flex-shrink-0
                 ${subTab === t ? "bg-lime-400/20 text-lime-400" : "text-white/30 hover:text-white/50"}`}
             >
@@ -508,6 +532,14 @@ export default function TeamPage() {
                               Accept
                             </button>
                           </div>
+                        )}
+                        {c.status === "accepted" && (
+                          <Link
+                            href={`/log?opponent=${encodeURIComponent(isChallenger ? (c.opponent_name ?? "") : (c.challenger_name ?? ""))}&challengeId=${c.id}&challengeType=team`}
+                            className="text-xs font-black text-lime-400 bg-lime-400/10 px-3 py-1.5 rounded-xl hover:bg-lime-400/20 transition-all"
+                          >
+                            Log Match
+                          </Link>
                         )}
                         {c.status === "completed" && c.match_id && (
                           <Link

@@ -93,16 +93,17 @@ export default function GroupPage() {
 
     const { data: matchRows } = await supabase
       .from("matches")
-      .select("id, user_id, opponent_name, result, surface, created_at")
+      .select("id, user_id, data, created_at")
       .in("user_id", userIds)
       .order("created_at", { ascending: false })
       .limit(50);
 
+    type MD = { result?: string; opponentName?: string; surface?: string };
     const stats: Record<string, { wins: number; losses: number }> = {};
     for (const id of userIds) stats[id] = { wins: 0, losses: 0 };
-    for (const m of (matchRows ?? []) as { user_id: string; result: string }[]) {
-      if (m.result === "win") stats[m.user_id].wins++;
-      else if (m.result === "loss") stats[m.user_id].losses++;
+    for (const m of (matchRows ?? []) as { user_id: string; data: MD }[]) {
+      if (m.data?.result === "win") stats[m.user_id].wins++;
+      else if (m.data?.result === "loss") stats[m.user_id].losses++;
     }
 
     setMembers(
@@ -119,13 +120,13 @@ export default function GroupPage() {
     );
 
     setFeed(
-      ((matchRows ?? []) as { id: string; user_id: string; opponent_name: string; result: string; surface: string; created_at: string }[])
+      ((matchRows ?? []) as { id: string; user_id: string; data: MD; created_at: string }[])
         .slice(0, 30)
         .map(m => ({
           id: m.id,
-          opponent_name: m.opponent_name,
-          result: m.result,
-          surface: m.surface,
+          opponent_name: m.data?.opponentName ?? "Unknown",
+          result: m.data?.result ?? "unfinished",
+          surface: m.data?.surface ?? "",
           created_at: m.created_at,
           player_name: pm[m.user_id]?.display_name ?? `@${pm[m.user_id]?.username ?? m.user_id}`,
         }))
@@ -212,6 +213,20 @@ export default function GroupPage() {
     }
     init();
   }, [router, groupId, loadAll, loadPosts, loadChallenges]);
+
+  function switchTab(tab: SubTab) {
+    setSubTab(tab);
+    if (tab === "leaderboard" || tab === "feed") loadAll();
+    else if (tab === "challenges" && userId) loadChallenges(userId);
+  }
+
+  useEffect(() => {
+    function onVisible() {
+      if (document.visibilityState === "visible" && userId) loadAll();
+    }
+    document.addEventListener("visibilitychange", onVisible);
+    return () => document.removeEventListener("visibilitychange", onVisible);
+  }, [userId, loadAll]);
 
   async function removeMember(memberId: string) {
     await supabase.from("friend_group_members").delete()
@@ -316,7 +331,7 @@ export default function GroupPage() {
           {(["leaderboard", "feed", "wall", "challenges"] as SubTab[]).map(t => (
             <button
               key={t}
-              onClick={() => setSubTab(t)}
+              onClick={() => switchTab(t)}
               className={`text-[10px] font-black tracking-widest uppercase px-2.5 py-1.5 rounded-xl transition-all capitalize
                 ${subTab === t ? "bg-lime-400/20 text-lime-400" : "text-white/25 hover:text-white/50"}`}
             >
@@ -521,7 +536,7 @@ export default function GroupPage() {
                         )}
                         {c.status === "accepted" && (
                           <Link
-                            href="/log"
+                            href={`/log?opponent=${encodeURIComponent(isChallenger ? c.opponentName : c.challengerName)}&challengeId=${c.id}&challengeType=group`}
                             className="text-xs font-black text-lime-400 bg-lime-400/10 px-2.5 py-1.5 rounded-xl hover:bg-lime-400/20 transition-all flex-shrink-0"
                           >
                             Log Match
