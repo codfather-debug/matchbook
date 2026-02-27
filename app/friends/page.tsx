@@ -5,6 +5,7 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import BottomNav from "@/components/BottomNav";
 import { upsertProfile } from "@/lib/profile";
+import { hasProfanity } from "@/lib/profanity";
 
 interface FriendProfile { friendshipId: string; userId: string; username: string; displayName?: string; }
 interface PendingRequest { friendshipId: string; userId: string; username: string; displayName?: string; }
@@ -46,6 +47,9 @@ export default function FriendsPage() {
   const [selectedFriendIds, setSelectedFriendIds] = useState<Set<string>>(new Set());
   const [groupBusy, setGroupBusy] = useState(false);
   const [groupError, setGroupError] = useState("");
+
+  // Discover suggestions
+  const [suggestions, setSuggestions] = useState<SearchResult[]>([]);
 
   const loadFriends = useCallback(async (uid: string) => {
     const { data: friendshipRows } = await supabase
@@ -94,24 +98,20 @@ export default function FriendsPage() {
 
   const loadTeams = useCallback(async (uid: string) => {
     // Two-query approach to avoid relying on PostgREST FK join recognition
-    const { data: memberRows, error: memberErr } = await supabase
+    const { data: memberRows } = await supabase
       .from("team_members")
       .select("team_id, role")
       .eq("user_id", uid);
-
-    console.log("[loadTeams] memberRows:", memberRows, "error:", memberErr);
 
     if (!memberRows || memberRows.length === 0) { setTeams([]); return; }
 
     const teamIds = memberRows.map(r => r.team_id);
     const roleMap = Object.fromEntries(memberRows.map(r => [r.team_id, r.role]));
 
-    const { data: teamRows, error: teamErr } = await supabase
+    const { data: teamRows } = await supabase
       .from("teams")
       .select("id, name, invite_code")
       .in("id", teamIds);
-
-    console.log("[loadTeams] teamRows:", teamRows, "error:", teamErr);
 
     if (!teamRows) { setTeams([]); return; }
 
@@ -157,17 +157,41 @@ export default function FriendsPage() {
     setGroups(groupList);
   }, []);
 
+  const loadSuggestions = useCallback(async (uid: string, friendships: FriendshipRow[]) => {
+    const existingIds = new Set([
+      uid,
+      ...friendships.map(r => r.requester_id === uid ? r.addressee_id : r.requester_id),
+    ]);
+    const { data } = await supabase
+      .from("profiles")
+      .select("id, username, display_name")
+      .neq("id", uid)
+      .limit(20);
+    setSuggestions((data ?? []).filter(p => !existingIds.has(p.id)).slice(0, 6));
+  }, []);
+
   useEffect(() => {
     async function init() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { router.push("/auth"); return; }
       setUserId(user.id);
       await upsertProfile(user);
-      await Promise.all([loadFriends(user.id), loadTeams(user.id), loadGroups(user.id)]);
+      const [friendshipRows] = await Promise.all([
+        loadFriends(user.id).then(() => null),
+        loadTeams(user.id),
+        loadGroups(user.id),
+      ]);
+      // Load suggestions after friends are known
+      const { data: fRows } = await supabase
+        .from("friendships")
+        .select("id, requester_id, addressee_id, status")
+        .or(`requester_id.eq.${user.id},addressee_id.eq.${user.id}`);
+      await loadSuggestions(user.id, fRows ?? []);
+      void friendshipRows;
       setLoading(false);
     }
     init();
-  }, [router, loadFriends, loadTeams, loadGroups]);
+  }, [router, loadFriends, loadTeams, loadGroups, loadSuggestions]);
 
   // Debounced player search
   useEffect(() => {
@@ -221,7 +245,10 @@ export default function FriendsPage() {
     if (!newTeamName.trim()) return;
     setTeamBusy(true);
     setTeamError("");
-    // Generate ID + invite code client-side to avoid RLS select-after-insert issue
+    if (hasProfanity(newTeamName) || hasProfanity(newTeamDesc)) {
+      setTeamError("Please use an appropriate name.");
+      setTeamBusy(false); return;
+    }
     const teamId = crypto.randomUUID();
     const inviteCode = Math.random().toString(36).substring(2, 8).toUpperCase();
     const { error } = await supabase
@@ -253,7 +280,20 @@ export default function FriendsPage() {
     if (!newGroupName.trim() || selectedFriendIds.size === 0) return;
     setGroupBusy(true);
     setGroupError("");
-    // Generate ID client-side to avoid RLS select-after-insert issue
+    if (hasProfanity(newGroupName)) {
+      setGroupError("Please use an appropriate group name.");
+      setGroupBusy(false); return;
+    }
+    // No duplicate group names allowed
+    const { data: existing } = await supabase
+      .from("friend_groups")
+      .select("id")
+      .ilike("name", newGroupName.trim())
+      .limit(1);
+    if (existing && existing.length > 0) {
+      setGroupError("A group with this name already exists.");
+      setGroupBusy(false); return;
+    }
     const groupId = crypto.randomUUID();
     const { error } = await supabase
       .from("friend_groups")
@@ -349,6 +389,32 @@ export default function FriendsPage() {
               )}
               {searchQuery.trim().length >= 2 && searchResults.length === 0 && (
                 <p className="text-xs text-white/20 text-center py-2">No players found</p>
+              )}
+              {searchQuery.trim().length < 2 && suggestions.length > 0 && (
+                <div className="space-y-2">
+                  <p className="text-xs text-white/20">Suggested players</p>
+                  <div className="rounded-2xl border border-white/10 bg-white/[0.03] divide-y divide-white/[0.06]">
+                    {suggestions.map(r => (
+                      <div key={r.id} className="flex items-center justify-between px-4 py-3">
+                        <div>
+                          <p className="text-sm font-semibold text-white/80">{r.display_name ?? `@${r.username}`}</p>
+                          {r.display_name && <p className="text-xs text-white/30">@{r.username}</p>}
+                        </div>
+                        {sentRequests.has(r.id) ? (
+                          <span className="text-xs text-white/30 font-semibold">Sent ✓</span>
+                        ) : (
+                          <button
+                            onClick={() => sendRequest(r.id)}
+                            disabled={busy.has(r.id)}
+                            className="text-xs font-black text-lime-400 bg-lime-400/10 px-3 py-1.5 rounded-xl hover:bg-lime-400/20 transition-all active:scale-95 disabled:opacity-40"
+                          >
+                            Add
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
               )}
             </section>
 
@@ -649,7 +715,7 @@ export default function FriendsPage() {
 
       </div>
 
-      <BottomNav active="profile" />
+      <BottomNav active="friends" />
     </main>
   );
 }

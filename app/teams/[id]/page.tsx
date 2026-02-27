@@ -509,7 +509,7 @@ export default function TeamPage() {
 
       </div>
 
-      <BottomNav active="profile" />
+      <BottomNav active="friends" />
     </main>
   );
 }
