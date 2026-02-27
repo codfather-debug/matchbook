@@ -885,9 +885,12 @@ export default function FriendsPage() {
                               </p>
                             </div>
                             {c.status === "accepted" ? (
-                              <span className="text-[10px] font-black text-lime-400 bg-lime-400/10 px-2 py-1 rounded-lg flex-shrink-0">
-                                Accepted
-                              </span>
+                              <button
+                                onClick={() => router.push(`/log?opponent=${encodeURIComponent(c.challengerName)}&challengeId=${c.id}&challengeType=${c.type}`)}
+                                className="text-xs font-black text-lime-400 bg-lime-400/10 px-3 py-1.5 rounded-xl hover:bg-lime-400/20 transition-all active:scale-95 flex-shrink-0"
+                              >
+                                Log Match
+                              </button>
                             ) : (
                               <div className="flex gap-2 flex-shrink-0">
                                 <button
@@ -929,13 +932,18 @@ export default function FriendsPage() {
                             </p>
                           </div>
                           <div className="flex items-center gap-2">
-                            <span className={`text-[10px] font-black px-2 py-1 rounded-lg ${
-                              c.status === "accepted"
-                                ? "text-lime-400 bg-lime-400/10"
-                                : "text-white/30 bg-white/5"
-                            }`}>
-                              {c.status === "accepted" ? "Accepted" : "Pending"}
-                            </span>
+                            {c.status === "accepted" ? (
+                              <button
+                                onClick={() => router.push(`/log?opponent=${encodeURIComponent(c.opponentName)}&challengeId=${c.id}&challengeType=${c.type}`)}
+                                className="text-xs font-black text-lime-400 bg-lime-400/10 px-3 py-1.5 rounded-xl hover:bg-lime-400/20 transition-all active:scale-95"
+                              >
+                                Log Match
+                              </button>
+                            ) : (
+                              <span className="text-[10px] font-black px-2 py-1 rounded-lg text-white/30 bg-white/5">
+                                Pending
+                              </span>
+                            )}
                             <button
                               onClick={() => declineChallenge(c)}
                               disabled={challengeBusy.has(c.id)}

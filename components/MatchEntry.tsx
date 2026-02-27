@@ -455,11 +455,12 @@ function ScoutReviewBlock({ label, weapon, hole, keyToWin, styles, handedness }:
 
 interface MatchEntryProps {
   initialData?: Match;
+  initialOpponentName?: string;
   onSave?: (match: Omit<Match, "id" | "opponentId">) => void;
   onCancel?: () => void;
 }
 
-export default function MatchEntry({ initialData, onSave, onCancel }: MatchEntryProps) {
+export default function MatchEntry({ initialData, initialOpponentName, onSave, onCancel }: MatchEntryProps) {
   const [step, setStep] = useState<Step>("plan");
 
   // ── Plan state ──────────────────────────────────────────────────────────────
@@ -469,7 +470,7 @@ export default function MatchEntry({ initialData, onSave, onCancel }: MatchEntry
   const [planConfidence, setPlanConfidence] = useState<number | null>(initialData?.plan?.confidence ?? null);
 
   // ── Match info ──────────────────────────────────────────────────────────────
-  const [opponentName,  setOpponentName]  = useState(initialData?.opponentName ?? "");
+  const [opponentName,  setOpponentName]  = useState(initialData?.opponentName ?? initialOpponentName ?? "");
   const [opponent2Name, setOpponent2Name] = useState(initialData?.opponent2Name ?? "");
   const [prevOpponents, setPrevOpponents] = useState<string[]>([]);
   const [nameFocused, setNameFocused] = useState(false);
