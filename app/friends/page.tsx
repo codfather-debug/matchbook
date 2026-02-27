@@ -13,8 +13,19 @@ interface SearchResult { id: string; username: string; display_name?: string; }
 interface FriendshipRow { id: string; requester_id: string; addressee_id: string; status: string; }
 interface TeamRow { id: string; name: string; invite_code: string; member_count?: number; role?: string; }
 interface GroupRow { id: string; name: string; member_count?: number; }
+interface ChallengeItem {
+  id: string;
+  type: "team" | "group";
+  contextName: string;
+  challengerId: string;
+  opponentId: string;
+  challengerName: string;
+  opponentName: string;
+  status: string;
+  createdAt: string;
+}
 
-type ActiveTab = "friends" | "discover" | "teams" | "groups";
+type ActiveTab = "friends" | "discover" | "teams" | "groups" | "challenges";
 
 export default function FriendsPage() {
   const router = useRouter();
@@ -52,6 +63,11 @@ export default function FriendsPage() {
   const [discoverQuery, setDiscoverQuery] = useState("");
   const [discoverList, setDiscoverList] = useState<SearchResult[]>([]);
   const [discoverLoading, setDiscoverLoading] = useState(false);
+
+  // Challenges tab
+  const [challenges, setChallenges] = useState<ChallengeItem[]>([]);
+  const [challengesLoading, setChallengesLoading] = useState(false);
+  const [challengeBusy, setChallengeBusy] = useState<Set<string>>(new Set());
 
   const loadFriends = useCallback(async (uid: string) => {
     const { data: friendshipRows } = await supabase
@@ -177,6 +193,79 @@ export default function FriendsPage() {
     setDiscoverLoading(false);
   }, []);
 
+  const loadChallenges = useCallback(async (uid: string) => {
+    setChallengesLoading(true);
+    // Fetch from both challenges (team) and group_challenges tables
+    const [{ data: teamChallenges }, { data: groupChallenges }] = await Promise.all([
+      supabase.from("challenges")
+        .select("id, challenger_id, opponent_id, status, created_at, team_id")
+        .or(`challenger_id.eq.${uid},opponent_id.eq.${uid}`)
+        .in("status", ["pending", "accepted"])
+        .order("created_at", { ascending: false }),
+      supabase.from("group_challenges")
+        .select("id, challenger_id, opponent_id, status, created_at, group_id")
+        .or(`challenger_id.eq.${uid},opponent_id.eq.${uid}`)
+        .in("status", ["pending", "accepted"])
+        .order("created_at", { ascending: false }),
+    ]);
+
+    // Collect all user IDs and context IDs we need to resolve
+    const allRows = [
+      ...(teamChallenges ?? []).map(r => ({ ...r, type: "team" as const })),
+      ...(groupChallenges ?? []).map(r => ({ ...r, type: "group" as const })),
+    ];
+
+    const userIds = [...new Set(allRows.flatMap(r => [r.challenger_id, r.opponent_id]))];
+    const teamIds = [...new Set((teamChallenges ?? []).map(r => r.team_id))];
+    const groupIds = [...new Set((groupChallenges ?? []).map(r => r.group_id))];
+
+    const [profilesRes, teamsRes, groupsRes] = await Promise.all([
+      userIds.length > 0
+        ? supabase.from("profiles").select("id, username, display_name").in("id", userIds)
+        : Promise.resolve({ data: [] }),
+      teamIds.length > 0
+        ? supabase.from("teams").select("id, name").in("id", teamIds)
+        : Promise.resolve({ data: [] }),
+      groupIds.length > 0
+        ? supabase.from("friend_groups").select("id, name").in("id", groupIds)
+        : Promise.resolve({ data: [] }),
+    ]);
+
+    type ProfileRow = { id: string; username: string; display_name?: string };
+    type NameRow = { id: string; name: string };
+    const profileMap: Record<string, ProfileRow> = Object.fromEntries(
+      ((profilesRes.data ?? []) as ProfileRow[]).map(p => [p.id, p])
+    );
+    const teamMap: Record<string, string> = Object.fromEntries(
+      ((teamsRes.data ?? []) as NameRow[]).map(t => [t.id, t.name])
+    );
+    const groupMap: Record<string, string> = Object.fromEntries(
+      ((groupsRes.data ?? []) as NameRow[]).map(g => [g.id, g.name])
+    );
+
+    const getName = (id: string) => {
+      const p = profileMap[id];
+      return p ? (p.display_name || `@${p.username}`) : id;
+    };
+
+    const items: ChallengeItem[] = allRows.map(r => ({
+      id: r.id,
+      type: r.type,
+      contextName: r.type === "team"
+        ? (teamMap[(r as { team_id: string }).team_id] ?? "Team")
+        : (groupMap[(r as { group_id: string }).group_id] ?? "Group"),
+      challengerId: r.challenger_id,
+      opponentId: r.opponent_id,
+      challengerName: getName(r.challenger_id),
+      opponentName: getName(r.opponent_id),
+      status: r.status,
+      createdAt: r.created_at,
+    }));
+
+    setChallenges(items);
+    setChallengesLoading(false);
+  }, []);
+
   useEffect(() => {
     async function init() {
       const { data: { user } } = await supabase.auth.getUser();
@@ -188,6 +277,12 @@ export default function FriendsPage() {
     }
     init();
   }, [router, loadFriends, loadTeams, loadGroups]);
+
+  // Load challenges when tab becomes active
+  useEffect(() => {
+    if (activeTab !== "challenges" || !userId) return;
+    loadChallenges(userId);
+  }, [activeTab, userId, loadChallenges]);
 
   // Refresh discover list whenever tab is active or query changes
   useEffect(() => {
@@ -244,6 +339,22 @@ export default function FriendsPage() {
     await supabase.from("friendships").delete().eq("id", friendshipId);
     await loadFriends(userId);
     setBusy(s => { const n = new Set(s); n.delete(friendshipId); return n; });
+  }
+
+  async function declineChallenge(challenge: ChallengeItem) {
+    setChallengeBusy(s => new Set(s).add(challenge.id));
+    const table = challenge.type === "team" ? "challenges" : "group_challenges";
+    await supabase.from(table).delete().eq("id", challenge.id);
+    setChallenges(prev => prev.filter(c => c.id !== challenge.id));
+    setChallengeBusy(s => { const n = new Set(s); n.delete(challenge.id); return n; });
+  }
+
+  async function acceptChallenge(challenge: ChallengeItem) {
+    setChallengeBusy(s => new Set(s).add(challenge.id));
+    const table = challenge.type === "team" ? "challenges" : "group_challenges";
+    await supabase.from(table).update({ status: "accepted" }).eq("id", challenge.id);
+    setChallenges(prev => prev.map(c => c.id === challenge.id ? { ...c, status: "accepted" } : c));
+    setChallengeBusy(s => { const n = new Set(s); n.delete(challenge.id); return n; });
   }
 
   async function createTeam() {
@@ -736,6 +847,109 @@ export default function FriendsPage() {
                   </div>
                 </div>
               </div>
+            )}
+          </>
+        )}
+
+        {/* ── CHALLENGES TAB ── */}
+        {activeTab === "challenges" && (
+          <>
+            {challengesLoading ? (
+              <div className="py-10 text-center">
+                <p className="text-white/30 text-sm">Loading…</p>
+              </div>
+            ) : challenges.length === 0 ? (
+              <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-8 text-center space-y-2">
+                <p className="text-3xl">⚔️</p>
+                <p className="text-sm text-white/50">No active challenges</p>
+                <p className="text-xs text-white/25">Challenge teammates from the Teams or Groups pages</p>
+              </div>
+            ) : (
+              <>
+                {/* Received challenges */}
+                {challenges.filter(c => c.opponentId === userId).length > 0 && (
+                  <section className="space-y-3">
+                    <p className="text-xs font-black tracking-widest uppercase text-white/30">
+                      Received <span className="text-lime-400">({challenges.filter(c => c.opponentId === userId).length})</span>
+                    </p>
+                    <div className="rounded-2xl border border-white/10 bg-white/[0.03] divide-y divide-white/[0.06]">
+                      {challenges.filter(c => c.opponentId === userId).map(c => (
+                        <div key={c.id} className="px-4 py-3 space-y-2">
+                          <div className="flex items-start justify-between gap-2">
+                            <div>
+                              <p className="text-sm font-semibold text-white/80">
+                                {c.challengerName} challenged you
+                              </p>
+                              <p className="text-xs text-white/30 mt-0.5">
+                                {c.type === "team" ? "Team" : "Group"}: {c.contextName}
+                              </p>
+                            </div>
+                            {c.status === "accepted" ? (
+                              <span className="text-[10px] font-black text-lime-400 bg-lime-400/10 px-2 py-1 rounded-lg flex-shrink-0">
+                                Accepted
+                              </span>
+                            ) : (
+                              <div className="flex gap-2 flex-shrink-0">
+                                <button
+                                  onClick={() => declineChallenge(c)}
+                                  disabled={challengeBusy.has(c.id)}
+                                  className="text-xs font-bold text-white/40 bg-white/5 border border-white/10 px-3 py-1.5 rounded-xl hover:text-red-400/70 hover:border-red-400/20 transition-all active:scale-95 disabled:opacity-40"
+                                >
+                                  Decline
+                                </button>
+                                <button
+                                  onClick={() => acceptChallenge(c)}
+                                  disabled={challengeBusy.has(c.id)}
+                                  className="text-xs font-black text-lime-400 bg-lime-400/10 px-3 py-1.5 rounded-xl hover:bg-lime-400/20 transition-all active:scale-95 disabled:opacity-40"
+                                >
+                                  Accept
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </section>
+                )}
+
+                {/* Sent challenges */}
+                {challenges.filter(c => c.challengerId === userId).length > 0 && (
+                  <section className="space-y-3">
+                    <p className="text-xs font-black tracking-widest uppercase text-white/30">Sent</p>
+                    <div className="rounded-2xl border border-white/10 bg-white/[0.03] divide-y divide-white/[0.06]">
+                      {challenges.filter(c => c.challengerId === userId).map(c => (
+                        <div key={c.id} className="flex items-center justify-between px-4 py-3">
+                          <div>
+                            <p className="text-sm font-semibold text-white/80">
+                              vs {c.opponentName}
+                            </p>
+                            <p className="text-xs text-white/30 mt-0.5">
+                              {c.type === "team" ? "Team" : "Group"}: {c.contextName}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className={`text-[10px] font-black px-2 py-1 rounded-lg ${
+                              c.status === "accepted"
+                                ? "text-lime-400 bg-lime-400/10"
+                                : "text-white/30 bg-white/5"
+                            }`}>
+                              {c.status === "accepted" ? "Accepted" : "Pending"}
+                            </span>
+                            <button
+                              onClick={() => declineChallenge(c)}
+                              disabled={challengeBusy.has(c.id)}
+                              className="text-xs font-bold text-white/25 hover:text-red-400/70 transition-colors disabled:opacity-40"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </section>
+                )}
+              </>
             )}
           </>
         )}
