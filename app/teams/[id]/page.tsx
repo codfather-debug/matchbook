@@ -6,7 +6,7 @@ import { supabase } from "@/lib/supabase";
 import BottomNav from "@/components/BottomNav";
 import ProfileCard from "@/components/ProfileCard";
 
-type SubTab = "leaderboard" | "feed" | "wall" | "challenges";
+type SubTab = "leaderboard" | "feed" | "wall" | "challenges" | "manage";
 
 interface MemberStat {
   userId: string;
@@ -56,6 +56,13 @@ interface ChallengeRow {
   opponent_name?: string;
 }
 
+interface ManagedMember {
+  userId: string;
+  displayName: string;
+  username: string;
+  role: string;
+}
+
 function relativeTime(iso: string) {
   const diff = Date.now() - new Date(iso).getTime();
   const mins = Math.floor(diff / 60000);
@@ -94,6 +101,11 @@ export default function TeamPage() {
   const [challenges, setChallenges] = useState<ChallengeRow[]>([]);
   const [challengeBusy, setChallengeBusy] = useState<Set<string>>(new Set());
   const [profileUserId, setProfileUserId] = useState<string | null>(null);
+  // Manage tab
+  const [managedMembers, setManagedMembers] = useState<ManagedMember[]>([]);
+  const [manageSearchQuery, setManageSearchQuery] = useState("");
+  const [manageSearchResults, setManageSearchResults] = useState<{id: string; display_name?: string; username: string}[]>([]);
+  const [manageBusy, setManageBusy] = useState<Set<string>>(new Set());
 
   const loadLeaderboard = useCallback(async () => {
     const { data: members } = await supabase
@@ -234,6 +246,24 @@ export default function TeamPage() {
     })));
   }, [teamId]);
 
+  const loadManagedMembers = useCallback(async () => {
+    const { data: rows } = await supabase
+      .from("team_members")
+      .select("user_id, role")
+      .eq("team_id", teamId);
+    if (!rows || rows.length === 0) { setManagedMembers([]); return; }
+    const uids = rows.map(r => r.user_id);
+    const { data: profiles } = await supabase
+      .from("profiles").select("id, display_name, username").in("id", uids);
+    const pm = Object.fromEntries((profiles ?? []).map(p => [p.id, p]));
+    setManagedMembers(rows.map(r => ({
+      userId: r.user_id,
+      role: r.role,
+      displayName: pm[r.user_id]?.display_name ?? "",
+      username: pm[r.user_id]?.username ?? r.user_id,
+    })));
+  }, [teamId]);
+
   useEffect(() => {
     async function init() {
       const { data: { user } } = await supabase.auth.getUser();
@@ -263,11 +293,12 @@ export default function TeamPage() {
         loadFeed(),
         loadWall(),
         loadChallenges(user.id),
+        loadManagedMembers(),
       ]);
       setLoading(false);
     }
     init();
-  }, [router, teamId, loadLeaderboard, loadFeed, loadWall, loadChallenges]);
+  }, [router, teamId, loadLeaderboard, loadFeed, loadWall, loadChallenges, loadManagedMembers]);
 
   // Refresh data when switching tabs so new matches/challenges appear immediately
   function switchTab(tab: SubTab) {
@@ -275,6 +306,7 @@ export default function TeamPage() {
     if (tab === "leaderboard") loadLeaderboard();
     else if (tab === "feed") loadFeed();
     else if (tab === "challenges" && userId) loadChallenges(userId);
+    else if (tab === "manage") loadManagedMembers();
   }
 
   // Also refresh leaderboard + feed when the user returns to this page
@@ -318,6 +350,45 @@ export default function TeamPage() {
   async function deleteReply(replyId: string) {
     await supabase.from("team_posts").delete().eq("id", replyId);
     await loadWall();
+  }
+
+  async function kickMember(uid: string) {
+    setManageBusy(s => new Set(s).add(uid));
+    await supabase.from("team_members").delete().eq("team_id", teamId).eq("user_id", uid);
+    setMemberCount(c => Math.max(0, c - 1));
+    await loadManagedMembers();
+    await loadLeaderboard();
+    setManageBusy(s => { const n = new Set(s); n.delete(uid); return n; });
+  }
+
+  async function changeTeamRole(uid: string, newRole: "admin" | "member") {
+    setManageBusy(s => new Set(s).add(uid));
+    await supabase.from("team_members").update({ role: newRole }).eq("team_id", teamId).eq("user_id", uid);
+    await loadManagedMembers();
+    setManageBusy(s => { const n = new Set(s); n.delete(uid); return n; });
+  }
+
+  async function searchToAdd(q: string) {
+    setManageSearchQuery(q);
+    if (q.trim().length < 2) { setManageSearchResults([]); return; }
+    const existingIds = managedMembers.map(m => m.userId);
+    const { data } = await supabase
+      .from("profiles")
+      .select("id, display_name, username")
+      .or(`username.ilike.%${q.trim()}%,display_name.ilike.%${q.trim()}%`)
+      .not("id", "in", `(${existingIds.join(",")})`)
+      .limit(8);
+    setManageSearchResults(data ?? []);
+  }
+
+  async function addTeamMember(uid: string) {
+    setManageBusy(s => new Set(s).add(uid));
+    await supabase.from("team_members").insert({ team_id: teamId, user_id: uid, role: "member" });
+    setMemberCount(c => c + 1);
+    setManageSearchResults(prev => prev.filter(r => r.id !== uid));
+    await loadManagedMembers();
+    await loadLeaderboard();
+    setManageBusy(s => { const n = new Set(s); n.delete(uid); return n; });
   }
 
   async function sendChallenge(opponentId: string) {
@@ -376,7 +447,7 @@ export default function TeamPage() {
     );
   }
 
-  const subTabs: SubTab[] = ["leaderboard", "feed", "wall", "challenges"];
+  const subTabs: SubTab[] = ["leaderboard", "feed", "wall", "challenges", "manage"];
 
   return (
     <main className="min-h-screen bg-[#0c0c0e] max-w-sm mx-auto pb-24">
@@ -687,6 +758,102 @@ export default function TeamPage() {
                   );
                 })}
               </div>
+            )}
+          </div>
+        )}
+
+        {/* ── MANAGE ── */}
+        {subTab === "manage" && (
+          <div className="space-y-5">
+            {!isAdmin ? (
+              <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-6 text-center">
+                <p className="text-sm text-white/40">Only team admins can manage members.</p>
+              </div>
+            ) : (
+              <>
+                {/* Add Member */}
+                <section className="space-y-3">
+                  <p className="text-xs font-black tracking-widest uppercase text-white/30">Add Member</p>
+                  <input
+                    type="text"
+                    placeholder="Search by name or username…"
+                    value={manageSearchQuery}
+                    onChange={e => searchToAdd(e.target.value)}
+                    className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white text-sm placeholder:text-white/25 outline-none focus:ring-2 focus:ring-lime-400/50 focus:border-lime-400/30 transition-all"
+                  />
+                  {manageSearchResults.length > 0 && (
+                    <div className="rounded-2xl border border-white/10 bg-white/[0.03] divide-y divide-white/[0.06]">
+                      {manageSearchResults.map(r => (
+                        <div key={r.id} className="flex items-center justify-between px-4 py-3 gap-3">
+                          <div className="min-w-0">
+                            <p className="text-sm font-semibold text-white/80 truncate">{r.display_name ?? `@${r.username}`}</p>
+                            {r.display_name && <p className="text-xs text-white/30">@{r.username}</p>}
+                          </div>
+                          <button
+                            onClick={() => addTeamMember(r.id)}
+                            disabled={manageBusy.has(r.id)}
+                            className="text-xs font-black text-lime-400 bg-lime-400/10 px-3 py-1.5 rounded-xl hover:bg-lime-400/20 transition-all active:scale-95 disabled:opacity-40 flex-shrink-0"
+                          >
+                            {manageBusy.has(r.id) ? "Adding…" : "Add"}
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </section>
+
+                {/* Member list */}
+                <section className="space-y-3">
+                  <p className="text-xs font-black tracking-widest uppercase text-white/30">
+                    Members <span className="text-white/20">({managedMembers.length})</span>
+                  </p>
+                  {managedMembers.length === 0 ? (
+                    <p className="text-white/25 text-sm text-center py-4">No members</p>
+                  ) : (
+                    <div className="rounded-2xl border border-white/10 bg-white/[0.03] divide-y divide-white/[0.06]">
+                      {managedMembers.map(m => (
+                        <div key={m.userId} className="flex items-center justify-between px-4 py-3 gap-3">
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            <div className="w-8 h-8 rounded-full bg-lime-400/10 flex items-center justify-center flex-shrink-0">
+                              <span className="text-xs font-black text-lime-400">
+                                {(m.displayName || m.username)[0].toUpperCase()}
+                              </span>
+                            </div>
+                            <div className="min-w-0">
+                              <p className="text-sm font-semibold text-white/80 truncate">
+                                {m.displayName || `@${m.username}`}
+                                {m.userId === userId && <span className="text-xs text-lime-400/50 ml-1.5">you</span>}
+                              </p>
+                              <span className={`text-[10px] font-black px-1.5 py-0.5 rounded-md ${m.role === "admin" ? "bg-lime-400/10 text-lime-400" : "bg-white/5 text-white/30"}`}>
+                                {m.role}
+                              </span>
+                            </div>
+                          </div>
+                          {m.userId !== userId && (
+                            <div className="flex gap-2 flex-shrink-0">
+                              <button
+                                onClick={() => changeTeamRole(m.userId, m.role === "admin" ? "member" : "admin")}
+                                disabled={manageBusy.has(m.userId)}
+                                className="text-[10px] font-black text-white/40 bg-white/5 border border-white/10 px-2.5 py-1 rounded-xl hover:text-white/70 hover:border-white/20 transition-all active:scale-95 disabled:opacity-40"
+                              >
+                                {m.role === "admin" ? "Demote" : "Make Admin"}
+                              </button>
+                              <button
+                                onClick={() => kickMember(m.userId)}
+                                disabled={manageBusy.has(m.userId)}
+                                className="text-[10px] font-bold text-white/25 hover:text-red-400/70 transition-colors disabled:opacity-40"
+                                title="Remove from team"
+                              >
+                                ×
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </section>
+              </>
             )}
           </div>
         )}

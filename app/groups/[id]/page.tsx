@@ -43,6 +43,13 @@ interface WallPost {
   replies: WallReply[];
 }
 
+interface ManagedGroupMember {
+  userId: string;
+  displayName?: string;
+  username: string;
+  role: string;
+}
+
 interface GroupChallenge {
   id: string;
   challenger_id: string;
@@ -54,7 +61,7 @@ interface GroupChallenge {
   opponentName: string;
 }
 
-type SubTab = "leaderboard" | "feed" | "wall" | "challenges";
+type SubTab = "leaderboard" | "feed" | "wall" | "challenges" | "manage";
 
 function relativeTime(iso: string) {
   const diff = Date.now() - new Date(iso).getTime();
@@ -74,6 +81,7 @@ export default function GroupPage() {
   const [userId, setUserId] = useState("");
   const [loading, setLoading] = useState(true);
   const [isCreator, setIsCreator] = useState(false);
+  const [isGroupAdmin, setIsGroupAdmin] = useState(false);
   const [leaveBusy, setLeaveBusy] = useState(false);
   const [groupName, setGroupName] = useState("");
   const [subTab, setSubTab] = useState<SubTab>("leaderboard");
@@ -87,6 +95,11 @@ export default function GroupPage() {
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [replyText, setReplyText] = useState("");
   const [profileUserId, setProfileUserId] = useState<string | null>(null);
+  // Manage tab
+  const [managedGroupMembers, setManagedGroupMembers] = useState<ManagedGroupMember[]>([]);
+  const [manageSearchQuery, setManageSearchQuery] = useState("");
+  const [manageSearchResults, setManageSearchResults] = useState<{id: string; display_name?: string; username: string}[]>([]);
+  const [manageBusy, setManageBusy] = useState<Set<string>>(new Set());
 
   const loadAll = useCallback(async () => {
     const { data: memberRows } = await supabase
@@ -222,6 +235,24 @@ export default function GroupPage() {
     })));
   }, [groupId]);
 
+  const loadManagedGroupMembers = useCallback(async () => {
+    const { data: rows } = await supabase
+      .from("friend_group_members")
+      .select("user_id, role")
+      .eq("group_id", groupId);
+    if (!rows || rows.length === 0) { setManagedGroupMembers([]); return; }
+    const uids = rows.map((r: { user_id: string }) => r.user_id);
+    const { data: profiles } = await supabase
+      .from("profiles").select("id, display_name, username").in("id", uids);
+    const pm = Object.fromEntries((profiles ?? []).map(p => [p.id, p]));
+    setManagedGroupMembers((rows as { user_id: string; role: string }[]).map(r => ({
+      userId: r.user_id,
+      role: r.role ?? "member",
+      displayName: (pm[r.user_id] as { display_name?: string } | undefined)?.display_name,
+      username: (pm[r.user_id] as { username?: string } | undefined)?.username ?? r.user_id,
+    })));
+  }, [groupId]);
+
   useEffect(() => {
     async function init() {
       const { data: { user } } = await supabase.auth.getUser();
@@ -235,20 +266,23 @@ export default function GroupPage() {
       setIsCreator(group.created_by === user.id);
 
       const { data: membership } = await supabase
-        .from("friend_group_members").select("id")
+        .from("friend_group_members").select("id, role")
         .eq("group_id", groupId).eq("user_id", user.id).single();
       if (!membership) { router.push("/friends"); return; }
+      const memberRole = (membership as { role?: string }).role ?? "member";
+      setIsGroupAdmin(memberRole === "admin" || group.created_by === user.id);
 
-      await Promise.all([loadAll(), loadPosts(), loadChallenges(user.id)]);
+      await Promise.all([loadAll(), loadPosts(), loadChallenges(user.id), loadManagedGroupMembers()]);
       setLoading(false);
     }
     init();
-  }, [router, groupId, loadAll, loadPosts, loadChallenges]);
+  }, [router, groupId, loadAll, loadPosts, loadChallenges, loadManagedGroupMembers]);
 
   function switchTab(tab: SubTab) {
     setSubTab(tab);
     if (tab === "leaderboard" || tab === "feed") loadAll();
     else if (tab === "challenges" && userId) loadChallenges(userId);
+    else if (tab === "manage") loadManagedGroupMembers();
   }
 
   useEffect(() => {
@@ -296,6 +330,43 @@ export default function GroupPage() {
   async function deleteReply(replyId: string) {
     await supabase.from("group_posts").delete().eq("id", replyId);
     await loadPosts();
+  }
+
+  async function changeGroupRole(uid: string, newRole: "admin" | "member") {
+    setManageBusy(s => new Set(s).add(uid));
+    await supabase.from("friend_group_members").update({ role: newRole }).eq("group_id", groupId).eq("user_id", uid);
+    await loadManagedGroupMembers();
+    setManageBusy(s => { const n = new Set(s); n.delete(uid); return n; });
+  }
+
+  async function kickGroupMember(uid: string) {
+    setManageBusy(s => new Set(s).add(uid));
+    await supabase.from("friend_group_members").delete().eq("group_id", groupId).eq("user_id", uid);
+    await loadManagedGroupMembers();
+    await loadAll();
+    setManageBusy(s => { const n = new Set(s); n.delete(uid); return n; });
+  }
+
+  async function searchToAdd(q: string) {
+    setManageSearchQuery(q);
+    if (q.trim().length < 2) { setManageSearchResults([]); return; }
+    const existingIds = managedGroupMembers.map(m => m.userId);
+    const { data } = await supabase
+      .from("profiles")
+      .select("id, display_name, username")
+      .or(`username.ilike.%${q.trim()}%,display_name.ilike.%${q.trim()}%`)
+      .not("id", "in", `(${existingIds.join(",")})`)
+      .limit(8);
+    setManageSearchResults(data ?? []);
+  }
+
+  async function addGroupMember(uid: string) {
+    setManageBusy(s => new Set(s).add(uid));
+    await supabase.from("friend_group_members").insert({ group_id: groupId, user_id: uid, role: "member" });
+    setManageSearchResults(prev => prev.filter(r => r.id !== uid));
+    await loadManagedGroupMembers();
+    await loadAll();
+    setManageBusy(s => { const n = new Set(s); n.delete(uid); return n; });
   }
 
   async function submitReply(postId: string) {
@@ -376,7 +447,7 @@ export default function GroupPage() {
 
         {/* Sub-tabs */}
         <div className="flex gap-1 mt-3 -mx-1">
-          {(["leaderboard", "feed", "wall", "challenges"] as SubTab[]).map(t => (
+          {(["leaderboard", "feed", "wall", "challenges", "manage"] as SubTab[]).map(t => (
             <button
               key={t}
               onClick={() => switchTab(t)}
@@ -428,14 +499,6 @@ export default function GroupPage() {
                           className="text-[10px] font-black text-lime-400/70 bg-lime-400/10 px-2 py-1 rounded-lg hover:bg-lime-400/20 transition-all"
                         >
                           Challenge
-                        </button>
-                      )}
-                      {isCreator && m.userId !== userId && (
-                        <button
-                          onClick={() => removeMember(m.userId)}
-                          className="text-[10px] font-bold text-white/20 hover:text-red-400/70 transition-colors"
-                        >
-                          ×
                         </button>
                       )}
                     </div>
@@ -663,6 +726,102 @@ export default function GroupPage() {
               </div>
             )}
           </section>
+        )}
+
+        {/* ── MANAGE ── */}
+        {subTab === "manage" && (
+          <div className="space-y-5">
+            {!isGroupAdmin ? (
+              <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-6 text-center">
+                <p className="text-sm text-white/40">Only group admins can manage members.</p>
+              </div>
+            ) : (
+              <>
+                {/* Add Member */}
+                <section className="space-y-3">
+                  <p className="text-xs font-black tracking-widest uppercase text-white/30">Add Member</p>
+                  <input
+                    type="text"
+                    placeholder="Search by name or username…"
+                    value={manageSearchQuery}
+                    onChange={e => searchToAdd(e.target.value)}
+                    className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white text-sm placeholder:text-white/25 outline-none focus:ring-2 focus:ring-lime-400/50 focus:border-lime-400/30 transition-all"
+                  />
+                  {manageSearchResults.length > 0 && (
+                    <div className="rounded-2xl border border-white/10 bg-white/[0.03] divide-y divide-white/[0.06]">
+                      {manageSearchResults.map(r => (
+                        <div key={r.id} className="flex items-center justify-between px-4 py-3 gap-3">
+                          <div className="min-w-0">
+                            <p className="text-sm font-semibold text-white/80 truncate">{r.display_name ?? `@${r.username}`}</p>
+                            {r.display_name && <p className="text-xs text-white/30">@{r.username}</p>}
+                          </div>
+                          <button
+                            onClick={() => addGroupMember(r.id)}
+                            disabled={manageBusy.has(r.id)}
+                            className="text-xs font-black text-lime-400 bg-lime-400/10 px-3 py-1.5 rounded-xl hover:bg-lime-400/20 transition-all active:scale-95 disabled:opacity-40 flex-shrink-0"
+                          >
+                            {manageBusy.has(r.id) ? "Adding…" : "Add"}
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </section>
+
+                {/* Member list */}
+                <section className="space-y-3">
+                  <p className="text-xs font-black tracking-widest uppercase text-white/30">
+                    Members <span className="text-white/20">({managedGroupMembers.length})</span>
+                  </p>
+                  {managedGroupMembers.length === 0 ? (
+                    <p className="text-white/25 text-sm text-center py-4">No members</p>
+                  ) : (
+                    <div className="rounded-2xl border border-white/10 bg-white/[0.03] divide-y divide-white/[0.06]">
+                      {managedGroupMembers.map(m => (
+                        <div key={m.userId} className="flex items-center justify-between px-4 py-3 gap-3">
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            <div className="w-8 h-8 rounded-full bg-lime-400/10 flex items-center justify-center flex-shrink-0">
+                              <span className="text-xs font-black text-lime-400">
+                                {(m.displayName || m.username)[0].toUpperCase()}
+                              </span>
+                            </div>
+                            <div className="min-w-0">
+                              <p className="text-sm font-semibold text-white/80 truncate">
+                                {m.displayName ?? `@${m.username}`}
+                                {m.userId === userId && <span className="text-xs text-lime-400/50 ml-1.5">you</span>}
+                              </p>
+                              <span className={`text-[10px] font-black px-1.5 py-0.5 rounded-md ${m.role === "admin" ? "bg-lime-400/10 text-lime-400" : "bg-white/5 text-white/30"}`}>
+                                {m.role}
+                              </span>
+                            </div>
+                          </div>
+                          {m.userId !== userId && (
+                            <div className="flex gap-2 flex-shrink-0">
+                              <button
+                                onClick={() => changeGroupRole(m.userId, m.role === "admin" ? "member" : "admin")}
+                                disabled={manageBusy.has(m.userId)}
+                                className="text-[10px] font-black text-white/40 bg-white/5 border border-white/10 px-2.5 py-1 rounded-xl hover:text-white/70 hover:border-white/20 transition-all active:scale-95 disabled:opacity-40"
+                              >
+                                {m.role === "admin" ? "Demote" : "Make Admin"}
+                              </button>
+                              <button
+                                onClick={() => kickGroupMember(m.userId)}
+                                disabled={manageBusy.has(m.userId)}
+                                className="text-[10px] font-bold text-white/25 hover:text-red-400/70 transition-colors disabled:opacity-40"
+                                title="Remove from group"
+                              >
+                                ×
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </section>
+              </>
+            )}
+          </div>
         )}
 
       </div>

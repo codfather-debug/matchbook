@@ -409,9 +409,10 @@ export default function FriendsPage() {
       .from("friend_groups")
       .insert({ id: groupId, name: newGroupName.trim(), created_by: userId });
     if (error) { setGroupError("Failed to create group."); setGroupBusy(false); return; }
-    const memberInserts = [userId, ...Array.from(selectedFriendIds)].map(uid => ({
-      group_id: groupId, user_id: uid,
-    }));
+    const memberInserts = [
+      { group_id: groupId, user_id: userId, role: "admin" },
+      ...Array.from(selectedFriendIds).map(uid => ({ group_id: groupId, user_id: uid, role: "member" })),
+    ];
     await supabase.from("friend_group_members").insert(memberInserts);
     setNewGroupName(""); setSelectedFriendIds(new Set()); setShowCreateGroup(false);
     await loadGroups(userId);
