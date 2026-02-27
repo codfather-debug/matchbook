@@ -1,0 +1,135 @@
+"use client";
+import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase";
+
+interface Props {
+  userId: string;
+  onClose: () => void;
+}
+
+interface ProfileData {
+  displayName?: string;
+  username: string;
+  wins: number;
+  losses: number;
+  winPct: number;
+  recentMatches: { id: string; opponent_name: string; result: string; surface: string }[];
+}
+
+export default function ProfileCard({ userId, onClose }: Props) {
+  const [data, setData] = useState<ProfileData | null>(null);
+
+  useEffect(() => {
+    async function load() {
+      const [{ data: profile }, { data: matches }] = await Promise.all([
+        supabase.from("profiles").select("display_name, username").eq("id", userId).single(),
+        supabase.from("matches")
+          .select("id, opponent_name, result, surface, created_at")
+          .eq("user_id", userId)
+          .order("created_at", { ascending: false })
+          .limit(100),
+      ]);
+      const wins = (matches ?? []).filter(m => m.result === "win").length;
+      const losses = (matches ?? []).filter(m => m.result === "loss").length;
+      const total = wins + losses;
+      setData({
+        displayName: profile?.display_name,
+        username: profile?.username ?? userId,
+        wins,
+        losses,
+        winPct: total > 0 ? Math.round((wins / total) * 100) : 0,
+        recentMatches: (matches ?? []).slice(0, 5),
+      });
+    }
+    load();
+  }, [userId]);
+
+  return (
+    <div
+      className="fixed inset-0 z-[200] bg-black/70 flex items-end justify-center"
+      onClick={onClose}
+    >
+      <div
+        className="bg-[#141416] border border-white/10 rounded-t-3xl w-full max-w-sm p-6 space-y-5"
+        onClick={e => e.stopPropagation()}
+      >
+        {!data ? (
+          <div className="py-10 text-center">
+            <p className="text-white/30 text-sm">Loading…</p>
+          </div>
+        ) : (
+          <>
+            {/* Avatar + name */}
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 rounded-full bg-lime-400/10 flex items-center justify-center flex-shrink-0">
+                <span className="text-2xl font-black text-lime-400">
+                  {(data.displayName || data.username)[0].toUpperCase()}
+                </span>
+              </div>
+              <div>
+                <p className="text-lg font-black text-white">
+                  {data.displayName ?? `@${data.username}`}
+                </p>
+                {data.displayName && (
+                  <p className="text-sm text-white/40">@{data.username}</p>
+                )}
+              </div>
+            </div>
+
+            {/* Stats row */}
+            <div className="grid grid-cols-3 gap-3">
+              <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-3 text-center">
+                <p className="text-xl font-black text-white">{data.wins}</p>
+                <p className="text-[10px] font-bold text-white/30 uppercase tracking-wider mt-0.5">Wins</p>
+              </div>
+              <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-3 text-center">
+                <p className="text-xl font-black text-white">{data.losses}</p>
+                <p className="text-[10px] font-bold text-white/30 uppercase tracking-wider mt-0.5">Losses</p>
+              </div>
+              <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-3 text-center">
+                <p className="text-xl font-black text-lime-400">{data.winPct}%</p>
+                <p className="text-[10px] font-bold text-white/30 uppercase tracking-wider mt-0.5">Win %</p>
+              </div>
+            </div>
+
+            {/* Recent matches */}
+            {data.recentMatches.length > 0 && (
+              <div className="space-y-2">
+                <p className="text-xs font-black tracking-widest uppercase text-white/30">Recent Matches</p>
+                <div className="space-y-1.5">
+                  {data.recentMatches.map(m => (
+                    <div
+                      key={m.id}
+                      className="flex items-center justify-between bg-white/[0.02] border border-white/[0.04] rounded-xl px-3 py-2"
+                    >
+                      <p className="text-sm text-white/70 truncate">vs {m.opponent_name}</p>
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        <span className="text-[10px] text-white/30 capitalize">{m.surface}</span>
+                        <span className={`text-xs font-black px-1.5 py-0.5 rounded-lg ${
+                          m.result === "win" ? "text-lime-400 bg-lime-400/10" : "text-red-400/70 bg-red-400/10"
+                        }`}>
+                          {m.result === "win" ? "W" : "L"}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {data.wins + data.losses === 0 && (
+              <p className="text-sm text-white/30 text-center py-2">No matches logged yet</p>
+            )}
+
+            <button
+              onClick={onClose}
+              className="w-full text-sm font-bold text-white/40 bg-white/5 border border-white/10 py-3 rounded-2xl hover:text-white/60 transition-all"
+            >
+              Close
+            </button>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}

@@ -4,6 +4,7 @@ import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import BottomNav from "@/components/BottomNav";
+import ProfileCard from "@/components/ProfileCard";
 
 interface Member {
   userId: string;
@@ -73,6 +74,7 @@ export default function GroupPage() {
   const [challenges, setChallenges] = useState<GroupChallenge[]>([]);
   const [postContent, setPostContent] = useState("");
   const [postBusy, setPostBusy] = useState(false);
+  const [profileUserId, setProfileUserId] = useState<string | null>(null);
 
   const loadAll = useCallback(async () => {
     const { data: memberRows } = await supabase
@@ -246,6 +248,19 @@ export default function GroupPage() {
   }
 
   async function sendChallenge(opponentId: string) {
+    // Block if an active challenge already exists between these two users
+    const [{ data: c1 }, { data: c2 }] = await Promise.all([
+      supabase.from("group_challenges").select("id").eq("group_id", groupId)
+        .eq("challenger_id", userId).eq("opponent_id", opponentId)
+        .in("status", ["pending", "accepted"]).limit(1),
+      supabase.from("group_challenges").select("id").eq("group_id", groupId)
+        .eq("challenger_id", opponentId).eq("opponent_id", userId)
+        .in("status", ["pending", "accepted"]).limit(1),
+    ]);
+    if ((c1 && c1.length > 0) || (c2 && c2.length > 0)) {
+      alert("You already have an active challenge with this player. Complete it first.");
+      return;
+    }
     await supabase.from("group_challenges").insert({
       group_id: groupId, challenger_id: userId, opponent_id: opponentId, status: "pending",
     });
@@ -332,10 +347,13 @@ export default function GroupPage() {
                         </span>
                       </div>
                       <div className="min-w-0">
-                        <p className="text-sm font-semibold text-white/80 truncate">
+                        <button
+                          onClick={() => setProfileUserId(m.userId)}
+                          className="text-sm font-semibold text-white/80 truncate hover:text-white transition-colors text-left"
+                        >
                           {m.displayName ?? `@${m.username}`}
                           {m.userId === userId && <span className="text-xs text-lime-400/60 ml-1.5">you</span>}
-                        </p>
+                        </button>
                         <p className="text-xs text-white/30">{m.wins}W – {m.losses}L</p>
                       </div>
                     </div>
@@ -521,6 +539,10 @@ export default function GroupPage() {
       </div>
 
       <BottomNav active="friends" />
+
+      {profileUserId && (
+        <ProfileCard userId={profileUserId} onClose={() => setProfileUserId(null)} />
+      )}
     </main>
   );
 }

@@ -14,7 +14,7 @@ interface FriendshipRow { id: string; requester_id: string; addressee_id: string
 interface TeamRow { id: string; name: string; invite_code: string; member_count?: number; role?: string; }
 interface GroupRow { id: string; name: string; member_count?: number; }
 
-type ActiveTab = "friends" | "teams" | "groups";
+type ActiveTab = "friends" | "discover" | "teams" | "groups";
 
 export default function FriendsPage() {
   const router = useRouter();
@@ -48,8 +48,9 @@ export default function FriendsPage() {
   const [groupBusy, setGroupBusy] = useState(false);
   const [groupError, setGroupError] = useState("");
 
-  // Discover suggestions
-  const [suggestions, setSuggestions] = useState<SearchResult[]>([]);
+  // Discover tab
+  const [discoverQuery, setDiscoverQuery] = useState("");
+  const [discoverList, setDiscoverList] = useState<SearchResult[]>([]);
 
   const loadFriends = useCallback(async (uid: string) => {
     const { data: friendshipRows } = await supabase
@@ -157,17 +158,17 @@ export default function FriendsPage() {
     setGroups(groupList);
   }, []);
 
-  const loadSuggestions = useCallback(async (uid: string, friendships: FriendshipRow[]) => {
+  const loadDiscover = useCallback(async (uid: string, friendships: FriendshipRow[], q = "") => {
     const existingIds = new Set([
       uid,
       ...friendships.map(r => r.requester_id === uid ? r.addressee_id : r.requester_id),
     ]);
-    const { data } = await supabase
-      .from("profiles")
-      .select("id, username, display_name")
-      .neq("id", uid)
-      .limit(20);
-    setSuggestions((data ?? []).filter(p => !existingIds.has(p.id)).slice(0, 6));
+    let query = supabase.from("profiles").select("id, username, display_name").neq("id", uid);
+    if (q.trim().length >= 2) {
+      query = query.or(`username.ilike.%${q.trim()}%,display_name.ilike.%${q.trim()}%`);
+    }
+    const { data } = await query.limit(40);
+    setDiscoverList((data ?? []).filter((p: SearchResult) => !existingIds.has(p.id)));
   }, []);
 
   useEffect(() => {
@@ -176,22 +177,20 @@ export default function FriendsPage() {
       if (!user) { router.push("/auth"); return; }
       setUserId(user.id);
       await upsertProfile(user);
-      const [friendshipRows] = await Promise.all([
-        loadFriends(user.id).then(() => null),
-        loadTeams(user.id),
-        loadGroups(user.id),
-      ]);
-      // Load suggestions after friends are known
-      const { data: fRows } = await supabase
-        .from("friendships")
-        .select("id, requester_id, addressee_id, status")
-        .or(`requester_id.eq.${user.id},addressee_id.eq.${user.id}`);
-      await loadSuggestions(user.id, fRows ?? []);
-      void friendshipRows;
+      await Promise.all([loadFriends(user.id), loadTeams(user.id), loadGroups(user.id)]);
       setLoading(false);
     }
     init();
-  }, [router, loadFriends, loadTeams, loadGroups, loadSuggestions]);
+  }, [router, loadFriends, loadTeams, loadGroups]);
+
+  // Refresh discover list whenever tab is active or query changes
+  useEffect(() => {
+    if (activeTab !== "discover" || !userId) return;
+    const timer = setTimeout(() => {
+      loadDiscover(userId, allFriendships, discoverQuery);
+    }, discoverQuery.trim().length >= 2 ? 300 : 0);
+    return () => clearTimeout(timer);
+  }, [activeTab, discoverQuery, userId, allFriendships, loadDiscover]);
 
   // Debounced player search
   useEffect(() => {
@@ -330,8 +329,8 @@ export default function FriendsPage() {
         </div>
         <h1 className="text-2xl font-black text-white">Social</h1>
         {/* Tab switcher */}
-        <div className="flex gap-2 mt-3">
-          {(["friends", "teams", "groups"] as ActiveTab[]).map(t => (
+        <div className="flex gap-1.5 mt-3 flex-wrap">
+          {(["friends", "discover", "teams", "groups"] as ActiveTab[]).map(t => (
             <button
               key={t}
               onClick={() => setActiveTab(t)}
@@ -389,32 +388,6 @@ export default function FriendsPage() {
               )}
               {searchQuery.trim().length >= 2 && searchResults.length === 0 && (
                 <p className="text-xs text-white/20 text-center py-2">No players found</p>
-              )}
-              {searchQuery.trim().length < 2 && suggestions.length > 0 && (
-                <div className="space-y-2">
-                  <p className="text-xs text-white/20">Suggested players</p>
-                  <div className="rounded-2xl border border-white/10 bg-white/[0.03] divide-y divide-white/[0.06]">
-                    {suggestions.map(r => (
-                      <div key={r.id} className="flex items-center justify-between px-4 py-3">
-                        <div>
-                          <p className="text-sm font-semibold text-white/80">{r.display_name ?? `@${r.username}`}</p>
-                          {r.display_name && <p className="text-xs text-white/30">@{r.username}</p>}
-                        </div>
-                        {sentRequests.has(r.id) ? (
-                          <span className="text-xs text-white/30 font-semibold">Sent ✓</span>
-                        ) : (
-                          <button
-                            onClick={() => sendRequest(r.id)}
-                            disabled={busy.has(r.id)}
-                            className="text-xs font-black text-lime-400 bg-lime-400/10 px-3 py-1.5 rounded-xl hover:bg-lime-400/20 transition-all active:scale-95 disabled:opacity-40"
-                          >
-                            Add
-                          </button>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
               )}
             </section>
 
@@ -487,6 +460,54 @@ export default function FriendsPage() {
                           Remove
                         </button>
                       </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </section>
+          </>
+        )}
+
+        {/* ── DISCOVER TAB ── */}
+        {activeTab === "discover" && (
+          <>
+            <section className="space-y-3">
+              <p className="text-xs font-black tracking-widest uppercase text-white/30">Discover Players</p>
+              <div className="relative">
+                <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/30" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                </svg>
+                <input
+                  type="text"
+                  placeholder="Search by name or username…"
+                  value={discoverQuery}
+                  onChange={e => setDiscoverQuery(e.target.value)}
+                  className="w-full bg-white/5 border border-white/10 rounded-2xl pl-10 pr-4 py-3 text-white text-sm placeholder:text-white/25 outline-none focus:ring-2 focus:ring-lime-400/50 focus:border-lime-400/30 transition-all"
+                />
+              </div>
+              {discoverList.length === 0 ? (
+                <p className="text-xs text-white/20 text-center py-4">
+                  {discoverQuery.trim().length >= 2 ? "No players found" : "Loading players…"}
+                </p>
+              ) : (
+                <div className="rounded-2xl border border-white/10 bg-white/[0.03] divide-y divide-white/[0.06]">
+                  {discoverList.map(r => (
+                    <div key={r.id} className="flex items-center justify-between px-4 py-3">
+                      <div>
+                        <p className="text-sm font-semibold text-white/80">{r.display_name ?? `@${r.username}`}</p>
+                        {r.display_name && <p className="text-xs text-white/30">@{r.username}</p>}
+                      </div>
+                      {sentRequests.has(r.id) ? (
+                        <span className="text-xs text-white/30 font-semibold">Sent ✓</span>
+                      ) : (
+                        <button
+                          onClick={() => sendRequest(r.id)}
+                          disabled={busy.has(r.id)}
+                          className="text-xs font-black text-lime-400 bg-lime-400/10 px-3 py-1.5 rounded-xl hover:bg-lime-400/20 transition-all active:scale-95 disabled:opacity-40"
+                        >
+                          Add Friend
+                        </button>
+                      )}
                     </div>
                   ))}
                 </div>

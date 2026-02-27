@@ -4,6 +4,7 @@ import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import BottomNav from "@/components/BottomNav";
+import ProfileCard from "@/components/ProfileCard";
 
 type SubTab = "leaderboard" | "feed" | "wall" | "challenges";
 
@@ -80,6 +81,7 @@ export default function TeamPage() {
   const [postBusy, setPostBusy] = useState(false);
   const [challenges, setChallenges] = useState<ChallengeRow[]>([]);
   const [challengeBusy, setChallengeBusy] = useState<Set<string>>(new Set());
+  const [profileUserId, setProfileUserId] = useState<string | null>(null);
 
   const loadLeaderboard = useCallback(async () => {
     const { data: members } = await supabase
@@ -240,6 +242,20 @@ export default function TeamPage() {
 
   async function sendChallenge(opponentId: string) {
     setChallengeBusy(s => new Set(s).add(opponentId));
+    // Block if an active challenge already exists between these two users
+    const [{ data: c1 }, { data: c2 }] = await Promise.all([
+      supabase.from("challenges").select("id").eq("team_id", teamId)
+        .eq("challenger_id", userId).eq("opponent_id", opponentId)
+        .in("status", ["pending", "accepted"]).limit(1),
+      supabase.from("challenges").select("id").eq("team_id", teamId)
+        .eq("challenger_id", opponentId).eq("opponent_id", userId)
+        .in("status", ["pending", "accepted"]).limit(1),
+    ]);
+    if ((c1 && c1.length > 0) || (c2 && c2.length > 0)) {
+      alert("You already have an active challenge with this player. Complete it first.");
+      setChallengeBusy(s => { const n = new Set(s); n.delete(opponentId); return n; });
+      return;
+    }
     await supabase.from("challenges").insert({
       team_id: teamId, challenger_id: userId, opponent_id: opponentId, status: "pending",
     });
@@ -343,10 +359,13 @@ export default function TeamPage() {
                 <div key={m.userId} className="flex items-center gap-3 bg-white/[0.03] border border-white/[0.06] rounded-2xl px-4 py-3">
                   <span className="text-xs font-black text-white/20 w-5 text-center">{i + 1}</span>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-white/80 truncate">
+                    <button
+                      onClick={() => setProfileUserId(m.userId)}
+                      className="text-sm font-semibold text-white/80 truncate hover:text-white transition-colors text-left"
+                    >
                       {m.displayName || `@${m.username}`}
                       {m.userId === userId && <span className="text-xs text-lime-400/60 ml-1.5">you</span>}
-                    </p>
+                    </button>
                     <p className="text-xs text-white/30">{m.wins}W – {m.losses}L</p>
                   </div>
                   <div className="flex items-center gap-3">
@@ -510,6 +529,10 @@ export default function TeamPage() {
       </div>
 
       <BottomNav active="friends" />
+
+      {profileUserId && (
+        <ProfileCard userId={profileUserId} onClose={() => setProfileUserId(null)} />
+      )}
     </main>
   );
 }
