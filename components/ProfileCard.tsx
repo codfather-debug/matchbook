@@ -67,11 +67,11 @@ export default function ProfileCard({ userId, onClose }: Props) {
                 </span>
               </div>
               <div>
-                <p className="text-lg font-black text-gray-900">
+                <p className="text-lg font-black text-white">
                   {data.displayName ?? `@${data.username}`}
                 </p>
                 {data.displayName && (
-                  <p className="text-sm text-gray-500">@{data.username}</p>
+                  <p className="text-sm text-gray-400">@{data.username}</p>
                 )}
               </div>
             </div>
