@@ -14,8 +14,8 @@ export default function AuthCallback() {
   }, [router]);
 
   return (
-    <main className="min-h-screen bg-[#1e1e2a] flex items-center justify-center">
-      <p className="text-white/40 text-sm">Signing you in…</p>
+    <main className="min-h-screen bg-white flex items-center justify-center">
+      <p className="text-gray-500 text-sm">Signing you in…</p>
     </main>
   );
 }

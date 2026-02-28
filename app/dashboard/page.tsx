@@ -29,10 +29,10 @@ function StatCard({ label, value, sub, color = "white" }: {
   label: string; value: string; sub?: string; color?: string;
 }) {
   return (
-    <div className="flex-1 rounded-2xl bg-white/[0.03] border border-white/10 p-4 text-center">
-      <p className="text-xs font-bold text-white/30 uppercase tracking-widest mb-1">{label}</p>
+    <div className="flex-1 rounded-2xl bg-gray-50 border border-gray-200 p-4 text-center">
+      <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">{label}</p>
       <p className={`text-2xl font-black ${color}`}>{value}</p>
-      {sub && <p className="text-xs text-white/30 mt-0.5">{sub}</p>}
+      {sub && <p className="text-xs text-gray-400 mt-0.5">{sub}</p>}
     </div>
   );
 }
@@ -42,14 +42,14 @@ function InsightCard({ icon, label, text, type }: {
 }) {
   const border = type === "strength" ? "border-lime-400/20 bg-lime-400/[0.04]"
                : type === "weakness" ? "border-red-500/20 bg-red-500/[0.04]"
-               : "border-white/10 bg-white/[0.03]";
-  const labelColor = type === "strength" ? "text-lime-400"
-                   : type === "weakness" ? "text-red-400"
-                   : "text-white/40";
+               : "border-gray-200 bg-gray-50";
+  const labelColor = type === "strength" ? "text-lime-700"
+                   : type === "weakness" ? "text-red-600"
+                   : "text-gray-500";
   return (
     <div className={`rounded-2xl border p-4 space-y-1.5 ${border}`}>
       <p className={`text-xs font-black uppercase tracking-widest ${labelColor}`}>{icon} {label}</p>
-      <p className="text-sm text-white/80 leading-relaxed">{text}</p>
+      <p className="text-sm text-gray-800 leading-relaxed">{text}</p>
     </div>
   );
 }
@@ -171,8 +171,8 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-[#1e1e2a] flex items-center justify-center">
-        <p className="text-white/30 text-sm">Loading…</p>
+      <main className="min-h-screen bg-white flex items-center justify-center">
+        <p className="text-gray-400 text-sm">Loading…</p>
       </main>
     );
   }
@@ -203,13 +203,13 @@ export default function DashboardPage() {
       {/* Profile setup modal — shown to new users who haven't set a display name */}
       {showProfileSetup && (
         <div className="fixed inset-0 z-[150] bg-black/80 backdrop-blur-sm flex items-end justify-center">
-          <div className="bg-[#141416] border border-white/10 rounded-t-3xl w-full max-w-sm p-6 space-y-5">
+          <div className="bg-[#141416] border border-gray-200 rounded-t-3xl w-full max-w-sm p-6 space-y-5">
             <div className="space-y-1">
-              <h2 className="text-xl font-black text-white">Welcome to Matchbook!</h2>
-              <p className="text-sm text-white/40">Add your name so teammates and friends can find you.</p>
+              <h2 className="text-xl font-black text-gray-900">Welcome to Matchbook!</h2>
+              <p className="text-sm text-gray-500">Add your name so teammates and friends can find you.</p>
             </div>
             <div className="space-y-2">
-              <label className="text-xs font-black tracking-widest uppercase text-white/30">Display Name</label>
+              <label className="text-xs font-black tracking-widest uppercase text-gray-400">Display Name</label>
               <input
                 autoFocus
                 type="text"
@@ -217,14 +217,14 @@ export default function DashboardPage() {
                 value={profileSetupName}
                 onChange={e => setProfileSetupName(e.target.value)}
                 onKeyDown={e => { if (e.key === "Enter") saveDisplayName(); }}
-                className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white text-sm placeholder:text-white/25 outline-none focus:ring-2 focus:ring-lime-400/50 focus:border-lime-400/30 transition-all"
+                className="w-full bg-white/5 border border-gray-200 rounded-2xl px-4 py-3 text-gray-900 text-sm placeholder:text-gray-400 outline-none focus:ring-2 focus:ring-lime-400/50 focus:border-lime-400/30 transition-all"
               />
-              <p className="text-[10px] text-white/20">This is how you appear in teams, groups, and challenges.</p>
+              <p className="text-[10px] text-gray-300">This is how you appear in teams, groups, and challenges.</p>
             </div>
             <div className="flex gap-3">
               <button
                 onClick={() => setShowProfileSetup(false)}
-                className="flex-1 text-sm font-bold text-white/40 bg-white/5 border border-white/10 py-3 rounded-2xl hover:text-white/60 transition-all"
+                className="flex-1 text-sm font-bold text-gray-500 bg-white/5 border border-gray-200 py-3 rounded-2xl hover:text-gray-600 transition-all"
               >
                 Skip for now
               </button>
@@ -239,7 +239,7 @@ export default function DashboardPage() {
           </div>
         </div>
       )}
-    <main className="min-h-screen bg-[#1e1e2a] max-w-sm mx-auto pb-24 relative z-10">
+    <main className="min-h-screen bg-white max-w-sm mx-auto pb-24 relative z-10">
 
       <div className="px-5 py-5 space-y-5">
 
@@ -247,13 +247,13 @@ export default function DashboardPage() {
           <>
             {/* Empty hero */}
             <div className="pt-6 pb-2 flex flex-col items-center text-center space-y-1">
-              <p className="text-white/20 text-xs font-black tracking-[0.3em] uppercase">Matchbook</p>
-              <h1 className="text-2xl font-black text-white mt-1">Dashboard</h1>
+              <p className="text-gray-300 text-xs font-black tracking-[0.3em] uppercase">Matchbook</p>
+              <h1 className="text-2xl font-black text-gray-900 mt-1">Dashboard</h1>
             </div>
-            <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-8 text-center space-y-3">
+            <div className="rounded-2xl border border-gray-200 bg-gray-50 p-8 text-center space-y-3">
               <p className="text-4xl">🎾</p>
-              <p className="text-white font-bold">No matches yet</p>
-              <p className="text-white/40 text-sm">Log your first match to unlock your dashboard.</p>
+              <p className="text-gray-900 font-bold">No matches yet</p>
+              <p className="text-gray-500 text-sm">Log your first match to unlock your dashboard.</p>
               <Link href="/log" className="inline-block mt-2 bg-lime-400 text-black px-5 py-2.5 rounded-2xl text-sm font-black hover:bg-lime-300 transition-all">
                 + Log a Match
               </Link>
@@ -261,18 +261,18 @@ export default function DashboardPage() {
             {/* Still show challenges even if no matches */}
             {dashChallenges.filter(c => !dismissedChallengeIds.has(c.id)).length > 0 && (
               <section className="space-y-3">
-                <p className="text-xs font-black tracking-widest uppercase text-white/30">
-                  Challenges <span className="text-lime-400">({dashChallenges.filter(c => !dismissedChallengeIds.has(c.id)).length})</span>
+                <p className="text-xs font-black tracking-widest uppercase text-gray-400">
+                  Challenges <span className="text-lime-700">({dashChallenges.filter(c => !dismissedChallengeIds.has(c.id)).length})</span>
                 </p>
-                <div className="rounded-2xl border border-white/10 bg-white/[0.03] divide-y divide-white/[0.06]">
+                <div className="rounded-2xl border border-gray-200 bg-gray-50 divide-y divide-white/[0.06]">
                   {dashChallenges.filter(c => !dismissedChallengeIds.has(c.id)).map(c => (
                     <div key={c.id} className="px-4 py-3">
                       <div className="flex items-start justify-between gap-2">
                         <div>
-                          <p className="text-sm font-semibold text-white/80">
+                          <p className="text-sm font-semibold text-gray-800">
                             {c.isReceived ? `${c.challengerName} challenged you` : `vs ${c.opponentName}`}
                           </p>
-                          <p className="text-xs text-white/30 mt-0.5">
+                          <p className="text-xs text-gray-400 mt-0.5">
                             {c.type === "team" ? "Team" : "Group"}: {c.contextName}
                           </p>
                         </div>
@@ -281,13 +281,13 @@ export default function DashboardPage() {
                             <>
                               <Link
                                 href={`/log?opponent=${encodeURIComponent(c.isReceived ? c.challengerName : c.opponentName)}&challengeId=${c.id}&challengeType=${c.type}`}
-                                className="text-xs font-black text-lime-400 bg-lime-400/10 px-3 py-1.5 rounded-xl hover:bg-lime-400/20 transition-all"
+                                className="text-xs font-black text-lime-700 bg-lime-50 px-3 py-1.5 rounded-xl hover:bg-lime-100 transition-all"
                               >
                                 Log Match
                               </Link>
                               <button
                                 onClick={() => setDismissedChallengeIds(s => new Set(s).add(c.id))}
-                                className="text-xs font-bold text-white/20 hover:text-white/40 transition-colors"
+                                className="text-xs font-bold text-gray-300 hover:text-gray-500 transition-colors"
                                 title="Dismiss notification"
                               >
                                 ×
@@ -298,20 +298,20 @@ export default function DashboardPage() {
                               <button
                                 onClick={() => declineChallenge(c)}
                                 disabled={challengeBusy.has(c.id)}
-                                className="text-xs font-bold text-white/40 bg-white/5 border border-white/10 px-3 py-1.5 rounded-xl hover:text-red-400/70 hover:border-red-400/20 transition-all active:scale-95 disabled:opacity-40"
+                                className="text-xs font-bold text-gray-500 bg-white/5 border border-gray-200 px-3 py-1.5 rounded-xl hover:text-red-600/70 hover:border-red-400/20 transition-all active:scale-95 disabled:opacity-40"
                               >
                                 Decline
                               </button>
                               <button
                                 onClick={() => acceptChallenge(c)}
                                 disabled={challengeBusy.has(c.id)}
-                                className="text-xs font-black text-lime-400 bg-lime-400/10 px-3 py-1.5 rounded-xl hover:bg-lime-400/20 transition-all active:scale-95 disabled:opacity-40"
+                                className="text-xs font-black text-lime-700 bg-lime-50 px-3 py-1.5 rounded-xl hover:bg-lime-100 transition-all active:scale-95 disabled:opacity-40"
                               >
                                 Accept
                               </button>
                             </>
                           ) : (
-                            <span className="text-[10px] font-black px-2 py-1 rounded-lg text-white/30 bg-white/5">
+                            <span className="text-[10px] font-black px-2 py-1 rounded-lg text-gray-400 bg-white/5">
                               Pending
                             </span>
                           )}
@@ -331,7 +331,7 @@ export default function DashboardPage() {
               <div className="absolute top-0 left-1/2 -translate-x-1/2 w-56 h-56 rounded-full blur-[70px] opacity-25 pointer-events-none"
                 style={{ background: bgGlowColor }} />
 
-              <p className="text-white/20 text-[10px] font-black tracking-[0.35em] uppercase mb-5 z-10">Matchbook</p>
+              <p className="text-gray-300 text-[10px] font-black tracking-[0.35em] uppercase mb-5 z-10">Matchbook</p>
 
               {/* Win rate arc */}
               <div className="relative w-36 h-36 flex items-center justify-center z-10">
@@ -345,18 +345,18 @@ export default function DashboardPage() {
                   />
                 </svg>
                 <div className="text-center z-10">
-                  <p className="text-[2.6rem] font-black text-white leading-none tracking-tight">
-                    {winRate}<span className="text-xl text-white/30 ml-0.5">%</span>
+                  <p className="text-[2.6rem] font-black text-gray-900 leading-none tracking-tight">
+                    {winRate}<span className="text-xl text-gray-400 ml-0.5">%</span>
                   </p>
-                  <p className="text-[9px] font-black tracking-[0.2em] uppercase text-white/25 mt-1">Win Rate</p>
+                  <p className="text-[9px] font-black tracking-[0.2em] uppercase text-gray-400 mt-1">Win Rate</p>
                 </div>
               </div>
 
               {/* Record + streak */}
               <div className="flex items-center gap-3 mt-4 z-10">
-                <span className="text-white/40 text-sm font-bold">{record.wins}W – {record.losses}L</span>
+                <span className="text-gray-500 text-sm font-bold">{record.wins}W – {record.losses}L</span>
                 {streak !== 0 && (
-                  <span className={`text-xs font-black px-2.5 py-0.5 rounded-full ${streak > 0 ? "bg-lime-400/15 text-lime-400" : "bg-red-500/15 text-red-400"}`}>
+                  <span className={`text-xs font-black px-2.5 py-0.5 rounded-full ${streak > 0 ? "bg-lime-100 text-lime-700" : "bg-red-50 text-red-600"}`}>
                     {streakStr}
                   </span>
                 )}
@@ -366,18 +366,18 @@ export default function DashboardPage() {
             {/* ── Challenges ── */}
             {dashChallenges.filter(c => !dismissedChallengeIds.has(c.id)).length > 0 && (
               <section className="space-y-3">
-                <p className="text-xs font-black tracking-widest uppercase text-white/30">
-                  Challenges <span className="text-lime-400">({dashChallenges.filter(c => !dismissedChallengeIds.has(c.id)).length})</span>
+                <p className="text-xs font-black tracking-widest uppercase text-gray-400">
+                  Challenges <span className="text-lime-700">({dashChallenges.filter(c => !dismissedChallengeIds.has(c.id)).length})</span>
                 </p>
-                <div className="rounded-2xl border border-white/10 bg-white/[0.03] divide-y divide-white/[0.06]">
+                <div className="rounded-2xl border border-gray-200 bg-gray-50 divide-y divide-white/[0.06]">
                   {dashChallenges.filter(c => !dismissedChallengeIds.has(c.id)).map(c => (
                     <div key={c.id} className="px-4 py-3">
                       <div className="flex items-start justify-between gap-2">
                         <div>
-                          <p className="text-sm font-semibold text-white/80">
+                          <p className="text-sm font-semibold text-gray-800">
                             {c.isReceived ? `${c.challengerName} challenged you` : `vs ${c.opponentName}`}
                           </p>
-                          <p className="text-xs text-white/30 mt-0.5">
+                          <p className="text-xs text-gray-400 mt-0.5">
                             {c.type === "team" ? "Team" : "Group"}: {c.contextName}
                           </p>
                         </div>
@@ -386,13 +386,13 @@ export default function DashboardPage() {
                             <>
                               <Link
                                 href={`/log?opponent=${encodeURIComponent(c.isReceived ? c.challengerName : c.opponentName)}&challengeId=${c.id}&challengeType=${c.type}`}
-                                className="text-xs font-black text-lime-400 bg-lime-400/10 px-3 py-1.5 rounded-xl hover:bg-lime-400/20 transition-all"
+                                className="text-xs font-black text-lime-700 bg-lime-50 px-3 py-1.5 rounded-xl hover:bg-lime-100 transition-all"
                               >
                                 Log Match
                               </Link>
                               <button
                                 onClick={() => setDismissedChallengeIds(s => new Set(s).add(c.id))}
-                                className="text-xs font-bold text-white/20 hover:text-white/40 transition-colors"
+                                className="text-xs font-bold text-gray-300 hover:text-gray-500 transition-colors"
                                 title="Dismiss notification"
                               >
                                 ×
@@ -403,20 +403,20 @@ export default function DashboardPage() {
                               <button
                                 onClick={() => declineChallenge(c)}
                                 disabled={challengeBusy.has(c.id)}
-                                className="text-xs font-bold text-white/40 bg-white/5 border border-white/10 px-3 py-1.5 rounded-xl hover:text-red-400/70 hover:border-red-400/20 transition-all active:scale-95 disabled:opacity-40"
+                                className="text-xs font-bold text-gray-500 bg-white/5 border border-gray-200 px-3 py-1.5 rounded-xl hover:text-red-600/70 hover:border-red-400/20 transition-all active:scale-95 disabled:opacity-40"
                               >
                                 Decline
                               </button>
                               <button
                                 onClick={() => acceptChallenge(c)}
                                 disabled={challengeBusy.has(c.id)}
-                                className="text-xs font-black text-lime-400 bg-lime-400/10 px-3 py-1.5 rounded-xl hover:bg-lime-400/20 transition-all active:scale-95 disabled:opacity-40"
+                                className="text-xs font-black text-lime-700 bg-lime-50 px-3 py-1.5 rounded-xl hover:bg-lime-100 transition-all active:scale-95 disabled:opacity-40"
                               >
                                 Accept
                               </button>
                             </>
                           ) : (
-                            <span className="text-[10px] font-black px-2 py-1 rounded-lg text-white/30 bg-white/5">
+                            <span className="text-[10px] font-black px-2 py-1 rounded-lg text-gray-400 bg-white/5">
                               Pending
                             </span>
                           )}
@@ -436,14 +436,14 @@ export default function DashboardPage() {
                   label="Mental"
                   value={mentalAvg !== null ? `${mentalAvg}` : "—"}
                   sub={mentalAvg !== null ? "avg score" : "no data yet"}
-                  color={mentalAvg !== null ? (mentalAvg >= 7 ? "text-lime-400" : mentalAvg >= 5 ? "text-amber-400" : "text-red-400") : "text-white/40"}
+                  color={mentalAvg !== null ? (mentalAvg >= 7 ? "text-lime-700" : mentalAvg >= 5 ? "text-amber-400" : "text-red-600") : "text-gray-500"}
                 />
                 {execAvg !== null ? (
                   <StatCard
                     label="Execution"
                     value={`${execAvg}`}
                     sub="/10 avg"
-                    color={execAvg >= 7 ? "text-lime-400" : execAvg >= 5 ? "text-amber-400" : "text-red-400"}
+                    color={execAvg >= 7 ? "text-lime-700" : execAvg >= 5 ? "text-amber-400" : "text-red-600"}
                   />
                 ) : (
                   <StatCard label="Matches" value={`${matches.length}`} sub="logged" />
@@ -467,40 +467,40 @@ export default function DashboardPage() {
             {/* Quick Links */}
             <div className="grid grid-cols-2 gap-3 pt-1">
               <Link href="/history"
-                className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-center hover:border-white/20 transition-all active:scale-[0.98]">
+                className="rounded-2xl border border-gray-200 bg-gray-50 p-4 text-center hover:border-gray-200 transition-all active:scale-[0.98]">
                 <p className="text-2xl mb-1">📋</p>
-                <p className="text-sm font-bold text-white">History</p>
-                <p className="text-xs text-white/30">All your matches</p>
+                <p className="text-sm font-bold text-gray-900">History</p>
+                <p className="text-xs text-gray-400">All your matches</p>
               </Link>
               <Link href="/playbook"
-                className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-center hover:border-white/20 transition-all active:scale-[0.98]">
+                className="rounded-2xl border border-gray-200 bg-gray-50 p-4 text-center hover:border-gray-200 transition-all active:scale-[0.98]">
                 <p className="text-2xl mb-1">📖</p>
-                <p className="text-sm font-bold text-white">Playbook</p>
-                <p className="text-xs text-white/30">Strategy guides</p>
+                <p className="text-sm font-bold text-gray-900">Playbook</p>
+                <p className="text-xs text-gray-400">Strategy guides</p>
               </Link>
               <Link href="/analytics"
-                className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-center hover:border-white/20 transition-all active:scale-[0.98]">
+                className="rounded-2xl border border-gray-200 bg-gray-50 p-4 text-center hover:border-gray-200 transition-all active:scale-[0.98]">
                 <p className="text-2xl mb-1">📊</p>
-                <p className="text-sm font-bold text-white">Analytics</p>
-                <p className="text-xs text-white/30">Trends & charts</p>
+                <p className="text-sm font-bold text-gray-900">Analytics</p>
+                <p className="text-xs text-gray-400">Trends & charts</p>
               </Link>
               <Link href="/player-profile"
-                className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-center hover:border-white/20 transition-all active:scale-[0.98]">
+                className="rounded-2xl border border-gray-200 bg-gray-50 p-4 text-center hover:border-gray-200 transition-all active:scale-[0.98]">
                 <p className="text-2xl mb-1">👤</p>
-                <p className="text-sm font-bold text-white">Profile</p>
-                <p className="text-xs text-white/30">Grades & identity</p>
+                <p className="text-sm font-bold text-gray-900">Profile</p>
+                <p className="text-xs text-gray-400">Grades & identity</p>
               </Link>
               <Link href="/friends"
-                className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-center hover:border-white/20 transition-all active:scale-[0.98]">
+                className="rounded-2xl border border-gray-200 bg-gray-50 p-4 text-center hover:border-gray-200 transition-all active:scale-[0.98]">
                 <p className="text-2xl mb-1">👥</p>
-                <p className="text-sm font-bold text-white">Friends</p>
-                <p className="text-xs text-white/30">Find & view players</p>
+                <p className="text-sm font-bold text-gray-900">Friends</p>
+                <p className="text-xs text-gray-400">Find & view players</p>
               </Link>
               <Link href="/friends?tab=challenges"
-                className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-center hover:border-white/20 transition-all active:scale-[0.98] relative">
+                className="rounded-2xl border border-gray-200 bg-gray-50 p-4 text-center hover:border-gray-200 transition-all active:scale-[0.98] relative">
                 <p className="text-2xl mb-1">⚔️</p>
-                <p className="text-sm font-bold text-white">Challenges</p>
-                <p className="text-xs text-white/30">Teams & groups</p>
+                <p className="text-sm font-bold text-gray-900">Challenges</p>
+                <p className="text-xs text-gray-400">Teams & groups</p>
                 {dashChallenges.length > 0 && (
                   <span className="absolute top-2 right-2 w-4 h-4 rounded-full bg-lime-400 text-black text-[9px] font-black flex items-center justify-center">
                     {dashChallenges.length}
@@ -508,10 +508,10 @@ export default function DashboardPage() {
                 )}
               </Link>
               <Link href="/achievements"
-                className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-center hover:border-white/20 transition-all active:scale-[0.98]">
+                className="rounded-2xl border border-gray-200 bg-gray-50 p-4 text-center hover:border-gray-200 transition-all active:scale-[0.98]">
                 <p className="text-2xl mb-1">🏅</p>
-                <p className="text-sm font-bold text-white">Achievements</p>
-                <p className="text-xs text-white/30">Badges & progress</p>
+                <p className="text-sm font-bold text-gray-900">Achievements</p>
+                <p className="text-xs text-gray-400">Badges & progress</p>
               </Link>
             </div>
           </>

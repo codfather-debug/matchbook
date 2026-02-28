@@ -17,12 +17,12 @@ function GradeCard({ label, value, note }: { label: string; value: string | null
   const g = gradeColor(value ?? "F");
   const bg = gradeBg(value ?? "F");
   return (
-    <div className={`rounded-2xl border p-4 flex items-center justify-between ${value ? bg : "border-white/10 bg-white/[0.02]"}`}>
+    <div className={`rounded-2xl border p-4 flex items-center justify-between ${value ? bg : "border-gray-200 bg-gray-50"}`}>
       <div>
-        <p className="text-sm font-bold text-white/70">{label}</p>
-        {note && <p className="text-xs text-white/30 mt-0.5">{note}</p>}
+        <p className="text-sm font-bold text-gray-700">{label}</p>
+        {note && <p className="text-xs text-gray-400 mt-0.5">{note}</p>}
       </div>
-      <span className={`text-3xl font-black ${value ? g : "text-white/20"}`}>{value ?? "—"}</span>
+      <span className={`text-3xl font-black ${value ? g : "text-gray-300"}`}>{value ?? "—"}</span>
     </div>
   );
 }
@@ -94,8 +94,8 @@ export default function PlayerProfilePage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-[#1e1e2a] flex items-center justify-center">
-        <p className="text-white/30 text-sm">Loading…</p>
+      <main className="min-h-screen bg-white flex items-center justify-center">
+        <p className="text-gray-400 text-sm">Loading…</p>
       </main>
     );
   }
@@ -167,23 +167,23 @@ export default function PlayerProfilePage() {
   const surfEmoji: Record<string, string> = { hard: "🟦", clay: "🟫", grass: "🟩" };
 
   return (
-    <main className="min-h-screen bg-[#1e1e2a] max-w-sm mx-auto pb-24">
+    <main className="min-h-screen bg-white max-w-sm mx-auto pb-24">
       {/* Header */}
-      <div className="px-5 pt-5 pb-5 border-b border-white/[0.06]">
-        <p className="text-white/30 text-xs font-bold tracking-widest uppercase mb-3">Player Profile</p>
+      <div className="px-5 pt-5 pb-5 border-b border-gray-200">
+        <p className="text-gray-400 text-xs font-bold tracking-widest uppercase mb-3">Player Profile</p>
         <div className="flex items-end justify-between">
           <div>
-            <h1 className="text-2xl font-black text-white">{displayName || email}</h1>
-            <p className="text-white/40 text-sm mt-0.5">{record.wins}W – {record.losses}L · {winRate}% win rate</p>
-            <p className="text-white/30 text-xs mt-0.5">{matches.length} matches logged</p>
+            <h1 className="text-2xl font-black text-gray-900">{displayName || email}</h1>
+            <p className="text-gray-500 text-sm mt-0.5">{record.wins}W – {record.losses}L · {winRate}% win rate</p>
+            <p className="text-gray-400 text-xs mt-0.5">{matches.length} matches logged</p>
           </div>
           <div className={`text-right`}>
             {streak !== 0 && (
-              <div className={`text-2xl font-black ${streak > 0 ? "text-lime-400" : "text-red-400"}`}>
+              <div className={`text-2xl font-black ${streak > 0 ? "text-lime-700" : "text-red-600"}`}>
                 {streak > 0 ? `+${streak}W` : `${Math.abs(streak)}L`}
               </div>
             )}
-            {streak !== 0 && <p className="text-xs text-white/30">current streak</p>}
+            {streak !== 0 && <p className="text-xs text-gray-400">current streak</p>}
           </div>
         </div>
       </div>
@@ -192,8 +192,8 @@ export default function PlayerProfilePage() {
 
         {/* Performance Grades */}
         <section className="space-y-3">
-          <p className="text-xs font-black tracking-widest uppercase text-white/30">Performance Grades</p>
-          <p className="text-xs text-white/20">Based on last 10 matches</p>
+          <p className="text-xs font-black tracking-widest uppercase text-gray-400">Performance Grades</p>
+          <p className="text-xs text-gray-300">Based on last 10 matches</p>
           <div className="space-y-2">
             <GradeCard label="Consistency"  value={consistGrade}  note={consistNote} />
             <GradeCard label="Clutch"       value={clutchGrade}   note={clutchNote} />
@@ -206,28 +206,28 @@ export default function PlayerProfilePage() {
         {/* Identity Snapshot */}
         {matches.length >= 3 && (
           <section className="space-y-3">
-            <p className="text-xs font-black tracking-widest uppercase text-white/30">Identity Snapshot</p>
-            <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 space-y-3">
+            <p className="text-xs font-black tracking-widest uppercase text-gray-400">Identity Snapshot</p>
+            <div className="rounded-2xl border border-gray-200 bg-gray-50 p-4 space-y-3">
               {topStyle && (
                 <div className="flex items-center justify-between">
-                  <p className="text-sm text-white/50">Most common opponent type</p>
-                  <span className="px-2.5 py-0.5 rounded-full bg-white/10 text-white/70 text-xs font-semibold">
+                  <p className="text-sm text-gray-500">Most common opponent type</p>
+                  <span className="px-2.5 py-0.5 rounded-full bg-white/10 text-gray-700 text-xs font-semibold">
                     {PLAY_STYLES.find(p => p.value === topStyle)?.label ?? topStyle}
                   </span>
                 </div>
               )}
               {bestSurface && (
                 <div className="flex items-center justify-between">
-                  <p className="text-sm text-white/50">Best surface</p>
-                  <span className="text-sm font-bold text-lime-400">
+                  <p className="text-sm text-gray-500">Best surface</p>
+                  <span className="text-sm font-bold text-lime-700">
                     {surfEmoji[bestSurface]} {bestSurface.charAt(0).toUpperCase() + bestSurface.slice(1)} ({bestSurfRate}%)
                   </span>
                 </div>
               )}
               {lossPattern && (
                 <div className="flex items-start justify-between gap-4">
-                  <p className="text-sm text-white/50">Loss pattern</p>
-                  <p className="text-sm text-red-400/80 font-medium text-right">{lossPattern}</p>
+                  <p className="text-sm text-gray-500">Loss pattern</p>
+                  <p className="text-sm text-red-600/80 font-medium text-right">{lossPattern}</p>
                 </div>
               )}
             </div>
@@ -236,52 +236,52 @@ export default function PlayerProfilePage() {
 
         {/* Achievements link */}
         <Link href="/achievements"
-          className="flex items-center justify-between p-4 rounded-2xl border border-white/10 bg-white/[0.03] hover:border-white/20 transition-all active:scale-[0.98]">
+          className="flex items-center justify-between p-4 rounded-2xl border border-gray-200 bg-gray-50 hover:border-gray-200 transition-all active:scale-[0.98]">
           <div className="flex items-center gap-3">
             <span className="text-2xl">🏅</span>
             <div>
-              <p className="text-sm font-bold text-white">Achievements</p>
-              <p className="text-xs text-white/30">View your badges & progress</p>
+              <p className="text-sm font-bold text-gray-900">Achievements</p>
+              <p className="text-xs text-gray-400">View your badges & progress</p>
             </div>
           </div>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-white/30">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-gray-400">
             <polyline points="9 18 15 12 9 6"/>
           </svg>
         </Link>
 
         {/* Friends link */}
         <Link href="/friends"
-          className="flex items-center justify-between p-4 rounded-2xl border border-white/10 bg-white/[0.03] hover:border-white/20 transition-all active:scale-[0.98]">
+          className="flex items-center justify-between p-4 rounded-2xl border border-gray-200 bg-gray-50 hover:border-gray-200 transition-all active:scale-[0.98]">
           <div className="flex items-center gap-3">
             <span className="text-2xl">👥</span>
             <div>
-              <p className="text-sm font-bold text-white">Friends</p>
-              <p className="text-xs text-white/30">Find players & view their stats</p>
+              <p className="text-sm font-bold text-gray-900">Friends</p>
+              <p className="text-xs text-gray-400">Find players & view their stats</p>
             </div>
           </div>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-white/30">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-gray-400">
             <polyline points="9 18 15 12 9 6"/>
           </svg>
         </Link>
 
         {/* Name */}
         <section className="space-y-3">
-          <p className="text-xs font-black tracking-widest uppercase text-white/30">Your Name</p>
-          <p className="text-xs text-white/20">Shown to friends when they search for you</p>
+          <p className="text-xs font-black tracking-widest uppercase text-gray-400">Your Name</p>
+          <p className="text-xs text-gray-300">Shown to friends when they search for you</p>
           <div className="flex gap-2">
             <input
               type="text"
               placeholder="First"
               value={firstName}
               onChange={e => setFirstName(e.target.value)}
-              className="flex-1 bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white text-sm placeholder:text-white/25 outline-none focus:ring-2 focus:ring-lime-400/50 focus:border-lime-400/30 transition-all"
+              className="flex-1 bg-white/5 border border-gray-200 rounded-2xl px-4 py-3 text-gray-900 text-sm placeholder:text-gray-400 outline-none focus:ring-2 focus:ring-lime-400/50 focus:border-lime-400/30 transition-all"
             />
             <input
               type="text"
               placeholder="Last"
               value={lastName}
               onChange={e => setLastName(e.target.value)}
-              className="flex-1 bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white text-sm placeholder:text-white/25 outline-none focus:ring-2 focus:ring-lime-400/50 focus:border-lime-400/30 transition-all"
+              className="flex-1 bg-white/5 border border-gray-200 rounded-2xl px-4 py-3 text-gray-900 text-sm placeholder:text-gray-400 outline-none focus:ring-2 focus:ring-lime-400/50 focus:border-lime-400/30 transition-all"
             />
           </div>
           <button
@@ -295,12 +295,12 @@ export default function PlayerProfilePage() {
 
         {/* Privacy Settings */}
         <section className="space-y-3">
-          <p className="text-xs font-black tracking-widest uppercase text-white/30">Privacy</p>
-          <div className="rounded-2xl border border-white/10 bg-white/[0.03] divide-y divide-white/[0.06]">
+          <p className="text-xs font-black tracking-widest uppercase text-gray-400">Privacy</p>
+          <div className="rounded-2xl border border-gray-200 bg-gray-50 divide-y divide-white/[0.06]">
             <div className="flex items-center justify-between px-4 py-3.5">
               <div>
-                <p className="text-sm font-semibold text-white/80">Share my stats</p>
-                <p className="text-xs text-white/30 mt-0.5">Friends can see your grades & record</p>
+                <p className="text-sm font-semibold text-gray-800">Share my stats</p>
+                <p className="text-xs text-gray-400 mt-0.5">Friends can see your grades & record</p>
               </div>
               <button
                 onClick={() => updatePrivacy("share_stats", !shareStats)}
@@ -311,8 +311,8 @@ export default function PlayerProfilePage() {
             </div>
             <div className="flex items-center justify-between px-4 py-3.5">
               <div>
-                <p className="text-sm font-semibold text-white/80">Share my match history</p>
-                <p className="text-xs text-white/30 mt-0.5">Friends can see your match feed</p>
+                <p className="text-sm font-semibold text-gray-800">Share my match history</p>
+                <p className="text-xs text-gray-400 mt-0.5">Friends can see your match feed</p>
               </div>
               <button
                 onClick={() => updatePrivacy("share_history", !shareHistory)}

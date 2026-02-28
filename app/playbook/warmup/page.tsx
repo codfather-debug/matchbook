@@ -9,7 +9,7 @@ const PHASES = [
     label: "Mini Tennis",
     emoji: "🎾",
     color: "border-lime-400/30 bg-lime-400/[0.06]",
-    accent: "text-lime-400",
+    accent: "text-lime-700",
     tips: [
       "Stand at the service box, hit soft volleys and drops",
       "Focus on touch and feel — easy, loose swings",
@@ -61,7 +61,7 @@ const PHASES = [
     label: "Returns & Mental Prep",
     emoji: "🧠",
     color: "border-red-400/30 bg-red-400/[0.06]",
-    accent: "text-red-400",
+    accent: "text-red-600",
     tips: [
       "Return a few serves — get eyes on ball speed",
       "Set your focus word for the match",
@@ -97,14 +97,14 @@ export default function WarmupPlaybookPage() {
   const allChecked = MENTAL_CHECKLIST.every((_, i) => checked[i]);
 
   return (
-    <main className="min-h-screen bg-[#1e1e2a] max-w-sm mx-auto pb-10">
+    <main className="min-h-screen bg-white max-w-sm mx-auto pb-10">
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-[#1e1e2a]/90 backdrop-blur-xl border-b border-white/[0.06] px-5">
+      <div className="sticky top-0 z-10 bg-white/90 backdrop-blur-xl border-b border-gray-200 px-5">
         <div className="flex items-center justify-between h-14">
-          <Link href="/playbook" className="text-white/40 text-sm font-medium hover:text-white/80 transition-colors">
+          <Link href="/playbook" className="text-gray-500 text-sm font-medium hover:text-gray-800 transition-colors">
             ← Back
           </Link>
-          <span className="text-xs font-bold tracking-[0.2em] uppercase text-white/30">Playbook</span>
+          <span className="text-xs font-bold tracking-[0.2em] uppercase text-gray-400">Playbook</span>
           <div className="w-12" />
         </div>
       </div>
@@ -112,12 +112,12 @@ export default function WarmupPlaybookPage() {
       <div className="px-5 pt-6 pb-10 space-y-6">
         {/* Hero */}
         <div className="rounded-3xl border border-lime-400/20 bg-gradient-to-br from-lime-400/15 to-lime-400/5 p-6">
-          <p className="text-xs font-black tracking-widest uppercase text-lime-400 mb-1">Warm-Up Routine</p>
-          <h1 className="text-2xl font-black text-white">10-Minute Protocol</h1>
-          <p className="text-sm text-white/50 mt-2 leading-relaxed">
+          <p className="text-xs font-black tracking-widest uppercase text-lime-700 mb-1">Warm-Up Routine</p>
+          <h1 className="text-2xl font-black text-gray-900">10-Minute Protocol</h1>
+          <p className="text-sm text-gray-500 mt-2 leading-relaxed">
             A consistent pre-match warm-up reduces injury risk, sharpens touch, and sets your mental tone before the first point.
           </p>
-          <div className="mt-4 flex items-center gap-2 text-xs text-white/30">
+          <div className="mt-4 flex items-center gap-2 text-xs text-gray-400">
             <span className="w-2 h-2 rounded-full bg-lime-400 inline-block"></span>
             Start 10–15 minutes before your match
           </div>
@@ -125,16 +125,16 @@ export default function WarmupPlaybookPage() {
 
         {/* Before Court — Dynamic Movement */}
         <section className="space-y-3">
-          <p className="text-xs font-black tracking-widest uppercase text-white/30">Before You Hit — Dynamic Movement</p>
-          <p className="text-xs text-white/30">Do these 5 minutes before going on court.</p>
-          <div className="rounded-2xl border border-white/10 bg-white/[0.02] divide-y divide-white/[0.06]">
+          <p className="text-xs font-black tracking-widest uppercase text-gray-400">Before You Hit — Dynamic Movement</p>
+          <p className="text-xs text-gray-400">Do these 5 minutes before going on court.</p>
+          <div className="rounded-2xl border border-gray-200 bg-gray-50 divide-y divide-white/[0.06]">
             {DYNAMIC_STRETCHES.map(s => (
               <div key={s.move} className="px-4 py-3">
                 <div className="flex items-center justify-between">
-                  <p className="text-sm font-bold text-white">{s.move}</p>
-                  <span className="text-xs text-white/30 bg-white/[0.06] px-2 py-0.5 rounded-full">{s.sets}</span>
+                  <p className="text-sm font-bold text-gray-900">{s.move}</p>
+                  <span className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">{s.sets}</span>
                 </div>
-                <p className="text-xs text-white/40 mt-0.5">{s.note}</p>
+                <p className="text-xs text-gray-500 mt-0.5">{s.note}</p>
               </div>
             ))}
           </div>
@@ -142,23 +142,23 @@ export default function WarmupPlaybookPage() {
 
         {/* On-Court Protocol */}
         <section className="space-y-3">
-          <p className="text-xs font-black tracking-widest uppercase text-white/30">On-Court Protocol</p>
+          <p className="text-xs font-black tracking-widest uppercase text-gray-400">On-Court Protocol</p>
           <div className="space-y-2">
             {PHASES.map((phase, i) => (
               <div key={phase.label} className={`rounded-2xl border p-4 ${phase.color}`}>
                 <div className="flex items-center gap-3 mb-2">
                   <div className="w-12 text-center">
                     <p className={`text-xs font-black ${phase.accent}`}>{phase.time}</p>
-                    <p className="text-[10px] text-white/25">{phase.duration}</p>
+                    <p className="text-[10px] text-gray-400">{phase.duration}</p>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-lg">{phase.emoji}</span>
-                    <p className="text-sm font-black text-white">{phase.label}</p>
+                    <p className="text-sm font-black text-gray-900">{phase.label}</p>
                   </div>
                 </div>
                 <ul className="space-y-1 pl-14">
                   {phase.tips.map(t => (
-                    <li key={t} className="flex gap-2 text-xs text-white/60">
+                    <li key={t} className="flex gap-2 text-xs text-gray-600">
                       <span className={`${phase.accent} flex-shrink-0`}>·</span>
                       {t}
                     </li>
@@ -171,8 +171,8 @@ export default function WarmupPlaybookPage() {
 
         {/* Mental Readiness Checklist */}
         <section className="space-y-3">
-          <p className="text-xs font-black tracking-widest uppercase text-white/30">Mental Readiness Checklist</p>
-          <div className="rounded-2xl border border-white/10 bg-white/[0.02] divide-y divide-white/[0.06]">
+          <p className="text-xs font-black tracking-widest uppercase text-gray-400">Mental Readiness Checklist</p>
+          <div className="rounded-2xl border border-gray-200 bg-gray-50 divide-y divide-white/[0.06]">
             {MENTAL_CHECKLIST.map((item, i) => (
               <button
                 key={i}
@@ -180,7 +180,7 @@ export default function WarmupPlaybookPage() {
                 className="w-full flex items-center gap-3 px-4 py-3 text-left transition-all"
               >
                 <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${
-                  checked[i] ? "border-lime-400 bg-lime-400" : "border-white/20"
+                  checked[i] ? "border-lime-400 bg-lime-400" : "border-gray-200"
                 }`}>
                   {checked[i] && (
                     <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
@@ -188,21 +188,21 @@ export default function WarmupPlaybookPage() {
                     </svg>
                   )}
                 </div>
-                <p className={`text-sm transition-all ${checked[i] ? "text-white/40 line-through" : "text-white/80"}`}>{item}</p>
+                <p className={`text-sm transition-all ${checked[i] ? "text-gray-500 line-through" : "text-gray-800"}`}>{item}</p>
               </button>
             ))}
           </div>
           {allChecked && (
             <div className="rounded-2xl border border-lime-400/30 bg-lime-400/[0.06] px-4 py-3 text-center">
-              <p className="text-sm font-black text-lime-400">You're ready. Go compete.</p>
+              <p className="text-sm font-black text-lime-700">You're ready. Go compete.</p>
             </div>
           )}
         </section>
 
         {/* The Code Note */}
-        <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] px-4 py-3">
-          <p className="text-xs font-black text-white/20 uppercase tracking-widest mb-1">Note — The Code</p>
-          <p className="text-xs text-white/30 leading-relaxed">
+        <div className="rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3">
+          <p className="text-xs font-black text-gray-300 uppercase tracking-widest mb-1">Note — The Code</p>
+          <p className="text-xs text-gray-400 leading-relaxed">
             Per USTA regulations, each player is entitled to a warm-up of up to 5 minutes on court (or as mutually agreed). Use this time purposefully — it's part of the match.
           </p>
         </div>

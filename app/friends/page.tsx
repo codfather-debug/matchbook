@@ -495,25 +495,25 @@ export default function FriendsPage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-[#1e1e2a] flex items-center justify-center">
-        <p className="text-white/30 text-sm">Loading…</p>
+      <main className="min-h-screen bg-white flex items-center justify-center">
+        <p className="text-gray-400 text-sm">Loading…</p>
       </main>
     );
   }
 
   return (
-    <main className="min-h-screen bg-[#1e1e2a] max-w-sm mx-auto pb-24">
+    <main className="min-h-screen bg-white max-w-sm mx-auto pb-24">
       {/* Header */}
-      <div className="px-5 pt-5 pb-4 border-b border-white/[0.06]">
+      <div className="px-5 pt-5 pb-4 border-b border-gray-200">
         <div className="flex items-center gap-2 mb-1">
-          <Link href="/player-profile" className="text-white/30 hover:text-white/60 transition-colors">
+          <Link href="/player-profile" className="text-gray-400 hover:text-gray-600 transition-colors">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="15 18 9 12 15 6"/>
             </svg>
           </Link>
-          <p className="text-white/30 text-xs font-bold tracking-widest uppercase">Matchbook</p>
+          <p className="text-gray-400 text-xs font-bold tracking-widest uppercase">Matchbook</p>
         </div>
-        <h1 className="text-2xl font-black text-white">Social</h1>
+        <h1 className="text-2xl font-black text-gray-900">Social</h1>
         {/* Tab switcher */}
         <div className="flex gap-1.5 mt-3 flex-wrap">
           {(["friends", "teams", "groups", "challenges"] as ActiveTab[]).map(t => (
@@ -521,7 +521,7 @@ export default function FriendsPage() {
               key={t}
               onClick={() => setActiveTab(t)}
               className={`text-xs font-black tracking-widest uppercase px-3 py-1.5 rounded-xl transition-all capitalize
-                ${activeTab === t ? "bg-lime-400/20 text-lime-400" : "text-white/30 hover:text-white/50"}`}
+                ${activeTab === t ? "bg-lime-100 text-lime-700" : "text-gray-400 hover:text-gray-500"}`}
             >
               {t}
             </button>
@@ -536,11 +536,11 @@ export default function FriendsPage() {
           <>
             {/* ── Discover section (inline, always at top) ── */}
             <section className="space-y-3">
-              <p className="text-xs font-black tracking-widest uppercase text-white/30">Discover Players</p>
+              <p className="text-xs font-black tracking-widest uppercase text-gray-400">Discover Players</p>
 
               {/* Search */}
               <div className="relative">
-                <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/30" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
                 </svg>
                 <input
@@ -548,37 +548,37 @@ export default function FriendsPage() {
                   placeholder="Search by name or username…"
                   value={discoverQuery}
                   onChange={e => setDiscoverQuery(e.target.value)}
-                  className="w-full bg-white/5 border border-white/10 rounded-2xl pl-10 pr-4 py-3 text-white text-sm placeholder:text-white/25 outline-none focus:ring-2 focus:ring-lime-400/50 focus:border-lime-400/30 transition-all"
+                  className="w-full bg-white/5 border border-gray-200 rounded-2xl pl-10 pr-4 py-3 text-gray-900 text-sm placeholder:text-gray-400 outline-none focus:ring-2 focus:ring-lime-400/50 focus:border-lime-400/30 transition-all"
                 />
               </div>
 
               {discoverLoading ? (
-                <p className="text-xs text-white/20 text-center py-3">Loading players…</p>
+                <p className="text-xs text-gray-300 text-center py-3">Loading players…</p>
               ) : discoverList.length === 0 ? (
-                <p className="text-xs text-white/20 text-center py-3">No players found</p>
+                <p className="text-xs text-gray-300 text-center py-3">No players found</p>
               ) : (
-                <div className="rounded-2xl border border-white/10 bg-white/[0.03] divide-y divide-white/[0.06]">
+                <div className="rounded-2xl border border-gray-200 bg-gray-50 divide-y divide-white/[0.06]">
                   {discoverList.map(r => (
                     <div key={r.id} className="flex items-center gap-3 px-4 py-3">
                       <button
                         onClick={() => setProfileUserId(r.id)}
-                        className="w-9 h-9 rounded-full bg-white/[0.06] flex items-center justify-center flex-shrink-0 active:scale-90 transition-transform"
+                        className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0 active:scale-90 transition-transform"
                       >
-                        <span className="text-sm font-black text-white/50">
+                        <span className="text-sm font-black text-gray-500">
                           {(r.display_name || r.username)[0].toUpperCase()}
                         </span>
                       </button>
                       <button onClick={() => setProfileUserId(r.id)} className="flex-1 text-left min-w-0">
-                        <p className="text-sm font-semibold text-white/80 truncate">{r.display_name ?? `@${r.username}`}</p>
-                        {r.display_name && <p className="text-xs text-white/30">@{r.username}</p>}
+                        <p className="text-sm font-semibold text-gray-800 truncate">{r.display_name ?? `@${r.username}`}</p>
+                        {r.display_name && <p className="text-xs text-gray-400">@{r.username}</p>}
                       </button>
                       {sentRequests.has(r.id) ? (
-                        <span className="text-xs text-white/30 font-semibold flex-shrink-0">Sent ✓</span>
+                        <span className="text-xs text-gray-400 font-semibold flex-shrink-0">Sent ✓</span>
                       ) : (
                         <button
                           onClick={() => sendRequest(r.id)}
                           disabled={busy.has(r.id)}
-                          className="text-xs font-black text-lime-400 bg-lime-400/10 px-3 py-1.5 rounded-xl hover:bg-lime-400/20 transition-all active:scale-95 disabled:opacity-40 flex-shrink-0"
+                          className="text-xs font-black text-lime-700 bg-lime-50 px-3 py-1.5 rounded-xl hover:bg-lime-100 transition-all active:scale-95 disabled:opacity-40 flex-shrink-0"
                         >
                           Add
                         </button>
@@ -592,33 +592,33 @@ export default function FriendsPage() {
             {/* Pending requests */}
             {pending.length > 0 && (
               <section className="space-y-3">
-                <p className="text-xs font-black tracking-widest uppercase text-white/30">
-                  Friend Requests <span className="text-lime-400">({pending.length})</span>
+                <p className="text-xs font-black tracking-widest uppercase text-gray-400">
+                  Friend Requests <span className="text-lime-700">({pending.length})</span>
                 </p>
-                <div className="rounded-2xl border border-white/10 bg-white/[0.03] divide-y divide-white/[0.06]">
+                <div className="rounded-2xl border border-gray-200 bg-gray-50 divide-y divide-white/[0.06]">
                   {pending.map(p => (
                     <div key={p.friendshipId} className="flex items-center gap-3 px-4 py-3">
-                      <div className="w-10 h-10 rounded-full bg-lime-400/10 flex items-center justify-center flex-shrink-0">
-                        <span className="text-base font-black text-lime-400">
+                      <div className="w-10 h-10 rounded-full bg-lime-50 flex items-center justify-center flex-shrink-0">
+                        <span className="text-base font-black text-lime-700">
                           {(p.displayName || p.username)[0].toUpperCase()}
                         </span>
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-white/80 truncate">{p.displayName ?? `@${p.username}`}</p>
-                        {p.displayName && <p className="text-xs text-white/30">@{p.username}</p>}
+                        <p className="text-sm font-semibold text-gray-800 truncate">{p.displayName ?? `@${p.username}`}</p>
+                        {p.displayName && <p className="text-xs text-gray-400">@{p.username}</p>}
                       </div>
                       <div className="flex gap-2 flex-shrink-0">
                         <button
                           onClick={() => declineRequest(p.friendshipId)}
                           disabled={busy.has(p.friendshipId)}
-                          className="text-xs font-bold text-white/40 bg-white/5 border border-white/10 px-3 py-1.5 rounded-xl hover:text-white/60 transition-all active:scale-95 disabled:opacity-40"
+                          className="text-xs font-bold text-gray-500 bg-white/5 border border-gray-200 px-3 py-1.5 rounded-xl hover:text-gray-600 transition-all active:scale-95 disabled:opacity-40"
                         >
                           Decline
                         </button>
                         <button
                           onClick={() => acceptRequest(p.friendshipId)}
                           disabled={busy.has(p.friendshipId)}
-                          className="text-xs font-black text-lime-400 bg-lime-400/10 px-3 py-1.5 rounded-xl hover:bg-lime-400/20 transition-all active:scale-95 disabled:opacity-40"
+                          className="text-xs font-black text-lime-700 bg-lime-50 px-3 py-1.5 rounded-xl hover:bg-lime-100 transition-all active:scale-95 disabled:opacity-40"
                         >
                           Accept
                         </button>
@@ -631,24 +631,24 @@ export default function FriendsPage() {
 
             {/* Friends list */}
             <section className="space-y-3">
-              <p className="text-xs font-black tracking-widest uppercase text-white/30">
-                Your Friends <span className="text-white/20">({friends.length})</span>
+              <p className="text-xs font-black tracking-widest uppercase text-gray-400">
+                Your Friends <span className="text-gray-300">({friends.length})</span>
               </p>
               {friends.length === 0 ? (
-                <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-8 text-center space-y-2">
+                <div className="rounded-2xl border border-gray-200 bg-gray-50 p-8 text-center space-y-2">
                   <p className="text-3xl">👥</p>
-                  <p className="text-sm text-white/50">No friends yet</p>
-                  <p className="text-xs text-white/25">Search above to find and add players</p>
+                  <p className="text-sm text-gray-500">No friends yet</p>
+                  <p className="text-xs text-gray-400">Search above to find and add players</p>
                 </div>
               ) : (
-                <div className="rounded-2xl border border-white/10 bg-white/[0.03] divide-y divide-white/[0.06]">
+                <div className="rounded-2xl border border-gray-200 bg-gray-50 divide-y divide-white/[0.06]">
                   {friends.map(f => (
                     <div key={f.friendshipId} className="flex items-center gap-3 px-4 py-3">
                       <button
                         onClick={() => setProfileUserId(f.userId)}
-                        className="w-10 h-10 rounded-full bg-lime-400/10 flex items-center justify-center flex-shrink-0 active:scale-90 transition-transform"
+                        className="w-10 h-10 rounded-full bg-lime-50 flex items-center justify-center flex-shrink-0 active:scale-90 transition-transform"
                       >
-                        <span className="text-base font-black text-lime-400">
+                        <span className="text-base font-black text-lime-700">
                           {(f.displayName || f.username)[0].toUpperCase()}
                         </span>
                       </button>
@@ -656,13 +656,13 @@ export default function FriendsPage() {
                         onClick={() => setProfileUserId(f.userId)}
                         className="flex-1 text-left min-w-0"
                       >
-                        <p className="text-sm font-semibold text-white/80 truncate">{f.displayName ?? `@${f.username}`}</p>
-                        {f.displayName && <p className="text-xs text-white/30">@{f.username}</p>}
+                        <p className="text-sm font-semibold text-gray-800 truncate">{f.displayName ?? `@${f.username}`}</p>
+                        {f.displayName && <p className="text-xs text-gray-400">@{f.username}</p>}
                       </button>
                       <button
                         onClick={() => removeFriend(f.friendshipId)}
                         disabled={busy.has(f.friendshipId)}
-                        className="text-xs text-white/20 hover:text-red-400/60 transition-colors disabled:opacity-40 flex-shrink-0"
+                        className="text-xs text-gray-300 hover:text-red-600/60 transition-colors disabled:opacity-40 flex-shrink-0"
                       >
                         Remove
                       </button>
@@ -681,7 +681,7 @@ export default function FriendsPage() {
             <div className="flex gap-2">
               <button
                 onClick={() => { setShowCreateTeam(true); setTeamError(""); }}
-                className="flex-1 text-xs font-black text-lime-400 bg-lime-400/10 py-2.5 rounded-xl hover:bg-lime-400/20 transition-all active:scale-95"
+                className="flex-1 text-xs font-black text-lime-700 bg-lime-50 py-2.5 rounded-xl hover:bg-lime-100 transition-all active:scale-95"
               >
                 + Create Team
               </button>
@@ -689,7 +689,7 @@ export default function FriendsPage() {
 
             {/* Join via code */}
             <section className="space-y-2">
-              <p className="text-xs font-black tracking-widest uppercase text-white/30">Join via Invite Code</p>
+              <p className="text-xs font-black tracking-widest uppercase text-gray-400">Join via Invite Code</p>
               <div className="flex gap-2">
                 <input
                   type="text"
@@ -697,36 +697,36 @@ export default function FriendsPage() {
                   value={joinCode}
                   onChange={e => setJoinCode(e.target.value.toUpperCase())}
                   maxLength={6}
-                  className="flex-1 bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white text-sm placeholder:text-white/25 outline-none focus:ring-2 focus:ring-lime-400/50 focus:border-lime-400/30 transition-all font-mono tracking-widest uppercase"
+                  className="flex-1 bg-white/5 border border-gray-200 rounded-2xl px-4 py-3 text-gray-900 text-sm placeholder:text-gray-400 outline-none focus:ring-2 focus:ring-lime-400/50 focus:border-lime-400/30 transition-all font-mono tracking-widest uppercase"
                 />
                 <button
                   onClick={joinTeam}
                   disabled={teamBusy || joinCode.trim().length < 6}
-                  className="text-xs font-black text-lime-400 bg-lime-400/10 px-4 rounded-xl hover:bg-lime-400/20 transition-all active:scale-95 disabled:opacity-40"
+                  className="text-xs font-black text-lime-700 bg-lime-50 px-4 rounded-xl hover:bg-lime-100 transition-all active:scale-95 disabled:opacity-40"
                 >
                   Join
                 </button>
               </div>
-              {teamError && <p className="text-xs text-red-400/80">{teamError}</p>}
+              {teamError && <p className="text-xs text-red-600/80">{teamError}</p>}
             </section>
 
             {/* Discover Teams */}
             <section className="space-y-3">
-              <p className="text-xs font-black tracking-widest uppercase text-white/30">Discover Teams</p>
+              <p className="text-xs font-black tracking-widest uppercase text-gray-400">Discover Teams</p>
               {discoverTeams.length === 0 ? (
-                <p className="text-white/25 text-xs text-center py-3">No other teams to discover</p>
+                <p className="text-gray-400 text-xs text-center py-3">No other teams to discover</p>
               ) : (
-                <div className="rounded-2xl border border-white/10 bg-white/[0.03] divide-y divide-white/[0.06]">
+                <div className="rounded-2xl border border-gray-200 bg-gray-50 divide-y divide-white/[0.06]">
                   {discoverTeams.map(t => (
                     <div key={t.id} className="flex items-center justify-between px-4 py-3">
                       <div>
-                        <p className="text-sm font-semibold text-white/80">{t.name}</p>
-                        <p className="text-xs text-white/30">{t.member_count} member{t.member_count !== 1 ? "s" : ""}</p>
+                        <p className="text-sm font-semibold text-gray-800">{t.name}</p>
+                        <p className="text-xs text-gray-400">{t.member_count} member{t.member_count !== 1 ? "s" : ""}</p>
                       </div>
                       <button
                         onClick={() => joinDiscoverTeam(t.id)}
                         disabled={discoverTeamsBusy.has(t.id)}
-                        className="text-xs font-black text-lime-400 bg-lime-400/10 px-3 py-1.5 rounded-xl hover:bg-lime-400/20 transition-all active:scale-95 disabled:opacity-40"
+                        className="text-xs font-black text-lime-700 bg-lime-50 px-3 py-1.5 rounded-xl hover:bg-lime-100 transition-all active:scale-95 disabled:opacity-40"
                       >
                         {discoverTeamsBusy.has(t.id) ? "Joining…" : "Join"}
                       </button>
@@ -738,26 +738,26 @@ export default function FriendsPage() {
 
             {/* Teams list */}
             <section className="space-y-3">
-              <p className="text-xs font-black tracking-widest uppercase text-white/30">
-                Your Teams <span className="text-white/20">({teams.length})</span>
+              <p className="text-xs font-black tracking-widest uppercase text-gray-400">
+                Your Teams <span className="text-gray-300">({teams.length})</span>
               </p>
               {teams.length === 0 ? (
-                <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-6 text-center space-y-2">
+                <div className="rounded-2xl border border-gray-200 bg-gray-50 p-6 text-center space-y-2">
                   <p className="text-3xl">🏆</p>
-                  <p className="text-sm text-white/50">No teams yet</p>
-                  <p className="text-xs text-white/25">Create a team or join with an invite code</p>
+                  <p className="text-sm text-gray-500">No teams yet</p>
+                  <p className="text-xs text-gray-400">Create a team or join with an invite code</p>
                 </div>
               ) : (
-                <div className="rounded-2xl border border-white/10 bg-white/[0.03] divide-y divide-white/[0.06]">
+                <div className="rounded-2xl border border-gray-200 bg-gray-50 divide-y divide-white/[0.06]">
                   {teams.map(t => (
                     <div key={t.id} className="flex items-center justify-between px-4 py-3">
                       <div>
-                        <p className="text-sm font-semibold text-white/80">{t.name}</p>
-                        <p className="text-xs text-white/30">{t.member_count} member{t.member_count !== 1 ? "s" : ""} · {t.role}</p>
+                        <p className="text-sm font-semibold text-gray-800">{t.name}</p>
+                        <p className="text-xs text-gray-400">{t.member_count} member{t.member_count !== 1 ? "s" : ""} · {t.role}</p>
                       </div>
                       <Link
                         href={`/teams/${t.id}`}
-                        className="text-xs font-black text-lime-400 bg-lime-400/10 px-3 py-1.5 rounded-xl hover:bg-lime-400/20 transition-all active:scale-95"
+                        className="text-xs font-black text-lime-700 bg-lime-50 px-3 py-1.5 rounded-xl hover:bg-lime-100 transition-all active:scale-95"
                       >
                         View
                       </Link>
@@ -770,27 +770,27 @@ export default function FriendsPage() {
             {/* Create Team Modal */}
             {showCreateTeam && (
               <div className="fixed inset-0 z-[100] bg-black/70 flex items-end justify-center" onClick={() => setShowCreateTeam(false)}>
-                <div className="bg-[#141416] border border-white/10 rounded-t-3xl w-full max-w-sm p-6 space-y-4" onClick={e => e.stopPropagation()}>
-                  <h2 className="text-lg font-black text-white">Create Team</h2>
+                <div className="bg-[#141416] border border-gray-200 rounded-t-3xl w-full max-w-sm p-6 space-y-4" onClick={e => e.stopPropagation()}>
+                  <h2 className="text-lg font-black text-gray-900">Create Team</h2>
                   <input
                     type="text"
                     placeholder="Team name…"
                     value={newTeamName}
                     onChange={e => setNewTeamName(e.target.value)}
-                    className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white text-sm placeholder:text-white/25 outline-none focus:ring-2 focus:ring-lime-400/50 focus:border-lime-400/30 transition-all"
+                    className="w-full bg-white/5 border border-gray-200 rounded-2xl px-4 py-3 text-gray-900 text-sm placeholder:text-gray-400 outline-none focus:ring-2 focus:ring-lime-400/50 focus:border-lime-400/30 transition-all"
                   />
                   <input
                     type="text"
                     placeholder="Description (optional)…"
                     value={newTeamDesc}
                     onChange={e => setNewTeamDesc(e.target.value)}
-                    className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white text-sm placeholder:text-white/25 outline-none focus:ring-2 focus:ring-lime-400/50 focus:border-lime-400/30 transition-all"
+                    className="w-full bg-white/5 border border-gray-200 rounded-2xl px-4 py-3 text-gray-900 text-sm placeholder:text-gray-400 outline-none focus:ring-2 focus:ring-lime-400/50 focus:border-lime-400/30 transition-all"
                   />
-                  {teamError && <p className="text-xs text-red-400/80">{teamError}</p>}
+                  {teamError && <p className="text-xs text-red-600/80">{teamError}</p>}
                   <div className="flex gap-3">
                     <button
                       onClick={() => setShowCreateTeam(false)}
-                      className="flex-1 text-sm font-bold text-white/40 bg-white/5 border border-white/10 py-3 rounded-2xl hover:text-white/60 transition-all"
+                      className="flex-1 text-sm font-bold text-gray-500 bg-white/5 border border-gray-200 py-3 rounded-2xl hover:text-gray-600 transition-all"
                     >
                       Cancel
                     </button>
@@ -814,7 +814,7 @@ export default function FriendsPage() {
             <div className="flex gap-2">
               <button
                 onClick={() => { setShowCreateGroup(true); setGroupError(""); setSelectedFriendIds(new Set()); }}
-                className="flex-1 text-xs font-black text-lime-400 bg-lime-400/10 py-2.5 rounded-xl hover:bg-lime-400/20 transition-all active:scale-95"
+                className="flex-1 text-xs font-black text-lime-700 bg-lime-50 py-2.5 rounded-xl hover:bg-lime-100 transition-all active:scale-95"
               >
                 + Create Group
               </button>
@@ -822,7 +822,7 @@ export default function FriendsPage() {
 
             {/* Join via Invite Code */}
             <section className="space-y-2">
-              <p className="text-xs font-black tracking-widest uppercase text-white/30">Join via Invite Code</p>
+              <p className="text-xs font-black tracking-widest uppercase text-gray-400">Join via Invite Code</p>
               <div className="flex gap-2">
                 <input
                   type="text"
@@ -830,36 +830,36 @@ export default function FriendsPage() {
                   value={groupJoinCode}
                   onChange={e => setGroupJoinCode(e.target.value.toUpperCase())}
                   maxLength={6}
-                  className="flex-1 bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white text-sm placeholder:text-white/25 outline-none focus:ring-2 focus:ring-lime-400/50 focus:border-lime-400/30 transition-all font-mono tracking-widest uppercase"
+                  className="flex-1 bg-white/5 border border-gray-200 rounded-2xl px-4 py-3 text-gray-900 text-sm placeholder:text-gray-400 outline-none focus:ring-2 focus:ring-lime-400/50 focus:border-lime-400/30 transition-all font-mono tracking-widest uppercase"
                 />
                 <button
                   onClick={joinGroupByCode}
                   disabled={groupBusy || groupJoinCode.trim().length < 6}
-                  className="text-xs font-black text-lime-400 bg-lime-400/10 px-4 rounded-xl hover:bg-lime-400/20 transition-all active:scale-95 disabled:opacity-40"
+                  className="text-xs font-black text-lime-700 bg-lime-50 px-4 rounded-xl hover:bg-lime-100 transition-all active:scale-95 disabled:opacity-40"
                 >
                   Join
                 </button>
               </div>
-              {groupError && <p className="text-xs text-red-400/80">{groupError}</p>}
+              {groupError && <p className="text-xs text-red-600/80">{groupError}</p>}
             </section>
 
             {/* Discover Groups */}
             <section className="space-y-3">
-              <p className="text-xs font-black tracking-widest uppercase text-white/30">Discover Groups</p>
+              <p className="text-xs font-black tracking-widest uppercase text-gray-400">Discover Groups</p>
               {discoverGroups.length === 0 ? (
-                <p className="text-white/25 text-xs text-center py-3">No other groups to discover</p>
+                <p className="text-gray-400 text-xs text-center py-3">No other groups to discover</p>
               ) : (
-                <div className="rounded-2xl border border-white/10 bg-white/[0.03] divide-y divide-white/[0.06]">
+                <div className="rounded-2xl border border-gray-200 bg-gray-50 divide-y divide-white/[0.06]">
                   {discoverGroups.map(g => (
                     <div key={g.id} className="flex items-center justify-between px-4 py-3">
                       <div>
-                        <p className="text-sm font-semibold text-white/80">{g.name}</p>
-                        <p className="text-xs text-white/30">{g.member_count} member{g.member_count !== 1 ? "s" : ""}</p>
+                        <p className="text-sm font-semibold text-gray-800">{g.name}</p>
+                        <p className="text-xs text-gray-400">{g.member_count} member{g.member_count !== 1 ? "s" : ""}</p>
                       </div>
                       <button
                         onClick={() => joinDiscoverGroup(g.id)}
                         disabled={discoverGroupsBusy.has(g.id)}
-                        className="text-xs font-black text-lime-400 bg-lime-400/10 px-3 py-1.5 rounded-xl hover:bg-lime-400/20 transition-all active:scale-95 disabled:opacity-40"
+                        className="text-xs font-black text-lime-700 bg-lime-50 px-3 py-1.5 rounded-xl hover:bg-lime-100 transition-all active:scale-95 disabled:opacity-40"
                       >
                         {discoverGroupsBusy.has(g.id) ? "Joining…" : "Join"}
                       </button>
@@ -871,26 +871,26 @@ export default function FriendsPage() {
 
             {/* Groups list */}
             <section className="space-y-3">
-              <p className="text-xs font-black tracking-widest uppercase text-white/30">
-                Your Groups <span className="text-white/20">({groups.length})</span>
+              <p className="text-xs font-black tracking-widest uppercase text-gray-400">
+                Your Groups <span className="text-gray-300">({groups.length})</span>
               </p>
               {groups.length === 0 ? (
-                <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-6 text-center space-y-2">
+                <div className="rounded-2xl border border-gray-200 bg-gray-50 p-6 text-center space-y-2">
                   <p className="text-3xl">💬</p>
-                  <p className="text-sm text-white/50">No groups yet</p>
-                  <p className="text-xs text-white/25">Create a group with your friends</p>
+                  <p className="text-sm text-gray-500">No groups yet</p>
+                  <p className="text-xs text-gray-400">Create a group with your friends</p>
                 </div>
               ) : (
-                <div className="rounded-2xl border border-white/10 bg-white/[0.03] divide-y divide-white/[0.06]">
+                <div className="rounded-2xl border border-gray-200 bg-gray-50 divide-y divide-white/[0.06]">
                   {groups.map(g => (
                     <div key={g.id} className="flex items-center justify-between px-4 py-3">
                       <div>
-                        <p className="text-sm font-semibold text-white/80">{g.name}</p>
-                        <p className="text-xs text-white/30">{g.member_count} member{g.member_count !== 1 ? "s" : ""}</p>
+                        <p className="text-sm font-semibold text-gray-800">{g.name}</p>
+                        <p className="text-xs text-gray-400">{g.member_count} member{g.member_count !== 1 ? "s" : ""}</p>
                       </div>
                       <Link
                         href={`/groups/${g.id}`}
-                        className="text-xs font-black text-lime-400 bg-lime-400/10 px-3 py-1.5 rounded-xl hover:bg-lime-400/20 transition-all active:scale-95"
+                        className="text-xs font-black text-lime-700 bg-lime-50 px-3 py-1.5 rounded-xl hover:bg-lime-100 transition-all active:scale-95"
                       >
                         View
                       </Link>
@@ -903,23 +903,23 @@ export default function FriendsPage() {
             {/* Create Group Modal */}
             {showCreateGroup && (
               <div className="fixed inset-0 z-[100] bg-black/70 flex items-end justify-center" onClick={() => setShowCreateGroup(false)}>
-                <div className="bg-[#141416] border border-white/10 rounded-t-3xl w-full max-w-sm flex flex-col max-h-[80vh]" onClick={e => e.stopPropagation()}>
+                <div className="bg-[#141416] border border-gray-200 rounded-t-3xl w-full max-w-sm flex flex-col max-h-[80vh]" onClick={e => e.stopPropagation()}>
                   {/* Fixed header */}
                   <div className="px-6 pt-6 pb-4 space-y-4 flex-shrink-0">
-                    <h2 className="text-lg font-black text-white">Create Group</h2>
+                    <h2 className="text-lg font-black text-gray-900">Create Group</h2>
                     <input
                       type="text"
                       placeholder="Group name…"
                       value={newGroupName}
                       onChange={e => setNewGroupName(e.target.value)}
-                      className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white text-sm placeholder:text-white/25 outline-none focus:ring-2 focus:ring-lime-400/50 focus:border-lime-400/30 transition-all"
+                      className="w-full bg-white/5 border border-gray-200 rounded-2xl px-4 py-3 text-gray-900 text-sm placeholder:text-gray-400 outline-none focus:ring-2 focus:ring-lime-400/50 focus:border-lime-400/30 transition-all"
                     />
-                    <p className="text-xs font-black tracking-widest uppercase text-white/30">Add Friends</p>
+                    <p className="text-xs font-black tracking-widest uppercase text-gray-400">Add Friends</p>
                   </div>
                   {/* Scrollable friends list */}
                   <div className="px-6 overflow-y-auto flex-1 min-h-0">
                     {friends.length === 0 ? (
-                      <p className="text-xs text-white/25 pb-4">You need friends to create a group</p>
+                      <p className="text-xs text-gray-400 pb-4">You need friends to create a group</p>
                     ) : (
                       <div className="flex flex-wrap gap-2 pb-4">
                         {friends.map(f => {
@@ -933,7 +933,7 @@ export default function FriendsPage() {
                                 return n;
                               })}
                               className={`text-xs font-bold px-3 py-1.5 rounded-xl transition-all border
-                                ${sel ? "bg-lime-400/20 text-lime-400 border-lime-400/30" : "bg-white/5 text-white/40 border-white/10 hover:text-white/60"}`}
+                                ${sel ? "bg-lime-100 text-lime-700 border-lime-400/30" : "bg-white/5 text-gray-500 border-gray-200 hover:text-gray-600"}`}
                             >
                               {f.displayName ?? `@${f.username}`}
                             </button>
@@ -944,11 +944,11 @@ export default function FriendsPage() {
                   </div>
                   {/* Fixed footer */}
                   <div className="px-6 pt-3 pb-6 flex-shrink-0 space-y-3">
-                  {groupError && <p className="text-xs text-red-400/80">{groupError}</p>}
+                  {groupError && <p className="text-xs text-red-600/80">{groupError}</p>}
                   <div className="flex gap-3">
                     <button
                       onClick={() => setShowCreateGroup(false)}
-                      className="flex-1 text-sm font-bold text-white/40 bg-white/5 border border-white/10 py-3 rounded-2xl hover:text-white/60 transition-all"
+                      className="flex-1 text-sm font-bold text-gray-500 bg-white/5 border border-gray-200 py-3 rounded-2xl hover:text-gray-600 transition-all"
                     >
                       Cancel
                     </button>
@@ -972,31 +972,31 @@ export default function FriendsPage() {
           <>
             {challengesLoading ? (
               <div className="py-10 text-center">
-                <p className="text-white/30 text-sm">Loading…</p>
+                <p className="text-gray-400 text-sm">Loading…</p>
               </div>
             ) : challenges.length === 0 ? (
-              <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-8 text-center space-y-2">
+              <div className="rounded-2xl border border-gray-200 bg-gray-50 p-8 text-center space-y-2">
                 <p className="text-3xl">⚔️</p>
-                <p className="text-sm text-white/50">No active challenges</p>
-                <p className="text-xs text-white/25">Challenge teammates from the Teams or Groups pages</p>
+                <p className="text-sm text-gray-500">No active challenges</p>
+                <p className="text-xs text-gray-400">Challenge teammates from the Teams or Groups pages</p>
               </div>
             ) : (
               <>
                 {/* Received challenges */}
                 {challenges.filter(c => c.opponentId === userId).length > 0 && (
                   <section className="space-y-3">
-                    <p className="text-xs font-black tracking-widest uppercase text-white/30">
-                      Received <span className="text-lime-400">({challenges.filter(c => c.opponentId === userId).length})</span>
+                    <p className="text-xs font-black tracking-widest uppercase text-gray-400">
+                      Received <span className="text-lime-700">({challenges.filter(c => c.opponentId === userId).length})</span>
                     </p>
-                    <div className="rounded-2xl border border-white/10 bg-white/[0.03] divide-y divide-white/[0.06]">
+                    <div className="rounded-2xl border border-gray-200 bg-gray-50 divide-y divide-white/[0.06]">
                       {challenges.filter(c => c.opponentId === userId).map(c => (
                         <div key={c.id} className="px-4 py-3 space-y-2">
                           <div className="flex items-start justify-between gap-2">
                             <div>
-                              <p className="text-sm font-semibold text-white/80">
+                              <p className="text-sm font-semibold text-gray-800">
                                 {c.challengerName} challenged you
                               </p>
-                              <p className="text-xs text-white/30 mt-0.5">
+                              <p className="text-xs text-gray-400 mt-0.5">
                                 {c.type === "team" ? "Team" : "Group"}: {c.contextName}
                               </p>
                             </div>
@@ -1004,14 +1004,14 @@ export default function FriendsPage() {
                               <div className="flex gap-2 flex-shrink-0">
                                 <button
                                   onClick={() => router.push(`/log?opponent=${encodeURIComponent(c.challengerName)}&challengeId=${c.id}&challengeType=${c.type}`)}
-                                  className="text-xs font-black text-lime-400 bg-lime-400/10 px-3 py-1.5 rounded-xl hover:bg-lime-400/20 transition-all active:scale-95"
+                                  className="text-xs font-black text-lime-700 bg-lime-50 px-3 py-1.5 rounded-xl hover:bg-lime-100 transition-all active:scale-95"
                                 >
                                   Log Match
                                 </button>
                                 <button
                                   onClick={() => declineChallenge(c)}
                                   disabled={challengeBusy.has(c.id)}
-                                  className="text-xs font-bold text-white/25 hover:text-red-400/70 transition-colors disabled:opacity-40"
+                                  className="text-xs font-bold text-gray-400 hover:text-red-600/70 transition-colors disabled:opacity-40"
                                   title="Cancel challenge"
                                 >
                                   ×
@@ -1022,14 +1022,14 @@ export default function FriendsPage() {
                                 <button
                                   onClick={() => declineChallenge(c)}
                                   disabled={challengeBusy.has(c.id)}
-                                  className="text-xs font-bold text-white/40 bg-white/5 border border-white/10 px-3 py-1.5 rounded-xl hover:text-red-400/70 hover:border-red-400/20 transition-all active:scale-95 disabled:opacity-40"
+                                  className="text-xs font-bold text-gray-500 bg-white/5 border border-gray-200 px-3 py-1.5 rounded-xl hover:text-red-600/70 hover:border-red-400/20 transition-all active:scale-95 disabled:opacity-40"
                                 >
                                   Decline
                                 </button>
                                 <button
                                   onClick={() => acceptChallenge(c)}
                                   disabled={challengeBusy.has(c.id)}
-                                  className="text-xs font-black text-lime-400 bg-lime-400/10 px-3 py-1.5 rounded-xl hover:bg-lime-400/20 transition-all active:scale-95 disabled:opacity-40"
+                                  className="text-xs font-black text-lime-700 bg-lime-50 px-3 py-1.5 rounded-xl hover:bg-lime-100 transition-all active:scale-95 disabled:opacity-40"
                                 >
                                   Accept
                                 </button>
@@ -1045,15 +1045,15 @@ export default function FriendsPage() {
                 {/* Sent challenges */}
                 {challenges.filter(c => c.challengerId === userId).length > 0 && (
                   <section className="space-y-3">
-                    <p className="text-xs font-black tracking-widest uppercase text-white/30">Sent</p>
-                    <div className="rounded-2xl border border-white/10 bg-white/[0.03] divide-y divide-white/[0.06]">
+                    <p className="text-xs font-black tracking-widest uppercase text-gray-400">Sent</p>
+                    <div className="rounded-2xl border border-gray-200 bg-gray-50 divide-y divide-white/[0.06]">
                       {challenges.filter(c => c.challengerId === userId).map(c => (
                         <div key={c.id} className="flex items-center justify-between px-4 py-3">
                           <div>
-                            <p className="text-sm font-semibold text-white/80">
+                            <p className="text-sm font-semibold text-gray-800">
                               vs {c.opponentName}
                             </p>
-                            <p className="text-xs text-white/30 mt-0.5">
+                            <p className="text-xs text-gray-400 mt-0.5">
                               {c.type === "team" ? "Team" : "Group"}: {c.contextName}
                             </p>
                           </div>
@@ -1061,19 +1061,19 @@ export default function FriendsPage() {
                             {c.status === "accepted" ? (
                               <button
                                 onClick={() => router.push(`/log?opponent=${encodeURIComponent(c.opponentName)}&challengeId=${c.id}&challengeType=${c.type}`)}
-                                className="text-xs font-black text-lime-400 bg-lime-400/10 px-3 py-1.5 rounded-xl hover:bg-lime-400/20 transition-all active:scale-95"
+                                className="text-xs font-black text-lime-700 bg-lime-50 px-3 py-1.5 rounded-xl hover:bg-lime-100 transition-all active:scale-95"
                               >
                                 Log Match
                               </button>
                             ) : (
-                              <span className="text-[10px] font-black px-2 py-1 rounded-lg text-white/30 bg-white/5">
+                              <span className="text-[10px] font-black px-2 py-1 rounded-lg text-gray-400 bg-white/5">
                                 Pending
                               </span>
                             )}
                             <button
                               onClick={() => declineChallenge(c)}
                               disabled={challengeBusy.has(c.id)}
-                              className="text-xs font-bold text-white/25 hover:text-red-400/70 transition-colors disabled:opacity-40"
+                              className="text-xs font-bold text-gray-400 hover:text-red-600/70 transition-colors disabled:opacity-40"
                             >
                               Cancel
                             </button>

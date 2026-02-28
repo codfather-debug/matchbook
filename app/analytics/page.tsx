@@ -20,7 +20,7 @@ function LineChart({
   if (data.length < 2) {
     return (
       <div className="h-20 flex items-center justify-center">
-        <p className="text-white/20 text-xs">Need more data to show trend</p>
+        <p className="text-gray-300 text-xs">Need more data to show trend</p>
       </div>
     );
   }
@@ -95,8 +95,8 @@ export default function AnalyticsPage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-[#1e1e2a] flex items-center justify-center">
-        <p className="text-white/30 text-sm">Loading…</p>
+      <main className="min-h-screen bg-white flex items-center justify-center">
+        <p className="text-gray-400 text-sm">Loading…</p>
       </main>
     );
   }
@@ -119,21 +119,21 @@ export default function AnalyticsPage() {
   const execSeries   = getExecutionSeries(filtered);
 
   return (
-    <main className="min-h-screen bg-[#1e1e2a] max-w-sm mx-auto pb-24">
+    <main className="min-h-screen bg-white max-w-sm mx-auto pb-24">
       {/* Header */}
-      <div className="px-5 pt-5 pb-4 border-b border-white/[0.06]">
-        <p className="text-white/30 text-xs font-bold tracking-widest uppercase mb-0.5">Matchbook</p>
-        <h1 className="text-2xl font-black text-white">Analytics</h1>
-        <p className="text-white/30 text-sm mt-0.5">{matches.length} matches logged</p>
+      <div className="px-5 pt-5 pb-4 border-b border-gray-200">
+        <p className="text-gray-400 text-xs font-bold tracking-widest uppercase mb-0.5">Matchbook</p>
+        <h1 className="text-2xl font-black text-gray-900">Analytics</h1>
+        <p className="text-gray-400 text-sm mt-0.5">{matches.length} matches logged</p>
       </div>
 
       <div className="px-5 py-5 space-y-6">
 
         {matches.length === 0 ? (
-          <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-8 text-center space-y-2">
+          <div className="rounded-2xl border border-gray-200 bg-gray-50 p-8 text-center space-y-2">
             <p className="text-4xl">📊</p>
-            <p className="text-white font-bold">No data yet</p>
-            <p className="text-white/40 text-sm">Log matches to unlock analytics.</p>
+            <p className="text-gray-900 font-bold">No data yet</p>
+            <p className="text-gray-500 text-sm">Log matches to unlock analytics.</p>
           </div>
         ) : (
           <>
@@ -146,7 +146,7 @@ export default function AnalyticsPage() {
                   className={`flex-1 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
                     filter === f
                       ? "bg-lime-400 text-black"
-                      : "bg-white/[0.05] text-white/40 hover:text-white/70"
+                      : "bg-gray-100 text-gray-500 hover:text-gray-700"
                   }`}
                 >
                   {f === "all" ? "All" : `Last ${f}`}
@@ -156,17 +156,17 @@ export default function AnalyticsPage() {
 
             {/* Summary row */}
             <div className="grid grid-cols-3 gap-2">
-              <div className="rounded-2xl bg-white/[0.03] border border-white/10 p-3 text-center">
-                <p className="text-xs text-white/30 font-bold uppercase tracking-widest">Record</p>
-                <p className="text-xl font-black text-white mt-0.5">{record.wins}–{record.losses}</p>
+              <div className="rounded-2xl bg-gray-50 border border-gray-200 p-3 text-center">
+                <p className="text-xs text-gray-400 font-bold uppercase tracking-widest">Record</p>
+                <p className="text-xl font-black text-gray-900 mt-0.5">{record.wins}–{record.losses}</p>
               </div>
-              <div className="rounded-2xl bg-white/[0.03] border border-white/10 p-3 text-center">
-                <p className="text-xs text-white/30 font-bold uppercase tracking-widest">Win %</p>
-                <p className={`text-xl font-black mt-0.5 ${winRate >= 60 ? "text-lime-400" : winRate >= 40 ? "text-amber-400" : "text-red-400"}`}>{winRate}%</p>
+              <div className="rounded-2xl bg-gray-50 border border-gray-200 p-3 text-center">
+                <p className="text-xs text-gray-400 font-bold uppercase tracking-widest">Win %</p>
+                <p className={`text-xl font-black mt-0.5 ${winRate >= 60 ? "text-lime-700" : winRate >= 40 ? "text-amber-400" : "text-red-600"}`}>{winRate}%</p>
               </div>
-              <div className="rounded-2xl bg-white/[0.03] border border-white/10 p-3 text-center">
-                <p className="text-xs text-white/30 font-bold uppercase tracking-widest">Mental</p>
-                <p className={`text-xl font-black mt-0.5 ${mentalAvg === null ? "text-white/20" : mentalAvg >= 7 ? "text-lime-400" : mentalAvg >= 5 ? "text-amber-400" : "text-red-400"}`}>
+              <div className="rounded-2xl bg-gray-50 border border-gray-200 p-3 text-center">
+                <p className="text-xs text-gray-400 font-bold uppercase tracking-widest">Mental</p>
+                <p className={`text-xl font-black mt-0.5 ${mentalAvg === null ? "text-gray-300" : mentalAvg >= 7 ? "text-lime-700" : mentalAvg >= 5 ? "text-amber-400" : "text-red-600"}`}>
                   {mentalAvg !== null ? mentalAvg : "—"}
                 </p>
               </div>
@@ -175,17 +175,17 @@ export default function AnalyticsPage() {
             {/* Win Rate Chart */}
             <section className="space-y-2">
               <div className="flex items-center justify-between">
-                <p className="text-xs font-black tracking-widest uppercase text-white/30">Win Rate Trend</p>
+                <p className="text-xs font-black tracking-widest uppercase text-gray-400">Win Rate Trend</p>
                 {winSeries.length > 0 && (
-                  <p className="text-xs text-white/30">{winRate}% current</p>
+                  <p className="text-xs text-gray-400">{winRate}% current</p>
                 )}
               </div>
-              <div className="rounded-2xl bg-white/[0.03] border border-white/10 p-3">
+              <div className="rounded-2xl bg-gray-50 border border-gray-200 p-3">
                 <LineChart data={winSeries} color="#a3e635" min={0} max={100} />
                 {winSeries.length >= 2 && (
                   <div className="flex justify-between mt-1 px-1">
-                    <span className="text-[10px] text-white/20">{winSeries[0].label}</span>
-                    <span className="text-[10px] text-white/20">{winSeries[winSeries.length - 1].label}</span>
+                    <span className="text-[10px] text-gray-300">{winSeries[0].label}</span>
+                    <span className="text-[10px] text-gray-300">{winSeries[winSeries.length - 1].label}</span>
                   </div>
                 )}
               </div>
@@ -195,14 +195,14 @@ export default function AnalyticsPage() {
             {mentalSeries.length >= 2 && (
               <section className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <p className="text-xs font-black tracking-widest uppercase text-white/30">Mental Score</p>
-                  {mentalAvg !== null && <p className="text-xs text-white/30">{mentalAvg}/10 avg</p>}
+                  <p className="text-xs font-black tracking-widest uppercase text-gray-400">Mental Score</p>
+                  {mentalAvg !== null && <p className="text-xs text-gray-400">{mentalAvg}/10 avg</p>}
                 </div>
-                <div className="rounded-2xl bg-white/[0.03] border border-white/10 p-3">
+                <div className="rounded-2xl bg-gray-50 border border-gray-200 p-3">
                   <LineChart data={mentalSeries} color="#60a5fa" min={1} max={10} />
                   <div className="flex justify-between mt-1 px-1">
-                    <span className="text-[10px] text-white/20">{mentalSeries[0].label}</span>
-                    <span className="text-[10px] text-white/20">{mentalSeries[mentalSeries.length - 1].label}</span>
+                    <span className="text-[10px] text-gray-300">{mentalSeries[0].label}</span>
+                    <span className="text-[10px] text-gray-300">{mentalSeries[mentalSeries.length - 1].label}</span>
                   </div>
                 </div>
               </section>
@@ -212,14 +212,14 @@ export default function AnalyticsPage() {
             {execSeries.length >= 2 && (
               <section className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <p className="text-xs font-black tracking-widest uppercase text-white/30">Execution Score</p>
-                  {execAvg !== null && <p className="text-xs text-white/30">{execAvg}/10 avg</p>}
+                  <p className="text-xs font-black tracking-widest uppercase text-gray-400">Execution Score</p>
+                  {execAvg !== null && <p className="text-xs text-gray-400">{execAvg}/10 avg</p>}
                 </div>
-                <div className="rounded-2xl bg-white/[0.03] border border-white/10 p-3">
+                <div className="rounded-2xl bg-gray-50 border border-gray-200 p-3">
                   <LineChart data={execSeries} color="#f59e0b" min={1} max={10} />
                   <div className="flex justify-between mt-1 px-1">
-                    <span className="text-[10px] text-white/20">{execSeries[0].label}</span>
-                    <span className="text-[10px] text-white/20">{execSeries[execSeries.length - 1].label}</span>
+                    <span className="text-[10px] text-gray-300">{execSeries[0].label}</span>
+                    <span className="text-[10px] text-gray-300">{execSeries[execSeries.length - 1].label}</span>
                   </div>
                 </div>
               </section>
@@ -227,8 +227,8 @@ export default function AnalyticsPage() {
 
             {/* Surface Breakdown */}
             <section className="space-y-2">
-              <p className="text-xs font-black tracking-widest uppercase text-white/30">Surface Breakdown</p>
-              <div className="rounded-2xl border border-white/10 bg-white/[0.03] divide-y divide-white/[0.06]">
+              <p className="text-xs font-black tracking-widest uppercase text-gray-400">Surface Breakdown</p>
+              <div className="rounded-2xl border border-gray-200 bg-gray-50 divide-y divide-white/[0.06]">
                 {SURFACES.map(surf => {
                   const d = surfRates[surf];
                   if (!d) {
@@ -236,9 +236,9 @@ export default function AnalyticsPage() {
                       <div key={surf} className="flex items-center justify-between px-4 py-3 opacity-40">
                         <div className="flex items-center gap-2">
                           <span>{SURF_EMOJI[surf]}</span>
-                          <span className="text-sm text-white/50 capitalize">{surf}</span>
+                          <span className="text-sm text-gray-500 capitalize">{surf}</span>
                         </div>
-                        <span className="text-xs text-white/20">No matches</span>
+                        <span className="text-xs text-gray-300">No matches</span>
                       </div>
                     );
                   }
@@ -246,11 +246,11 @@ export default function AnalyticsPage() {
                     <div key={surf} className="flex items-center justify-between px-4 py-3">
                       <div className="flex items-center gap-2">
                         <span>{SURF_EMOJI[surf]}</span>
-                        <span className="text-sm font-semibold text-white/70 capitalize">{surf}</span>
+                        <span className="text-sm font-semibold text-gray-700 capitalize">{surf}</span>
                       </div>
                       <div className="flex items-center gap-3">
-                        <span className="text-xs text-white/30">{d.wins}W – {d.total - d.wins}L</span>
-                        <span className={`text-sm font-black ${d.rate >= 60 ? "text-lime-400" : d.rate >= 40 ? "text-amber-400" : "text-red-400"}`}>
+                        <span className="text-xs text-gray-400">{d.wins}W – {d.total - d.wins}L</span>
+                        <span className={`text-sm font-black ${d.rate >= 60 ? "text-lime-700" : d.rate >= 40 ? "text-amber-400" : "text-red-600"}`}>
                           {d.rate}%
                         </span>
                       </div>
@@ -263,20 +263,20 @@ export default function AnalyticsPage() {
             {/* Opponent Style Breakdown */}
             {Object.keys(styleRates).length > 0 && (
               <section className="space-y-2">
-                <p className="text-xs font-black tracking-widest uppercase text-white/30">By Opponent Style</p>
-                <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 space-y-3">
+                <p className="text-xs font-black tracking-widest uppercase text-gray-400">By Opponent Style</p>
+                <div className="rounded-2xl border border-gray-200 bg-gray-50 p-4 space-y-3">
                   {(Object.entries(styleRates) as [string, { wins: number; total: number; rate: number }][])
                     .sort((a, b) => b[1].rate - a[1].rate)
                     .map(([style, d]) => (
                       <div key={style}>
                         <div className="flex items-center justify-between mb-1">
-                          <span className="text-xs font-semibold text-white/60 capitalize">{style.replace("-", " ")}</span>
+                          <span className="text-xs font-semibold text-gray-600 capitalize">{style.replace("-", " ")}</span>
                           <div className="flex items-center gap-2">
-                            <span className="text-xs text-white/30">{d.wins}W – {d.total - d.wins}L</span>
-                            <span className={`text-xs font-black ${d.rate >= 60 ? "text-lime-400" : d.rate >= 40 ? "text-amber-400" : "text-red-400"}`}>{d.rate}%</span>
+                            <span className="text-xs text-gray-400">{d.wins}W – {d.total - d.wins}L</span>
+                            <span className={`text-xs font-black ${d.rate >= 60 ? "text-lime-700" : d.rate >= 40 ? "text-amber-400" : "text-red-600"}`}>{d.rate}%</span>
                           </div>
                         </div>
-                        <div className="h-1.5 rounded-full bg-white/[0.06] overflow-hidden">
+                        <div className="h-1.5 rounded-full bg-gray-100 overflow-hidden">
                           <div
                             className={`h-full rounded-full transition-all ${d.rate >= 60 ? "bg-lime-400" : d.rate >= 40 ? "bg-amber-400" : "bg-red-400"}`}
                             style={{ width: `${d.rate}%` }}
@@ -291,7 +291,7 @@ export default function AnalyticsPage() {
             {/* Insights */}
             {insights.length > 0 && (
               <section className="space-y-2">
-                <p className="text-xs font-black tracking-widest uppercase text-white/30">Insights</p>
+                <p className="text-xs font-black tracking-widest uppercase text-gray-400">Insights</p>
                 <div className="space-y-2">
                   {insights.map((ins, i) => (
                     <div
@@ -302,10 +302,10 @@ export default function AnalyticsPage() {
                           : "border-red-500/20 bg-red-500/[0.04]"
                       }`}
                     >
-                      <p className={`text-xs font-black uppercase tracking-widest mb-1 ${ins.type === "strength" ? "text-lime-400" : "text-red-400"}`}>
+                      <p className={`text-xs font-black uppercase tracking-widest mb-1 ${ins.type === "strength" ? "text-lime-700" : "text-red-600"}`}>
                         {ins.type === "strength" ? "💪 Strength" : "⚠️ Watch Out"}
                       </p>
-                      <p className="text-sm text-white/80 leading-relaxed">{ins.text}</p>
+                      <p className="text-sm text-gray-800 leading-relaxed">{ins.text}</p>
                     </div>
                   ))}
                 </div>

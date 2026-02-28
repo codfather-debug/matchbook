@@ -10,7 +10,7 @@ const PILLARS = [
     label: "Tilt Control",
     icon: "😤",
     color: "border-red-400/20 bg-red-400/[0.04]",
-    badge: "text-red-400",
+    badge: "text-red-600",
     dot: "bg-red-400",
     summary: "Tilt is anger or frustration leaking into your game. It's the #1 performance killer.",
     points: [
@@ -61,7 +61,7 @@ const PILLARS = [
     label: "Confidence",
     icon: "💪",
     color: "border-lime-400/20 bg-lime-400/[0.04]",
-    badge: "text-lime-400",
+    badge: "text-lime-700",
     dot: "bg-lime-400",
     summary: "Confidence is built in practice and protected in matches. It's fragile — protect it.",
     points: [
@@ -86,12 +86,12 @@ const MOMENTUM = [
   {
     situation: "You're on a roll",
     action: "Shorten between-point time. Serve quickly. Don't let your opponent reset.",
-    color: "border-lime-400/20 text-lime-400",
+    color: "border-lime-400/20 text-lime-700",
   },
   {
     situation: "Opponent is on a roll",
     action: "Slow everything down. Bounce the ball more. Take a full breath. Break their rhythm.",
-    color: "border-red-400/20 text-red-400",
+    color: "border-red-400/20 text-red-600",
   },
   {
     situation: "Big point (break point, set point)",
@@ -106,7 +106,7 @@ const MOMENTUM = [
   {
     situation: "Down a set",
     action: "Wipe the slate. The second set is a new match. Go back to what's working.",
-    color: "border-white/10 text-white/50",
+    color: "border-gray-200 text-gray-500",
   },
 ];
 
@@ -162,28 +162,28 @@ const MISTAKES = [
 function PillarCard({ p }: { p: typeof PILLARS[0] }) {
   const [open, setOpen] = useState(false);
   return (
-    <div className={`rounded-2xl border transition-all ${open ? p.color : "border-white/10 bg-white/[0.02]"}`}>
+    <div className={`rounded-2xl border transition-all ${open ? p.color : "border-gray-200 bg-gray-50"}`}>
       <button
         onClick={() => setOpen(v => !v)}
         className="w-full flex items-center justify-between px-4 py-3.5 text-left"
       >
         <div className="flex items-center gap-3">
           <span className="text-xl flex-shrink-0">{p.icon}</span>
-          <span className={`text-sm font-bold ${open ? p.badge : "text-white/90"}`}>{p.label}</span>
+          <span className={`text-sm font-bold ${open ? p.badge : "text-gray-900"}`}>{p.label}</span>
         </div>
         <svg
-          className={`text-white/30 transition-transform flex-shrink-0 ml-2 ${open ? "rotate-90" : ""}`}
+          className={`text-gray-400 transition-transform flex-shrink-0 ml-2 ${open ? "rotate-90" : ""}`}
           width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
         >
           <polyline points="9 18 15 12 9 6"/>
         </svg>
       </button>
       {open && (
-        <div className="px-4 pb-4 space-y-3 border-t border-white/[0.06] pt-3">
-          <p className="text-sm text-white/60 italic">{p.summary}</p>
+        <div className="px-4 pb-4 space-y-3 border-t border-gray-200 pt-3">
+          <p className="text-sm text-gray-600 italic">{p.summary}</p>
           <ul className="space-y-1.5">
             {p.points.map((pt, i) => (
-              <li key={i} className="flex items-start gap-2 text-sm text-white/70">
+              <li key={i} className="flex items-start gap-2 text-sm text-gray-700">
                 <span className={`mt-0.5 flex-shrink-0 ${p.badge}`}>›</span>
                 {pt}
               </li>
@@ -191,7 +191,7 @@ function PillarCard({ p }: { p: typeof PILLARS[0] }) {
           </ul>
           <div className={`rounded-xl border p-3 mt-1 ${p.color}`}>
             <p className={`text-xs font-black uppercase tracking-wider ${p.badge} mb-1`}>Reset Cue</p>
-            <p className="text-sm text-white/70">{p.cue}</p>
+            <p className="text-sm text-gray-700">{p.cue}</p>
           </div>
         </div>
       )}
@@ -203,13 +203,13 @@ function PillarCard({ p }: { p: typeof PILLARS[0] }) {
 
 export default function MentalPlaybookPage() {
   return (
-    <main className="min-h-screen bg-[#1e1e2a] max-w-sm mx-auto pb-10">
+    <main className="min-h-screen bg-white max-w-sm mx-auto pb-10">
 
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-[#1e1e2a]/90 backdrop-blur-xl border-b border-white/[0.06] px-5">
+      <div className="sticky top-0 z-10 bg-white/90 backdrop-blur-xl border-b border-gray-200 px-5">
         <div className="flex items-center justify-between h-14">
-          <Link href="/playbook" className="text-white/40 text-sm font-medium hover:text-white/80 transition-colors">← Playbook</Link>
-          <span className="text-xs font-black tracking-[0.2em] uppercase text-white/30">Mental</span>
+          <Link href="/playbook" className="text-gray-500 text-sm font-medium hover:text-gray-800 transition-colors">← Playbook</Link>
+          <span className="text-xs font-black tracking-[0.2em] uppercase text-gray-400">Mental</span>
           <div className="w-14" />
         </div>
       </div>
@@ -219,14 +219,14 @@ export default function MentalPlaybookPage() {
         {/* Hero */}
         <section className="rounded-2xl border border-amber-400/20 bg-amber-400/[0.04] p-4 text-center space-y-1">
           <p className="text-3xl font-black text-amber-400">The Mental Game</p>
-          <p className="text-sm text-white/50">Technical skill gets you on court. Mental skill wins matches.</p>
+          <p className="text-sm text-gray-500">Technical skill gets you on court. Mental skill wins matches.</p>
         </section>
 
         {/* 4 Pillars */}
         <section className="space-y-3">
           <div>
-            <p className="text-xs font-black tracking-widest uppercase text-white/30">4 Mental Pillars</p>
-            <p className="text-xs text-white/20 mt-0.5">The same metrics tracked in your match reflections</p>
+            <p className="text-xs font-black tracking-widest uppercase text-gray-400">4 Mental Pillars</p>
+            <p className="text-xs text-gray-300 mt-0.5">The same metrics tracked in your match reflections</p>
           </div>
           <div className="space-y-2">
             {PILLARS.map(p => <PillarCard key={p.key} p={p} />)}
@@ -235,15 +235,15 @@ export default function MentalPlaybookPage() {
 
         {/* Between-Point Routine */}
         <section className="space-y-3">
-          <p className="text-xs font-black tracking-widest uppercase text-white/30">Between-Point Routine</p>
-          <p className="text-xs text-white/20">Do this after every single point — win or lose</p>
-          <div className="rounded-2xl border border-white/10 bg-white/[0.02] overflow-hidden divide-y divide-white/[0.06]">
+          <p className="text-xs font-black tracking-widest uppercase text-gray-400">Between-Point Routine</p>
+          <p className="text-xs text-gray-300">Do this after every single point — win or lose</p>
+          <div className="rounded-2xl border border-gray-200 bg-gray-50 overflow-hidden divide-y divide-white/[0.06]">
             {BETWEEN_POINT.map(b => (
               <div key={b.step} className="flex items-start gap-4 px-4 py-3.5">
                 <span className="text-lg font-black text-amber-400 flex-shrink-0 w-5">{b.step}</span>
                 <div>
-                  <p className="text-sm font-bold text-white/80">{b.label}</p>
-                  <p className="text-xs text-white/40 mt-0.5">{b.detail}</p>
+                  <p className="text-sm font-bold text-gray-800">{b.label}</p>
+                  <p className="text-xs text-gray-500 mt-0.5">{b.detail}</p>
                 </div>
               </div>
             ))}
@@ -252,12 +252,12 @@ export default function MentalPlaybookPage() {
 
         {/* Momentum Management */}
         <section className="space-y-3">
-          <p className="text-xs font-black tracking-widest uppercase text-white/30">Momentum Management</p>
+          <p className="text-xs font-black tracking-widest uppercase text-gray-400">Momentum Management</p>
           <div className="space-y-2">
             {MOMENTUM.map(m => (
-              <div key={m.situation} className={`rounded-2xl border p-4 space-y-1.5 ${m.color} bg-white/[0.02]`}>
+              <div key={m.situation} className={`rounded-2xl border p-4 space-y-1.5 ${m.color} bg-gray-50`}>
                 <p className={`text-xs font-black uppercase tracking-wider ${m.color.split(" ")[1]}`}>{m.situation}</p>
-                <p className="text-sm text-white/65">{m.action}</p>
+                <p className="text-sm text-gray-600">{m.action}</p>
               </div>
             ))}
           </div>
@@ -265,13 +265,13 @@ export default function MentalPlaybookPage() {
 
         {/* Language Protocol */}
         <section className="space-y-3">
-          <p className="text-xs font-black tracking-widest uppercase text-white/30">Self-Talk Protocol</p>
-          <p className="text-xs text-white/20">Replace negative self-talk in real time</p>
-          <div className="rounded-2xl border border-white/10 bg-white/[0.02] overflow-hidden divide-y divide-white/[0.06]">
+          <p className="text-xs font-black tracking-widest uppercase text-gray-400">Self-Talk Protocol</p>
+          <p className="text-xs text-gray-300">Replace negative self-talk in real time</p>
+          <div className="rounded-2xl border border-gray-200 bg-gray-50 overflow-hidden divide-y divide-white/[0.06]">
             {LANGUAGE.map((l, i) => (
               <div key={i} className="px-4 py-3 space-y-1">
-                <p className="text-xs text-red-400/70 line-through">{l.bad}</p>
-                <p className="text-sm text-lime-400 font-medium">→ {l.good}</p>
+                <p className="text-xs text-red-600/70 line-through">{l.bad}</p>
+                <p className="text-sm text-lime-700 font-medium">→ {l.good}</p>
               </div>
             ))}
           </div>
@@ -279,13 +279,13 @@ export default function MentalPlaybookPage() {
 
         {/* Body Language */}
         <section className="space-y-3">
-          <p className="text-xs font-black tracking-widest uppercase text-white/30">Body Language</p>
-          <p className="text-xs text-white/20">Your body broadcasts your mental state — to yourself and your opponent</p>
-          <div className="rounded-2xl border border-white/10 bg-white/[0.02] divide-y divide-white/[0.06] overflow-hidden">
+          <p className="text-xs font-black tracking-widest uppercase text-gray-400">Body Language</p>
+          <p className="text-xs text-gray-300">Your body broadcasts your mental state — to yourself and your opponent</p>
+          <div className="rounded-2xl border border-gray-200 bg-gray-50 divide-y divide-white/[0.06] overflow-hidden">
             {BODY_LANGUAGE.map(b => (
               <div key={b.label} className="px-4 py-3 space-y-0.5">
-                <p className="text-sm font-bold text-white/80">{b.label}</p>
-                <p className="text-xs text-white/40">{b.detail}</p>
+                <p className="text-sm font-bold text-gray-800">{b.label}</p>
+                <p className="text-xs text-gray-500">{b.detail}</p>
               </div>
             ))}
           </div>
@@ -293,12 +293,12 @@ export default function MentalPlaybookPage() {
 
         {/* Pre-Match Prep */}
         <section className="space-y-3">
-          <p className="text-xs font-black tracking-widest uppercase text-white/30">Pre-Match Prep</p>
+          <p className="text-xs font-black tracking-widest uppercase text-gray-400">Pre-Match Prep</p>
           <div className="space-y-2">
             {PRE_MATCH.map((p, i) => (
-              <div key={i} className="flex items-start gap-3 rounded-2xl border border-white/10 bg-white/[0.02] px-4 py-3">
+              <div key={i} className="flex items-start gap-3 rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3">
                 <span className="text-lg flex-shrink-0">{p.icon}</span>
-                <p className="text-sm text-white/65">{p.tip}</p>
+                <p className="text-sm text-gray-600">{p.tip}</p>
               </div>
             ))}
           </div>
@@ -306,12 +306,12 @@ export default function MentalPlaybookPage() {
 
         {/* Common Mental Mistakes */}
         <section className="space-y-3">
-          <p className="text-xs font-black tracking-widest uppercase text-white/30">Common Mental Mistakes</p>
+          <p className="text-xs font-black tracking-widest uppercase text-gray-400">Common Mental Mistakes</p>
           <div className="space-y-2">
             {MISTAKES.map((m, i) => (
               <div key={i} className="rounded-2xl border border-red-500/15 bg-red-500/[0.03] p-4 space-y-1.5">
-                <p className="text-sm font-bold text-red-400/90">⚠ {m.mistake}</p>
-                <p className="text-sm text-white/60">{m.fix}</p>
+                <p className="text-sm font-bold text-red-600/90">⚠ {m.mistake}</p>
+                <p className="text-sm text-gray-600">{m.fix}</p>
               </div>
             ))}
           </div>

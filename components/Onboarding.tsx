@@ -6,7 +6,7 @@ const SLIDES = [
     emoji: "🎾",
     title: "Welcome to Matchbook",
     body: "Your personal tennis match logger, scouting tool, and performance tracker. Built for competitive players who want to improve with data.",
-    accent: "text-lime-400",
+    accent: "text-lime-700",
     border: "border-lime-400/20",
     bg: "from-lime-400/15 to-lime-400/5",
   },
@@ -56,11 +56,11 @@ export default function Onboarding({ onDismiss }: OnboardingProps) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 bg-[#1e1e2a]/95 backdrop-blur-xl flex flex-col items-center justify-center px-6">
+    <div className="fixed inset-0 z-50 bg-white/95 backdrop-blur-xl flex flex-col items-center justify-center px-6">
       {/* Skip */}
       <button
         onClick={onDismiss}
-        className="absolute top-5 right-5 text-white/30 text-xs font-semibold hover:text-white/60 transition-colors"
+        className="absolute top-5 right-5 text-gray-400 text-xs font-semibold hover:text-gray-600 transition-colors"
       >
         Skip
       </button>
@@ -69,9 +69,9 @@ export default function Onboarding({ onDismiss }: OnboardingProps) {
       <div className={`w-full max-w-xs rounded-3xl border bg-gradient-to-br p-7 space-y-4 ${current.border} ${current.bg}`}>
         <div className="text-5xl text-center">{current.emoji}</div>
         <h2 className={`text-xl font-black text-center ${current.accent}`}>{current.title}</h2>
-        <p className="text-sm text-white/70 leading-relaxed text-center">{current.body}</p>
+        <p className="text-sm text-gray-700 leading-relaxed text-center">{current.body}</p>
         {current.detail && (
-          <p className="text-xs text-white/40 text-center">{current.detail}</p>
+          <p className="text-xs text-gray-500 text-center">{current.detail}</p>
         )}
       </div>
 

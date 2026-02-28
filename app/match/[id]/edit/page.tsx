@@ -36,8 +36,8 @@ export default function EditMatchPage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-[#1e1e2a] flex items-center justify-center">
-        <p className="text-white/30 text-sm">Loading…</p>
+      <main className="min-h-screen bg-white flex items-center justify-center">
+        <p className="text-gray-400 text-sm">Loading…</p>
       </main>
     );
   }

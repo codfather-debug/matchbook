@@ -9,7 +9,7 @@ const BOOKS = [
     title: "Singles Playbook",
     sub: "8 strategies · patterns · court zones",
     accent: "border-lime-400/20 hover:border-lime-400/40",
-    badge: "text-lime-400",
+    badge: "text-lime-700",
   },
   {
     href: "/playbook/doubles",
@@ -49,26 +49,26 @@ const BOOKS = [
     title: "Match Scoring",
     sub: "Ad scoring · tiebreaks · pro-set",
     accent: "border-red-400/20 hover:border-red-400/40",
-    badge: "text-red-400",
+    badge: "text-red-600",
   },
   {
     href: "/playbook/rules",
     icon: "📋",
     title: "Rules & The Code",
     sub: "Line calls · serving · hindrance",
-    accent: "border-white/10 hover:border-white/25",
-    badge: "text-white/70",
+    accent: "border-gray-200 hover:border-gray-200",
+    badge: "text-gray-700",
   },
 ];
 
 export default function PlaybookIndexPage() {
   return (
-    <main className="min-h-screen bg-[#1e1e2a] max-w-sm mx-auto pb-24">
+    <main className="min-h-screen bg-white max-w-sm mx-auto pb-24">
       {/* Header */}
-      <div className="px-5 pt-5 pb-4 border-b border-white/[0.06]">
-        <p className="text-white/30 text-xs font-bold tracking-widest uppercase">Matchbook</p>
-        <h1 className="text-2xl font-black text-white mt-0.5">Playbooks</h1>
-        <p className="text-white/30 text-sm mt-0.5">Strategy guides for every situation</p>
+      <div className="px-5 pt-5 pb-4 border-b border-gray-200">
+        <p className="text-gray-400 text-xs font-bold tracking-widest uppercase">Matchbook</p>
+        <h1 className="text-2xl font-black text-gray-900 mt-0.5">Playbooks</h1>
+        <p className="text-gray-400 text-sm mt-0.5">Strategy guides for every situation</p>
       </div>
 
       <div className="px-5 py-5 space-y-3">
@@ -76,14 +76,14 @@ export default function PlaybookIndexPage() {
           <Link
             key={b.href}
             href={b.href}
-            className={`flex items-center gap-4 rounded-2xl border bg-white/[0.02] p-5 transition-all active:scale-[0.98] ${b.accent}`}
+            className={`flex items-center gap-4 rounded-2xl border bg-gray-50 p-5 transition-all active:scale-[0.98] ${b.accent}`}
           >
             <span className="text-4xl flex-shrink-0">{b.icon}</span>
             <div className="flex-1 min-w-0">
               <p className={`text-base font-black ${b.badge}`}>{b.title}</p>
-              <p className="text-sm text-white/40 mt-0.5">{b.sub}</p>
+              <p className="text-sm text-gray-500 mt-0.5">{b.sub}</p>
             </div>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-white/20 flex-shrink-0">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-gray-300 flex-shrink-0">
               <polyline points="9 18 15 12 9 6"/>
             </svg>
           </Link>

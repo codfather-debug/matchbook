@@ -38,25 +38,25 @@ export default function AuthPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#1e1e2a] flex flex-col items-center justify-center px-5">
+    <main className="min-h-screen bg-white flex flex-col items-center justify-center px-5">
       <div className="w-full max-w-sm space-y-8">
 
         {/* Logo */}
         <div className="text-center space-y-1">
-          <h1 className="text-3xl font-black text-white">Matchbook</h1>
-          <p className="text-white/40 text-sm">Your tennis scouting companion</p>
+          <h1 className="text-3xl font-black text-gray-900">Matchbook</h1>
+          <p className="text-gray-500 text-sm">Your tennis scouting companion</p>
         </div>
 
         {/* Card */}
-        <div className="bg-white/[0.03] border border-white/10 rounded-3xl p-6 space-y-4">
-          <h2 className="text-lg font-black text-white">
+        <div className="bg-gray-50 border border-gray-200 rounded-3xl p-6 space-y-4">
+          <h2 className="text-lg font-black text-gray-900">
             {mode === "login" ? "Welcome back" : "Create account"}
           </h2>
 
           {/* Google button */}
           <button
             onClick={handleGoogle}
-            className="w-full py-3.5 rounded-2xl border border-white/10 bg-white/5 text-white text-sm font-semibold hover:bg-white/10 transition-all active:scale-95 flex items-center justify-center gap-3"
+            className="w-full py-3.5 rounded-2xl border border-gray-200 bg-white/5 text-gray-900 text-sm font-semibold hover:bg-white/10 transition-all active:scale-95 flex items-center justify-center gap-3"
           >
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
               <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/>
@@ -70,7 +70,7 @@ export default function AuthPage() {
           {/* Divider */}
           <div className="flex items-center gap-3">
             <div className="flex-1 h-px bg-white/10" />
-            <span className="text-xs text-white/25 font-medium">or</span>
+            <span className="text-xs text-gray-400 font-medium">or</span>
             <div className="flex-1 h-px bg-white/10" />
           </div>
 
@@ -81,7 +81,7 @@ export default function AuthPage() {
               autoComplete="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3.5 text-white text-sm placeholder:text-white/25 outline-none focus:ring-2 focus:ring-lime-400/50 focus:border-lime-400/30 transition-all"
+              className="w-full bg-white/5 border border-gray-200 rounded-2xl px-4 py-3.5 text-gray-900 text-sm placeholder:text-gray-400 outline-none focus:ring-2 focus:ring-lime-400/50 focus:border-lime-400/30 transition-all"
             />
             <input
               type="password"
@@ -90,17 +90,17 @@ export default function AuthPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
-              className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3.5 text-white text-sm placeholder:text-white/25 outline-none focus:ring-2 focus:ring-lime-400/50 focus:border-lime-400/30 transition-all"
+              className="w-full bg-white/5 border border-gray-200 rounded-2xl px-4 py-3.5 text-gray-900 text-sm placeholder:text-gray-400 outline-none focus:ring-2 focus:ring-lime-400/50 focus:border-lime-400/30 transition-all"
             />
           </div>
 
           {error && (
-            <p className="text-sm text-red-400 bg-red-400/10 border border-red-400/20 rounded-2xl px-4 py-3">
+            <p className="text-sm text-red-600 bg-red-400/10 border border-red-400/20 rounded-2xl px-4 py-3">
               {error}
             </p>
           )}
           {success && (
-            <p className="text-sm text-lime-400 bg-lime-400/10 border border-lime-400/20 rounded-2xl px-4 py-3">
+            <p className="text-sm text-lime-700 bg-lime-50 border border-lime-400/20 rounded-2xl px-4 py-3">
               {success}
             </p>
           )}
@@ -114,7 +114,7 @@ export default function AuthPage() {
           </button>
         </div>
 
-        <p className="text-center text-sm text-white/30">
+        <p className="text-center text-sm text-gray-400">
           {mode === "login" ? "No account? " : "Already have one? "}
           <button
             onClick={() => {
@@ -122,7 +122,7 @@ export default function AuthPage() {
               setError("");
               setSuccess("");
             }}
-            className="text-lime-400 font-semibold hover:text-lime-300 transition-colors"
+            className="text-lime-700 font-semibold hover:text-lime-700 transition-colors"
           >
             {mode === "login" ? "Sign up" : "Log in"}
           </button>

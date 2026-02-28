@@ -93,10 +93,10 @@ export default function FriendProfilePage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-[#1e1e2a] flex items-center justify-center">
+      <main className="min-h-screen bg-white flex items-center justify-center">
         <div className="space-y-3 text-center">
-          <div className="w-12 h-12 rounded-full border-2 border-white/10 border-t-lime-400 animate-spin mx-auto" />
-          <p className="text-white/20 text-xs">Loading profile…</p>
+          <div className="w-12 h-12 rounded-full border-2 border-gray-200 border-t-lime-400 animate-spin mx-auto" />
+          <p className="text-gray-300 text-xs">Loading profile…</p>
         </div>
       </main>
     );
@@ -104,9 +104,9 @@ export default function FriendProfilePage() {
 
   if (error) {
     return (
-      <main className="min-h-screen bg-[#1e1e2a] flex flex-col items-center justify-center gap-4">
-        <p className="text-white/50">{error}</p>
-        <Link href="/friends" className="text-lime-400 text-sm font-semibold">← Back to friends</Link>
+      <main className="min-h-screen bg-white flex flex-col items-center justify-center gap-4">
+        <p className="text-gray-500">{error}</p>
+        <Link href="/friends" className="text-lime-700 text-sm font-semibold">← Back to friends</Link>
       </main>
     );
   }
@@ -115,22 +115,22 @@ export default function FriendProfilePage() {
 
   if (!isFriend) {
     return (
-      <main className="min-h-screen bg-[#1e1e2a] max-w-sm mx-auto flex flex-col">
-        <div className="sticky top-0 z-10 bg-[#1e1e2a]/80 backdrop-blur-xl border-b border-white/[0.06] px-5">
+      <main className="min-h-screen bg-white max-w-sm mx-auto flex flex-col">
+        <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-xl border-b border-gray-200 px-5">
           <div className="flex items-center h-14">
-            <Link href="/friends" className="text-white/40 text-sm font-medium hover:text-white/80 transition-colors">← Back</Link>
+            <Link href="/friends" className="text-gray-500 text-sm font-medium hover:text-gray-800 transition-colors">← Back</Link>
           </div>
         </div>
         <div className="flex-1 flex flex-col items-center justify-center gap-4 p-8 text-center">
           <div className="relative">
-            <div className="w-20 h-20 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
+            <div className="w-20 h-20 rounded-full bg-white/5 border border-gray-200 flex items-center justify-center">
               <span className="text-3xl">🔒</span>
             </div>
           </div>
           <div>
-            <p className="text-white font-black text-lg">{displayLabel}</p>
-            {displayName && <p className="text-white/30 text-xs mt-0.5">@{username}</p>}
-            <p className="text-white/30 text-sm mt-2">You need to be friends to view this profile.</p>
+            <p className="text-gray-900 font-black text-lg">{displayLabel}</p>
+            {displayName && <p className="text-gray-400 text-xs mt-0.5">@{username}</p>}
+            <p className="text-gray-400 text-sm mt-2">You need to be friends to view this profile.</p>
           </div>
         </div>
       </main>
@@ -157,7 +157,7 @@ export default function FriendProfilePage() {
 
   const showTabs = shareStats && shareHistory && matches.length > 0;
   const streakPos = streak > 0;
-  const streakColor = streakPos ? "text-lime-400" : "text-red-400";
+  const streakColor = streakPos ? "text-lime-700" : "text-red-600";
   const streakGlow  = streakPos ? "shadow-lime-400/30" : "shadow-red-400/30";
 
   // Pick spotlight color based on win rate
@@ -168,12 +168,12 @@ export default function FriendProfilePage() {
     : "rgba(248,113,113,0.10)";
 
   return (
-    <main className="min-h-screen bg-[#1e1e2a] max-w-sm mx-auto pb-10">
+    <main className="min-h-screen bg-white max-w-sm mx-auto pb-10">
 
       {/* Back nav — floats over hero */}
       <div className="sticky top-0 z-20 px-5">
         <div className="flex items-center h-14">
-          <Link href="/friends" className="flex items-center gap-1.5 text-white/40 text-sm font-medium hover:text-white/80 transition-colors">
+          <Link href="/friends" className="flex items-center gap-1.5 text-gray-500 text-sm font-medium hover:text-gray-800 transition-colors">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
               <polyline points="15 18 9 12 15 6"/>
             </svg>
@@ -202,9 +202,9 @@ export default function FriendProfilePage() {
         <div className="relative flex flex-col items-center gap-5 pt-6">
           {/* Avatar ring */}
           <div className="relative">
-            <div className="w-24 h-24 rounded-full bg-gradient-to-br from-white/10 to-white/5 border border-white/15 flex items-center justify-center shadow-xl"
+            <div className="w-24 h-24 rounded-full bg-gradient-to-br from-white/10 to-white/5 border border-gray-200 flex items-center justify-center shadow-xl"
               style={{ boxShadow: `0 0 40px ${spotlightColor}, 0 0 0 1px rgba(255,255,255,0.08)` }}>
-              <span className="text-2xl font-black text-white/80 tracking-tight">
+              <span className="text-2xl font-black text-gray-800 tracking-tight">
                 <Initials name={displayLabel} />
               </span>
             </div>
@@ -218,9 +218,9 @@ export default function FriendProfilePage() {
 
           {/* Name */}
           <div className="text-center">
-            <h1 className="text-2xl font-black text-white tracking-tight">{displayLabel}</h1>
-            {displayName && <p className="text-white/30 text-xs mt-0.5">@{username}</p>}
-            <p className="text-white/25 text-xs mt-1">{matches.length} matches logged</p>
+            <h1 className="text-2xl font-black text-gray-900 tracking-tight">{displayLabel}</h1>
+            {displayName && <p className="text-gray-400 text-xs mt-0.5">@{username}</p>}
+            <p className="text-gray-400 text-xs mt-1">{matches.length} matches logged</p>
           </div>
 
           {/* Win rate arc + record */}
@@ -230,20 +230,20 @@ export default function FriendProfilePage() {
               <div className="relative flex items-center justify-center">
                 <WinRateArc pct={winRate} />
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <span className="text-xl font-black text-white">{winRate}%</span>
-                  <span className="text-[9px] text-white/30 uppercase tracking-widest">win rate</span>
+                  <span className="text-xl font-black text-gray-900">{winRate}%</span>
+                  <span className="text-[9px] text-gray-400 uppercase tracking-widest">win rate</span>
                 </div>
               </div>
               {/* Record */}
               <div className="space-y-2">
                 <div>
-                  <p className="text-[10px] text-white/30 uppercase tracking-widest">Overall</p>
-                  <p className="text-2xl font-black text-white">{record.wins}<span className="text-white/20 font-normal">–</span>{record.losses}</p>
+                  <p className="text-[10px] text-gray-400 uppercase tracking-widest">Overall</p>
+                  <p className="text-2xl font-black text-gray-900">{record.wins}<span className="text-gray-300 font-normal">–</span>{record.losses}</p>
                 </div>
                 <div>
-                  <p className="text-[10px] text-white/30 uppercase tracking-widest">Last 5</p>
-                  <p className="text-base font-black text-white/70">
-                    {last5.filter(m => m.result === "win").length}<span className="text-white/20 font-normal">–</span>{last5.filter(m => m.result !== "win").length}
+                  <p className="text-[10px] text-gray-400 uppercase tracking-widest">Last 5</p>
+                  <p className="text-base font-black text-gray-700">
+                    {last5.filter(m => m.result === "win").length}<span className="text-gray-300 font-normal">–</span>{last5.filter(m => m.result !== "win").length}
                   </p>
                 </div>
               </div>
@@ -256,19 +256,19 @@ export default function FriendProfilePage() {
       <div className="px-5 space-y-5">
 
         {neitherShared ? (
-          <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-8 text-center space-y-2">
+          <div className="rounded-2xl border border-gray-200 bg-gray-50 p-8 text-center space-y-2">
             <p className="text-3xl">🔒</p>
-            <p className="text-white font-bold">Private profile</p>
-            <p className="text-white/40 text-sm">This player keeps their stats private.</p>
+            <p className="text-gray-900 font-bold">Private profile</p>
+            <p className="text-gray-500 text-sm">This player keeps their stats private.</p>
           </div>
         ) : (
           <>
             {/* Tab switcher */}
             {showTabs && (
-              <div className="flex gap-2 p-1 rounded-2xl bg-white/[0.04] border border-white/10">
+              <div className="flex gap-2 p-1 rounded-2xl bg-gray-50 border border-gray-200">
                 {(["stats", "history"] as Tab[]).map(t => (
                   <button key={t} onClick={() => setTab(t)}
-                    className={`flex-1 py-2.5 rounded-xl text-sm font-bold capitalize transition-all ${tab === t ? "bg-lime-400 text-black shadow" : "text-white/40 hover:text-white/70"}`}>
+                    className={`flex-1 py-2.5 rounded-xl text-sm font-bold capitalize transition-all ${tab === t ? "bg-lime-400 text-black shadow" : "text-gray-500 hover:text-gray-700"}`}>
                     {t}
                   </button>
                 ))}
@@ -279,14 +279,14 @@ export default function FriendProfilePage() {
             {shareStats && (!showTabs || tab === "stats") && (
               <div className="space-y-5">
                 {matches.length === 0 ? (
-                  <p className="text-white/30 text-sm text-center py-4">No matches logged yet.</p>
+                  <p className="text-gray-400 text-sm text-center py-4">No matches logged yet.</p>
                 ) : (
                   <>
                     {/* Performance Grades */}
                     {(consistGrade || clutchGrade || mentalGrade || execGrade || momentumGrade) && (
                       <section className="space-y-3">
-                        <p className="text-xs font-black tracking-widest uppercase text-white/30">Performance Grades</p>
-                        <p className="text-xs text-white/20">Based on last 10 matches</p>
+                        <p className="text-xs font-black tracking-widest uppercase text-gray-400">Performance Grades</p>
+                        <p className="text-xs text-gray-300">Based on last 10 matches</p>
                         <div className="space-y-2">
                           {([
                             { label: "Consistency", g: consistGrade },
@@ -296,7 +296,7 @@ export default function FriendProfilePage() {
                             { label: "Momentum",     g: momentumGrade },
                           ] as { label: string; g: string | null }[]).filter(r => r.g).map(({ label, g }) => (
                             <div key={label} className={`rounded-2xl border p-4 flex items-center justify-between ${gradeBg(g!)}`}>
-                              <p className="text-sm font-bold text-white/70">{label}</p>
+                              <p className="text-sm font-bold text-gray-700">{label}</p>
                               <span className={`text-3xl font-black ${gradeColor(g!)}`}
                                 style={{ textShadow: `0 0 20px currentColor` }}>
                                 {g}
@@ -314,9 +314,9 @@ export default function FriendProfilePage() {
             {/* ── History view ── */}
             {shareHistory && (!showTabs || tab === "history") && (
               <div className="space-y-3">
-                <p className="text-xs font-black tracking-widest uppercase text-white/30">Match History</p>
+                <p className="text-xs font-black tracking-widest uppercase text-gray-400">Match History</p>
                 {matches.length === 0 ? (
-                  <p className="text-white/30 text-sm text-center py-4">No matches logged yet.</p>
+                  <p className="text-gray-400 text-sm text-center py-4">No matches logged yet.</p>
                 ) : (
                   <div className="space-y-2">
                     {matches.map(m => {
@@ -337,13 +337,13 @@ export default function FriendProfilePage() {
                             style={{ boxShadow: win ? "2px 0 12px rgba(132,204,22,0.4)" : "2px 0 12px rgba(248,113,113,0.4)" }} />
                           <div className="pl-3">
                             <div className="flex items-center justify-between">
-                              <span className="text-white font-black text-base">{m.opponentName}</span>
-                              <span className={`text-xs font-black px-2.5 py-1 rounded-full ${win ? "bg-lime-400/15 text-lime-400" : "bg-red-500/15 text-red-400"}`}>
+                              <span className="text-gray-900 font-black text-base">{m.opponentName}</span>
+                              <span className={`text-xs font-black px-2.5 py-1 rounded-full ${win ? "bg-lime-100 text-lime-700" : "bg-red-50 text-red-600"}`}>
                                 {win ? "W" : "L"}
                               </span>
                             </div>
-                            <p className="text-xs text-white/40 mt-1">{SURFACE_EMOJI[m.surface]} {scoreSets}</p>
-                            <p className="text-[10px] text-white/20 mt-0.5">
+                            <p className="text-xs text-gray-500 mt-1">{SURFACE_EMOJI[m.surface]} {scoreSets}</p>
+                            <p className="text-[10px] text-gray-300 mt-0.5">
                               {new Date(m.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
                             </p>
                           </div>

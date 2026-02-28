@@ -62,7 +62,7 @@ const ROLES = [
     title: "Server",
     icon: "🎾",
     color: "border-lime-400/20 bg-lime-400/[0.03]",
-    badge: "text-lime-400",
+    badge: "text-lime-700",
     points: [
       "Serve wide or into the body — create an angle or jam the returner.",
       "Follow your serve to the net when first serve lands in.",
@@ -100,8 +100,8 @@ const ROLES = [
   {
     title: "Returner's Partner",
     icon: "📍",
-    color: "border-white/10 bg-white/[0.02]",
-    badge: "text-white/50",
+    color: "border-gray-200 bg-gray-50",
+    badge: "text-gray-500",
     points: [
       "Start at the service line — not too far forward, not at the baseline.",
       "Watch the net player. If they poach, move to the net and take over.",
@@ -117,7 +117,7 @@ const FORMATIONS = [
     title: "Both Up",
     icon: "⬆️⬆️",
     label: "Aggressive",
-    color: "text-lime-400",
+    color: "text-lime-700",
     description: "Both players at the net. Most effective when you've forced a weak ball or taken control of the point.",
     pros: ["Highest win % for net exchanges", "Puts maximum pressure on opponents", "Forces lobs or low-percentage passing shots"],
     cons: ["Vulnerable to lobs", "Requires good reflexes and communication"],
@@ -126,7 +126,7 @@ const FORMATIONS = [
     title: "Both Back",
     icon: "⬇️⬇️",
     label: "Defensive",
-    color: "text-red-400",
+    color: "text-red-600",
     description: "Both players at the baseline. Use only when forced — opponents at net win far more often.",
     pros: ["More time to react to hard shots", "Better for lob coverage"],
     cons: ["Surrenders net control", "Gives opponents easy volleys", "Use as a reset, not a strategy"],
@@ -220,26 +220,26 @@ const IN_MATCH_QUESTIONS = [
 function RoleCard({ r }: { r: typeof ROLES[0] }) {
   const [open, setOpen] = useState(false);
   return (
-    <div className={`rounded-2xl border transition-all ${open ? r.color : "border-white/10 bg-white/[0.02]"}`}>
+    <div className={`rounded-2xl border transition-all ${open ? r.color : "border-gray-200 bg-gray-50"}`}>
       <button
         onClick={() => setOpen(v => !v)}
         className="w-full flex items-center justify-between px-4 py-3.5 text-left"
       >
         <div className="flex items-center gap-3">
           <span className="text-xl flex-shrink-0">{r.icon}</span>
-          <span className={`text-sm font-bold ${open ? r.badge : "text-white/90"}`}>{r.title}</span>
+          <span className={`text-sm font-bold ${open ? r.badge : "text-gray-900"}`}>{r.title}</span>
         </div>
         <svg
-          className={`text-white/30 transition-transform flex-shrink-0 ml-2 ${open ? "rotate-90" : ""}`}
+          className={`text-gray-400 transition-transform flex-shrink-0 ml-2 ${open ? "rotate-90" : ""}`}
           width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
         >
           <polyline points="9 18 15 12 9 6"/>
         </svg>
       </button>
       {open && (
-        <ul className="px-4 pb-4 space-y-1.5 border-t border-white/[0.06] pt-3">
+        <ul className="px-4 pb-4 space-y-1.5 border-t border-gray-200 pt-3">
           {r.points.map((p, i) => (
-            <li key={i} className="flex items-start gap-2 text-sm text-white/70">
+            <li key={i} className="flex items-start gap-2 text-sm text-gray-700">
               <span className={`mt-0.5 flex-shrink-0 ${r.badge}`}>›</span>
               {p}
             </li>
@@ -253,30 +253,30 @@ function RoleCard({ r }: { r: typeof ROLES[0] }) {
 function FundamentalCard({ f, n }: { f: typeof FUNDAMENTALS[0]; n: number }) {
   const [open, setOpen] = useState(false);
   return (
-    <div className={`rounded-2xl border transition-all ${open ? "border-sky-400/20 bg-sky-400/[0.04]" : "border-white/10 bg-white/[0.02]"}`}>
+    <div className={`rounded-2xl border transition-all ${open ? "border-sky-400/20 bg-sky-400/[0.04]" : "border-gray-200 bg-gray-50"}`}>
       <button
         onClick={() => setOpen(v => !v)}
         className="w-full flex items-center justify-between px-4 py-3.5 text-left"
       >
         <div className="flex items-center gap-3">
-          <span className={`text-xs font-black w-6 h-6 rounded-full flex items-center justify-center ${open ? "bg-sky-400 text-black" : "bg-white/10 text-white/40"}`}>
+          <span className={`text-xs font-black w-6 h-6 rounded-full flex items-center justify-center ${open ? "bg-sky-400 text-black" : "bg-white/10 text-gray-500"}`}>
             {n}
           </span>
-          <span className="text-sm font-bold text-white/90">{f.title}</span>
+          <span className="text-sm font-bold text-gray-900">{f.title}</span>
         </div>
         <svg
-          className={`text-white/30 transition-transform flex-shrink-0 ml-2 ${open ? "rotate-90" : ""}`}
+          className={`text-gray-400 transition-transform flex-shrink-0 ml-2 ${open ? "rotate-90" : ""}`}
           width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
         >
           <polyline points="9 18 15 12 9 6"/>
         </svg>
       </button>
       {open && (
-        <div className="px-4 pb-4 space-y-3 border-t border-white/[0.06] pt-3">
-          <p className="text-sm text-white/60 italic">{f.summary}</p>
+        <div className="px-4 pb-4 space-y-3 border-t border-gray-200 pt-3">
+          <p className="text-sm text-gray-600 italic">{f.summary}</p>
           <ul className="space-y-1.5">
             {f.points.map((p, i) => (
-              <li key={i} className="flex items-start gap-2 text-sm text-white/70">
+              <li key={i} className="flex items-start gap-2 text-sm text-gray-700">
                 <span className="text-sky-400 mt-0.5 flex-shrink-0">›</span>
                 {p}
               </li>
@@ -292,13 +292,13 @@ function FundamentalCard({ f, n }: { f: typeof FUNDAMENTALS[0]; n: number }) {
 
 export default function DoublesPlaybookPage() {
   return (
-    <main className="min-h-screen bg-[#1e1e2a] max-w-sm mx-auto pb-10">
+    <main className="min-h-screen bg-white max-w-sm mx-auto pb-10">
 
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-[#1e1e2a]/90 backdrop-blur-xl border-b border-white/[0.06] px-5">
+      <div className="sticky top-0 z-10 bg-white/90 backdrop-blur-xl border-b border-gray-200 px-5">
         <div className="flex items-center justify-between h-14">
-          <Link href="/playbook" className="text-white/40 text-sm font-medium hover:text-white/80 transition-colors">← Playbook</Link>
-          <span className="text-xs font-black tracking-[0.2em] uppercase text-white/30">Doubles</span>
+          <Link href="/playbook" className="text-gray-500 text-sm font-medium hover:text-gray-800 transition-colors">← Playbook</Link>
+          <span className="text-xs font-black tracking-[0.2em] uppercase text-gray-400">Doubles</span>
           <div className="w-14" />
         </div>
       </div>
@@ -308,15 +308,15 @@ export default function DoublesPlaybookPage() {
         {/* Key Stat */}
         <section className="rounded-2xl border border-sky-400/20 bg-sky-400/[0.04] p-4 text-center space-y-1">
           <p className="text-4xl font-black text-sky-400">Both Up</p>
-          <p className="text-sm text-white/50">The team that wins the net wins the match.</p>
-          <p className="text-xs text-white/30">All strategy flows from this principle.</p>
+          <p className="text-sm text-gray-500">The team that wins the net wins the match.</p>
+          <p className="text-xs text-gray-400">All strategy flows from this principle.</p>
         </section>
 
         {/* 5 Fundamentals */}
         <section className="space-y-3">
           <div>
-            <p className="text-xs font-black tracking-widest uppercase text-white/30">5 Fundamentals</p>
-            <p className="text-xs text-white/20 mt-0.5">Tap to expand</p>
+            <p className="text-xs font-black tracking-widest uppercase text-gray-400">5 Fundamentals</p>
+            <p className="text-xs text-gray-300 mt-0.5">Tap to expand</p>
           </div>
           <div className="space-y-2">
             {FUNDAMENTALS.map((f, i) => <FundamentalCard key={f.title} f={f} n={i + 1} />)}
@@ -326,8 +326,8 @@ export default function DoublesPlaybookPage() {
         {/* 4 Roles */}
         <section className="space-y-3">
           <div>
-            <p className="text-xs font-black tracking-widest uppercase text-white/30">4 Roles on Court</p>
-            <p className="text-xs text-white/20 mt-0.5">Know your job on every point</p>
+            <p className="text-xs font-black tracking-widest uppercase text-gray-400">4 Roles on Court</p>
+            <p className="text-xs text-gray-300 mt-0.5">Know your job on every point</p>
           </div>
           <div className="space-y-2">
             {ROLES.map(r => <RoleCard key={r.title} r={r} />)}
@@ -336,32 +336,32 @@ export default function DoublesPlaybookPage() {
 
         {/* 3 Formations */}
         <section className="space-y-3">
-          <p className="text-xs font-black tracking-widest uppercase text-white/30">3 Formations</p>
+          <p className="text-xs font-black tracking-widest uppercase text-gray-400">3 Formations</p>
           <div className="space-y-3">
             {FORMATIONS.map(f => (
-              <div key={f.title} className="rounded-2xl border border-white/10 bg-white/[0.02] p-4 space-y-2">
+              <div key={f.title} className="rounded-2xl border border-gray-200 bg-gray-50 p-4 space-y-2">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <span className="text-base">{f.icon}</span>
-                    <p className="text-sm font-black text-white">{f.title}</p>
+                    <p className="text-sm font-black text-gray-900">{f.title}</p>
                   </div>
                   <span className={`text-xs font-black uppercase tracking-wider ${f.color}`}>{f.label}</span>
                 </div>
-                <p className="text-sm text-white/60">{f.description}</p>
+                <p className="text-sm text-gray-600">{f.description}</p>
                 <div className="grid grid-cols-2 gap-2 pt-1">
                   <div className="space-y-1">
-                    <p className="text-[10px] font-black text-lime-400 uppercase tracking-wider">Pros</p>
+                    <p className="text-[10px] font-black text-lime-700 uppercase tracking-wider">Pros</p>
                     {f.pros.map((p, i) => (
-                      <p key={i} className="text-xs text-white/50 flex items-start gap-1">
-                        <span className="text-lime-400 flex-shrink-0">+</span>{p}
+                      <p key={i} className="text-xs text-gray-500 flex items-start gap-1">
+                        <span className="text-lime-700 flex-shrink-0">+</span>{p}
                       </p>
                     ))}
                   </div>
                   <div className="space-y-1">
-                    <p className="text-[10px] font-black text-red-400 uppercase tracking-wider">Cons</p>
+                    <p className="text-[10px] font-black text-red-600 uppercase tracking-wider">Cons</p>
                     {f.cons.map((c, i) => (
-                      <p key={i} className="text-xs text-white/50 flex items-start gap-1">
-                        <span className="text-red-400 flex-shrink-0">−</span>{c}
+                      <p key={i} className="text-xs text-gray-500 flex items-start gap-1">
+                        <span className="text-red-600 flex-shrink-0">−</span>{c}
                       </p>
                     ))}
                   </div>
@@ -373,17 +373,17 @@ export default function DoublesPlaybookPage() {
 
         {/* Net Play */}
         <section className="space-y-3">
-          <p className="text-xs font-black tracking-widest uppercase text-white/30">Net Play</p>
+          <p className="text-xs font-black tracking-widest uppercase text-gray-400">Net Play</p>
           <div className="space-y-3">
             {NET_PLAY.map(n => (
-              <div key={n.category} className="rounded-2xl border border-white/10 bg-white/[0.02] p-4 space-y-2">
+              <div key={n.category} className="rounded-2xl border border-gray-200 bg-gray-50 p-4 space-y-2">
                 <div className="flex items-center gap-2">
                   <span className="text-lg">{n.icon}</span>
-                  <p className="text-sm font-black text-white">{n.category}</p>
+                  <p className="text-sm font-black text-gray-900">{n.category}</p>
                 </div>
                 <ul className="space-y-1.5">
                   {n.items.map((item, i) => (
-                    <li key={i} className="flex items-start gap-2 text-sm text-white/65">
+                    <li key={i} className="flex items-start gap-2 text-sm text-gray-600">
                       <span className="text-sky-400 mt-0.5 flex-shrink-0">›</span>
                       {item}
                     </li>
@@ -396,12 +396,12 @@ export default function DoublesPlaybookPage() {
 
         {/* What Makes a Good Partner */}
         <section className="space-y-3">
-          <p className="text-xs font-black tracking-widest uppercase text-white/30">Good Partner Traits</p>
-          <div className="rounded-2xl border border-white/10 bg-white/[0.02] divide-y divide-white/[0.06] overflow-hidden">
+          <p className="text-xs font-black tracking-widest uppercase text-gray-400">Good Partner Traits</p>
+          <div className="rounded-2xl border border-gray-200 bg-gray-50 divide-y divide-white/[0.06] overflow-hidden">
             {GOOD_PARTNER.map(g => (
               <div key={g.trait} className="px-4 py-3 space-y-0.5">
-                <p className="text-sm font-bold text-white/80">{g.trait}</p>
-                <p className="text-xs text-white/40">{g.detail}</p>
+                <p className="text-sm font-bold text-gray-800">{g.trait}</p>
+                <p className="text-xs text-gray-500">{g.detail}</p>
               </div>
             ))}
           </div>
@@ -409,12 +409,12 @@ export default function DoublesPlaybookPage() {
 
         {/* Common Themes */}
         <section className="space-y-3">
-          <p className="text-xs font-black tracking-widest uppercase text-white/30">Common Themes</p>
+          <p className="text-xs font-black tracking-widest uppercase text-gray-400">Common Themes</p>
           <div className="space-y-2">
             {THEMES.map((t, i) => (
-              <div key={i} className="flex items-start gap-3 rounded-2xl border border-white/10 bg-white/[0.02] px-4 py-3">
+              <div key={i} className="flex items-start gap-3 rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3">
                 <span className="text-lg flex-shrink-0">{t.icon}</span>
-                <p className="text-sm text-white/65">{t.tip}</p>
+                <p className="text-sm text-gray-600">{t.tip}</p>
               </div>
             ))}
           </div>
@@ -422,13 +422,13 @@ export default function DoublesPlaybookPage() {
 
         {/* Pre-Match Questions */}
         <section className="space-y-3">
-          <p className="text-xs font-black tracking-widest uppercase text-white/30">Pre-Match Partner Questions</p>
-          <p className="text-xs text-white/20">Ask your partner before you step on court</p>
-          <div className="rounded-2xl border border-white/10 bg-white/[0.02] divide-y divide-white/[0.06] overflow-hidden">
+          <p className="text-xs font-black tracking-widest uppercase text-gray-400">Pre-Match Partner Questions</p>
+          <p className="text-xs text-gray-300">Ask your partner before you step on court</p>
+          <div className="rounded-2xl border border-gray-200 bg-gray-50 divide-y divide-white/[0.06] overflow-hidden">
             {PRE_MATCH_QUESTIONS.map((q, i) => (
               <div key={i} className="flex items-start gap-3 px-4 py-3">
                 <span className="text-xs font-black text-sky-400 w-4 flex-shrink-0 mt-0.5">{i + 1}</span>
-                <p className="text-sm text-white/65">{q}</p>
+                <p className="text-sm text-gray-600">{q}</p>
               </div>
             ))}
           </div>
@@ -436,13 +436,13 @@ export default function DoublesPlaybookPage() {
 
         {/* In-Match Questions */}
         <section className="space-y-3">
-          <p className="text-xs font-black tracking-widest uppercase text-white/30">In-Match Check-In</p>
-          <p className="text-xs text-white/20">Ask between sets or when momentum shifts</p>
-          <div className="rounded-2xl border border-white/10 bg-white/[0.02] divide-y divide-white/[0.06] overflow-hidden">
+          <p className="text-xs font-black tracking-widest uppercase text-gray-400">In-Match Check-In</p>
+          <p className="text-xs text-gray-300">Ask between sets or when momentum shifts</p>
+          <div className="rounded-2xl border border-gray-200 bg-gray-50 divide-y divide-white/[0.06] overflow-hidden">
             {IN_MATCH_QUESTIONS.map((q, i) => (
               <div key={i} className="flex items-start gap-3 px-4 py-3">
                 <span className="text-xs font-black text-amber-400 w-4 flex-shrink-0 mt-0.5">?</span>
-                <p className="text-sm text-white/65">{q}</p>
+                <p className="text-sm text-gray-600">{q}</p>
               </div>
             ))}
           </div>

@@ -452,34 +452,34 @@ export default function GroupPage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-[#1e1e2a] flex items-center justify-center">
-        <p className="text-white/30 text-sm">Loading…</p>
+      <main className="min-h-screen bg-white flex items-center justify-center">
+        <p className="text-gray-400 text-sm">Loading…</p>
       </main>
     );
   }
 
   return (
-    <main className="min-h-screen bg-[#1e1e2a] max-w-sm mx-auto pb-24">
+    <main className="min-h-screen bg-white max-w-sm mx-auto pb-24">
 
       {/* Header */}
-      <div className="px-5 pt-5 pb-3 border-b border-white/[0.06]">
+      <div className="px-5 pt-5 pb-3 border-b border-gray-200">
         <div className="flex items-center gap-2 mb-1">
-          <Link href="/friends" className="text-white/30 hover:text-white/60 transition-colors">
+          <Link href="/friends" className="text-gray-400 hover:text-gray-600 transition-colors">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="15 18 9 12 15 6"/>
             </svg>
           </Link>
-          <p className="text-white/30 text-xs font-bold tracking-widest uppercase">Groups</p>
+          <p className="text-gray-400 text-xs font-bold tracking-widest uppercase">Groups</p>
         </div>
         <div className="flex items-start justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-black text-white leading-tight">{groupName}</h1>
-            <p className="text-white/30 text-xs mt-0.5">{members.length} member{members.length !== 1 ? "s" : ""}</p>
+            <h1 className="text-2xl font-black text-gray-900 leading-tight">{groupName}</h1>
+            <p className="text-gray-400 text-xs mt-0.5">{members.length} member{members.length !== 1 ? "s" : ""}</p>
           </div>
           <button
             onClick={leaveOrDelete}
             disabled={leaveBusy}
-            className={`text-xs font-bold mt-1 transition-colors disabled:opacity-40 ${isCreator ? "text-red-400/50 hover:text-red-400/80" : "text-white/25 hover:text-red-400/70"}`}
+            className={`text-xs font-bold mt-1 transition-colors disabled:opacity-40 ${isCreator ? "text-red-600/50 hover:text-red-600/80" : "text-gray-400 hover:text-red-600/70"}`}
           >
             {isCreator ? "Delete" : "Leave"}
           </button>
@@ -492,7 +492,7 @@ export default function GroupPage() {
               key={t}
               onClick={() => switchTab(t)}
               className={`text-[10px] font-black tracking-widest uppercase px-2.5 py-1.5 rounded-xl transition-all capitalize
-                ${subTab === t ? "bg-lime-400/20 text-lime-400" : "text-white/25 hover:text-white/50"}`}
+                ${subTab === t ? "bg-lime-100 text-lime-700" : "text-gray-400 hover:text-gray-500"}`}
             >
               {t === "leaderboard" ? "Board" : t === "challenges" ? "Duels" : t}
             </button>
@@ -506,37 +506,37 @@ export default function GroupPage() {
         {subTab === "leaderboard" && (
           <section className="space-y-3">
             {members.length === 0 ? (
-              <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-6 text-center">
-                <p className="text-sm text-white/40">No members yet</p>
+              <div className="rounded-2xl border border-gray-200 bg-gray-50 p-6 text-center">
+                <p className="text-sm text-gray-500">No members yet</p>
               </div>
             ) : (
-              <div className="rounded-2xl border border-white/10 bg-white/[0.03] divide-y divide-white/[0.06]">
+              <div className="rounded-2xl border border-gray-200 bg-gray-50 divide-y divide-white/[0.06]">
                 {members.map((m, i) => (
                   <div key={m.userId} className="flex items-center justify-between px-4 py-3 gap-3">
                     <div className="flex items-center gap-3 min-w-0">
-                      <span className="text-xs font-black text-white/20 w-4 flex-shrink-0">{i + 1}</span>
-                      <div className="w-8 h-8 rounded-full bg-lime-400/10 flex items-center justify-center flex-shrink-0">
-                        <span className="text-xs font-black text-lime-400">
+                      <span className="text-xs font-black text-gray-300 w-4 flex-shrink-0">{i + 1}</span>
+                      <div className="w-8 h-8 rounded-full bg-lime-50 flex items-center justify-center flex-shrink-0">
+                        <span className="text-xs font-black text-lime-700">
                           {(m.displayName || m.username)[0].toUpperCase()}
                         </span>
                       </div>
                       <div className="min-w-0">
                         <button
                           onClick={() => setProfileUserId(m.userId)}
-                          className="text-sm font-semibold text-white/80 truncate hover:text-white transition-colors text-left"
+                          className="text-sm font-semibold text-gray-800 truncate hover:text-gray-900 transition-colors text-left"
                         >
                           {m.displayName ?? `@${m.username}`}
-                          {m.userId === userId && <span className="text-xs text-lime-400/60 ml-1.5">you</span>}
+                          {m.userId === userId && <span className="text-xs text-lime-700/60 ml-1.5">you</span>}
                         </button>
-                        <p className="text-xs text-white/30">{m.wins}W – {m.losses}L</p>
+                        <p className="text-xs text-gray-400">{m.wins}W – {m.losses}L</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-2 flex-shrink-0">
-                      <span className="text-sm font-black text-white/70">{m.winPct}%</span>
+                      <span className="text-sm font-black text-gray-700">{m.winPct}%</span>
                       {m.userId !== userId && (
                         <button
                           onClick={() => sendChallenge(m.userId)}
-                          className="text-[10px] font-black text-lime-400/70 bg-lime-400/10 px-2 py-1 rounded-lg hover:bg-lime-400/20 transition-all"
+                          className="text-[10px] font-black text-lime-700/70 bg-lime-50 px-2 py-1 rounded-lg hover:bg-lime-100 transition-all"
                         >
                           Challenge
                         </button>
@@ -553,22 +553,22 @@ export default function GroupPage() {
         {subTab === "feed" && (
           <section className="space-y-2">
             {feed.length === 0 ? (
-              <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-6 text-center space-y-1">
-                <p className="text-sm text-white/40">No matches yet</p>
-                <p className="text-xs text-white/20">Matches logged by group members will appear here</p>
+              <div className="rounded-2xl border border-gray-200 bg-gray-50 p-6 text-center space-y-1">
+                <p className="text-sm text-gray-500">No matches yet</p>
+                <p className="text-xs text-gray-300">Matches logged by group members will appear here</p>
               </div>
             ) : (
               feed.map(m => (
-                <Link key={m.id} href={`/match/${m.id}`} className="block bg-white/[0.03] border border-white/[0.06] rounded-2xl px-4 py-3 hover:border-white/10 transition-all">
+                <Link key={m.id} href={`/match/${m.id}`} className="block bg-gray-50 border border-gray-200 rounded-2xl px-4 py-3 hover:border-gray-200 transition-all">
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-xs font-bold text-white/30">{m.player_name}</span>
-                    <span className="text-[10px] text-white/20">{relativeTime(m.created_at)}</span>
+                    <span className="text-xs font-bold text-gray-400">{m.player_name}</span>
+                    <span className="text-[10px] text-gray-300">{relativeTime(m.created_at)}</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <p className="text-sm font-semibold text-white/80">vs {m.opponent_name}</p>
+                    <p className="text-sm font-semibold text-gray-800">vs {m.opponent_name}</p>
                     <div className="flex items-center gap-2">
-                      <span className="text-[10px] text-white/30 capitalize">{m.surface}</span>
-                      <span className={`text-xs font-black px-2 py-0.5 rounded-lg ${m.result === "win" ? "text-lime-400 bg-lime-400/10" : "text-red-400/70 bg-red-400/10"}`}>
+                      <span className="text-[10px] text-gray-400 capitalize">{m.surface}</span>
+                      <span className={`text-xs font-black px-2 py-0.5 rounded-lg ${m.result === "win" ? "text-lime-700 bg-lime-50" : "text-red-600/70 bg-red-400/10"}`}>
                         {m.result === "win" ? "W" : "L"}
                       </span>
                     </div>
@@ -588,7 +588,7 @@ export default function GroupPage() {
                 onChange={e => setPostContent(e.target.value)}
                 placeholder="Post to the group…"
                 rows={3}
-                className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white text-sm placeholder:text-white/25 outline-none focus:ring-2 focus:ring-lime-400/50 focus:border-lime-400/30 transition-all resize-none"
+                className="w-full bg-white/5 border border-gray-200 rounded-2xl px-4 py-3 text-gray-900 text-sm placeholder:text-gray-400 outline-none focus:ring-2 focus:ring-lime-400/50 focus:border-lime-400/30 transition-all resize-none"
               />
               <button
                 onClick={submitPost}
@@ -599,30 +599,30 @@ export default function GroupPage() {
               </button>
             </div>
             {posts.length === 0 ? (
-              <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-6 text-center space-y-1">
-                <p className="text-sm text-white/40">No posts yet</p>
-                <p className="text-xs text-white/20">Be the first to post in this group</p>
+              <div className="rounded-2xl border border-gray-200 bg-gray-50 p-6 text-center space-y-1">
+                <p className="text-sm text-gray-500">No posts yet</p>
+                <p className="text-xs text-gray-300">Be the first to post in this group</p>
               </div>
             ) : (
               <div className="space-y-2">
                 {posts.map(p => (
-                  <div key={p.id} className="bg-white/[0.03] border border-white/[0.06] rounded-2xl px-4 py-3 space-y-2">
+                  <div key={p.id} className="bg-gray-50 border border-gray-200 rounded-2xl px-4 py-3 space-y-2">
                     {/* Post */}
                     <div className="flex items-start gap-3">
-                      <div className="w-8 h-8 rounded-full bg-lime-400/10 flex items-center justify-center flex-shrink-0">
-                        <span className="text-xs font-black text-lime-400">{p.initial}</span>
+                      <div className="w-8 h-8 rounded-full bg-lime-50 flex items-center justify-center flex-shrink-0">
+                        <span className="text-xs font-black text-lime-700">{p.initial}</span>
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between gap-2 mb-1">
-                          <span className="text-xs font-bold text-white/50">{p.playerName}</span>
-                          <span className="text-[10px] text-white/20 flex-shrink-0">{relativeTime(p.created_at)}</span>
+                          <span className="text-xs font-bold text-gray-500">{p.playerName}</span>
+                          <span className="text-[10px] text-gray-300 flex-shrink-0">{relativeTime(p.created_at)}</span>
                         </div>
-                        <p className="text-sm text-white/80 break-words">{p.content}</p>
+                        <p className="text-sm text-gray-800 break-words">{p.content}</p>
                       </div>
                       {p.userId === userId && (
                         <button
                           onClick={() => deletePost(p.id)}
-                          className="text-white/20 hover:text-red-400/60 transition-colors flex-shrink-0 text-sm leading-none mt-0.5"
+                          className="text-gray-300 hover:text-red-600/60 transition-colors flex-shrink-0 text-sm leading-none mt-0.5"
                         >
                           ×
                         </button>
@@ -630,27 +630,27 @@ export default function GroupPage() {
                     </div>
                     {/* Replies */}
                     {p.replies.length > 0 && (
-                      <div className="ml-11 border-l border-white/10 pl-3 space-y-2">
+                      <div className="ml-11 border-l border-gray-200 pl-3 space-y-2">
                         {p.replies.map(r => (
                           <div key={r.id} className="flex items-start gap-2">
-                            <div className="w-5 h-5 rounded-full bg-lime-400/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-                              <span className="text-[8px] font-black text-lime-400">{r.initial}</span>
+                            <div className="w-5 h-5 rounded-full bg-lime-50 flex items-center justify-center flex-shrink-0 mt-0.5">
+                              <span className="text-[8px] font-black text-lime-700">{r.initial}</span>
                             </div>
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-1.5 mb-0.5">
-                                <span className="text-[10px] font-bold text-white/40">{r.playerName}</span>
-                                <span className="text-[9px] text-white/15">{relativeTime(r.created_at)}</span>
+                                <span className="text-[10px] font-bold text-gray-500">{r.playerName}</span>
+                                <span className="text-[9px] text-gray-300">{relativeTime(r.created_at)}</span>
                                 {(r.userId === userId || isCreator) && (
                                   <button
                                     onClick={() => deleteReply(r.id)}
-                                    className="text-white/15 hover:text-red-400/60 transition-colors text-xs leading-none ml-auto"
+                                    className="text-gray-300 hover:text-red-600/60 transition-colors text-xs leading-none ml-auto"
                                     title="Delete reply"
                                   >
                                     ×
                                   </button>
                                 )}
                               </div>
-                              <p className="text-xs text-white/65 break-words">{r.content}</p>
+                              <p className="text-xs text-gray-600 break-words">{r.content}</p>
                             </div>
                           </div>
                         ))}
@@ -659,7 +659,7 @@ export default function GroupPage() {
                     {/* Reply toggle */}
                     <button
                       onClick={() => { setReplyingTo(replyingTo === p.id ? null : p.id); setReplyText(""); }}
-                      className="text-[10px] font-bold text-white/20 hover:text-white/50 transition-colors ml-11"
+                      className="text-[10px] font-bold text-gray-300 hover:text-gray-500 transition-colors ml-11"
                     >
                       {replyingTo === p.id ? "Cancel" : `Reply${p.replies.length > 0 ? ` (${p.replies.length})` : ""}`}
                     </button>
@@ -672,7 +672,7 @@ export default function GroupPage() {
                           value={replyText}
                           onChange={e => setReplyText(e.target.value)}
                           onKeyDown={e => { if (e.key === "Enter") submitReply(p.id); }}
-                          className="flex-1 bg-white/5 border border-white/10 rounded-xl px-3 py-1.5 text-white text-xs placeholder:text-white/20 outline-none focus:ring-1 focus:ring-lime-400/50 transition-all"
+                          className="flex-1 bg-white/5 border border-gray-200 rounded-xl px-3 py-1.5 text-gray-900 text-xs placeholder:text-gray-300 outline-none focus:ring-1 focus:ring-lime-400/50 transition-all"
                         />
                         <button
                           onClick={() => submitReply(p.id)}
@@ -693,13 +693,13 @@ export default function GroupPage() {
         {/* ── CHALLENGES ── */}
         {subTab === "challenges" && (
           <section className="space-y-3">
-            <p className="text-xs text-white/20">Challenge a group member from the Leaderboard tab.</p>
+            <p className="text-xs text-gray-300">Challenge a group member from the Leaderboard tab.</p>
             {challenges.length === 0 ? (
-              <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-6 text-center">
-                <p className="text-sm text-white/40">No challenges yet</p>
+              <div className="rounded-2xl border border-gray-200 bg-gray-50 p-6 text-center">
+                <p className="text-sm text-gray-500">No challenges yet</p>
               </div>
             ) : (
-              <div className="rounded-2xl border border-white/10 bg-white/[0.03] divide-y divide-white/[0.06]">
+              <div className="rounded-2xl border border-gray-200 bg-gray-50 divide-y divide-white/[0.06]">
                 {challenges.map(c => {
                   const isChallenger = c.challenger_id === userId;
                   const isPending = c.status === "pending";
@@ -712,51 +712,51 @@ export default function GroupPage() {
                     <div key={c.id} className="px-4 py-3 space-y-2">
                       <div className="flex items-center justify-between gap-3">
                         <div className="min-w-0">
-                          <p className="text-sm font-semibold text-white/80 truncate">
+                          <p className="text-sm font-semibold text-gray-800 truncate">
                             {isChallenger ? `vs ${c.opponentName}` : `${c.challengerName} challenged you`}
                           </p>
                           <div className="flex items-center gap-2 mt-0.5">
                             <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md ${
-                              c.status === "accepted" ? "bg-lime-400/10 text-lime-400" :
-                              c.status === "completed" ? "bg-white/5 text-white/30" :
+                              c.status === "accepted" ? "bg-lime-50 text-lime-700" :
+                              c.status === "completed" ? "bg-white/5 text-gray-400" :
                               c.status === "pending_confirmation" ? "bg-amber-400/10 text-amber-400/80" :
                               "bg-amber-400/10 text-amber-400/80"
                             }`}>
                               {statusLabel}
                             </span>
-                            <span className="text-[10px] text-white/20">{relativeTime(c.created_at)}</span>
+                            <span className="text-[10px] text-gray-300">{relativeTime(c.created_at)}</span>
                           </div>
                         </div>
                         {isReceived && (
                           <div className="flex gap-2 flex-shrink-0">
                             <button
                               onClick={() => respondChallenge(c.id, false)}
-                              className="text-xs font-bold text-white/30 bg-white/5 border border-white/10 px-2.5 py-1.5 rounded-xl hover:text-white/50 transition-all"
+                              className="text-xs font-bold text-gray-400 bg-white/5 border border-gray-200 px-2.5 py-1.5 rounded-xl hover:text-gray-500 transition-all"
                             >
                               Decline
                             </button>
                             <button
                               onClick={() => respondChallenge(c.id, true)}
-                              className="text-xs font-black text-lime-400 bg-lime-400/10 px-2.5 py-1.5 rounded-xl hover:bg-lime-400/20 transition-all"
+                              className="text-xs font-black text-lime-700 bg-lime-50 px-2.5 py-1.5 rounded-xl hover:bg-lime-100 transition-all"
                             >
                               Accept
                             </button>
                           </div>
                         )}
                         {isPending && isChallenger && (
-                          <span className="text-xs text-white/25 flex-shrink-0">Waiting…</span>
+                          <span className="text-xs text-gray-400 flex-shrink-0">Waiting…</span>
                         )}
                         {c.status === "accepted" && (
                           <div className="flex gap-2 flex-shrink-0">
                             <Link
                               href={`/log?opponent=${encodeURIComponent(isChallenger ? c.opponentName : c.challengerName)}&challengeId=${c.id}&challengeType=group&returnTo=/groups/${groupId}`}
-                              className="text-xs font-black text-lime-400 bg-lime-400/10 px-2.5 py-1.5 rounded-xl hover:bg-lime-400/20 transition-all"
+                              className="text-xs font-black text-lime-700 bg-lime-50 px-2.5 py-1.5 rounded-xl hover:bg-lime-100 transition-all"
                             >
                               Log Match
                             </Link>
                             <button
                               onClick={() => respondChallenge(c.id, false)}
-                              className="text-xs font-bold text-white/25 hover:text-red-400/70 transition-colors"
+                              className="text-xs font-bold text-gray-400 hover:text-red-600/70 transition-colors"
                               title="Cancel challenge"
                             >
                               ×
@@ -766,7 +766,7 @@ export default function GroupPage() {
                         {c.status === "completed" && c.match_id && (
                           <Link
                             href={`/match/${c.match_id}`}
-                            className="text-xs font-black text-lime-400/70 bg-lime-400/10 px-2.5 py-1.5 rounded-xl hover:bg-lime-400/20 transition-all flex-shrink-0"
+                            className="text-xs font-black text-lime-700/70 bg-lime-50 px-2.5 py-1.5 rounded-xl hover:bg-lime-100 transition-all flex-shrink-0"
                           >
                             View Match
                           </Link>
@@ -777,9 +777,9 @@ export default function GroupPage() {
                       {needsConfirm && (
                         <div className="p-3 bg-amber-400/5 border border-amber-400/20 rounded-xl space-y-2">
                           <p className="text-xs font-bold text-amber-400/80">Confirm the score</p>
-                          <p className="text-xs text-white/50">
+                          <p className="text-xs text-gray-500">
                             {c.challengerName} logged:{" "}
-                            <span className={c.pending_match_result === "win" ? "text-red-400 font-semibold" : "text-lime-400 font-semibold"}>
+                            <span className={c.pending_match_result === "win" ? "text-red-600 font-semibold" : "text-lime-700 font-semibold"}>
                               {c.pending_match_result === "win" ? "their win" : "your win"}
                             </span>
                             {c.pending_match_score ? ` · ${c.pending_match_score}` : ""}
@@ -787,13 +787,13 @@ export default function GroupPage() {
                           <div className="flex gap-2">
                             <button
                               onClick={() => confirmGroupChallengeScore(c.id, false)}
-                              className="flex-1 text-xs font-bold text-white/40 bg-white/5 border border-white/10 py-1.5 rounded-xl hover:text-red-400/70 transition-all"
+                              className="flex-1 text-xs font-bold text-gray-500 bg-white/5 border border-gray-200 py-1.5 rounded-xl hover:text-red-600/70 transition-all"
                             >
                               Dispute
                             </button>
                             <button
                               onClick={() => confirmGroupChallengeScore(c.id, true)}
-                              className="flex-1 text-xs font-black text-lime-400 bg-lime-400/10 py-1.5 rounded-xl hover:bg-lime-400/20 transition-all"
+                              className="flex-1 text-xs font-black text-lime-700 bg-lime-50 py-1.5 rounded-xl hover:bg-lime-100 transition-all"
                             >
                               Confirm ✓
                             </button>
@@ -819,33 +819,33 @@ export default function GroupPage() {
         {subTab === "manage" && (
           <div className="space-y-5">
             {(!isGroupAdmin && !isGroupAssistant) ? (
-              <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-6 text-center">
-                <p className="text-sm text-white/40">Only coaches can manage members.</p>
+              <div className="rounded-2xl border border-gray-200 bg-gray-50 p-6 text-center">
+                <p className="text-sm text-gray-500">Only coaches can manage members.</p>
               </div>
             ) : (
               <>
                 {/* Add Member — coaches + assistants */}
                 <section className="space-y-3">
-                  <p className="text-xs font-black tracking-widest uppercase text-white/30">Add Member</p>
+                  <p className="text-xs font-black tracking-widest uppercase text-gray-400">Add Member</p>
                   <input
                     type="text"
                     placeholder="Search by name or username…"
                     value={manageSearchQuery}
                     onChange={e => searchToAdd(e.target.value)}
-                    className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white text-sm placeholder:text-white/25 outline-none focus:ring-2 focus:ring-lime-400/50 focus:border-lime-400/30 transition-all"
+                    className="w-full bg-white/5 border border-gray-200 rounded-2xl px-4 py-3 text-gray-900 text-sm placeholder:text-gray-400 outline-none focus:ring-2 focus:ring-lime-400/50 focus:border-lime-400/30 transition-all"
                   />
                   {manageSearchResults.length > 0 && (
-                    <div className="rounded-2xl border border-white/10 bg-white/[0.03] divide-y divide-white/[0.06]">
+                    <div className="rounded-2xl border border-gray-200 bg-gray-50 divide-y divide-white/[0.06]">
                       {manageSearchResults.map(r => (
                         <div key={r.id} className="flex items-center justify-between px-4 py-3 gap-3">
                           <div className="min-w-0">
-                            <p className="text-sm font-semibold text-white/80 truncate">{r.display_name ?? `@${r.username}`}</p>
-                            {r.display_name && <p className="text-xs text-white/30">@{r.username}</p>}
+                            <p className="text-sm font-semibold text-gray-800 truncate">{r.display_name ?? `@${r.username}`}</p>
+                            {r.display_name && <p className="text-xs text-gray-400">@{r.username}</p>}
                           </div>
                           <button
                             onClick={() => addGroupMember(r.id)}
                             disabled={manageBusy.has(r.id)}
-                            className="text-xs font-black text-lime-400 bg-lime-400/10 px-3 py-1.5 rounded-xl hover:bg-lime-400/20 transition-all active:scale-95 disabled:opacity-40 flex-shrink-0"
+                            className="text-xs font-black text-lime-700 bg-lime-50 px-3 py-1.5 rounded-xl hover:bg-lime-100 transition-all active:scale-95 disabled:opacity-40 flex-shrink-0"
                           >
                             {manageBusy.has(r.id) ? "Adding…" : "Add"}
                           </button>
@@ -858,30 +858,30 @@ export default function GroupPage() {
                 {/* Member list — coaches only */}
                 {isGroupAdmin && (
                   <section className="space-y-3">
-                    <p className="text-xs font-black tracking-widest uppercase text-white/30">
-                      Members <span className="text-white/20">({managedGroupMembers.length})</span>
+                    <p className="text-xs font-black tracking-widest uppercase text-gray-400">
+                      Members <span className="text-gray-300">({managedGroupMembers.length})</span>
                     </p>
                     {managedGroupMembers.length === 0 ? (
-                      <p className="text-white/25 text-sm text-center py-4">No members</p>
+                      <p className="text-gray-400 text-sm text-center py-4">No members</p>
                     ) : (
-                      <div className="rounded-2xl border border-white/10 bg-white/[0.03] divide-y divide-white/[0.06]">
+                      <div className="rounded-2xl border border-gray-200 bg-gray-50 divide-y divide-white/[0.06]">
                         {managedGroupMembers.map(m => (
                           <div key={m.userId} className="flex items-center justify-between px-4 py-3 gap-2">
                             <div className="flex items-center gap-2.5 min-w-0">
-                              <div className="w-8 h-8 rounded-full bg-lime-400/10 flex items-center justify-center flex-shrink-0">
-                                <span className="text-xs font-black text-lime-400">
+                              <div className="w-8 h-8 rounded-full bg-lime-50 flex items-center justify-center flex-shrink-0">
+                                <span className="text-xs font-black text-lime-700">
                                   {(m.displayName || m.username)[0].toUpperCase()}
                                 </span>
                               </div>
                               <div className="min-w-0">
-                                <p className="text-sm font-semibold text-white/80 truncate">
+                                <p className="text-sm font-semibold text-gray-800 truncate">
                                   {m.displayName ?? `@${m.username}`}
-                                  {m.userId === userId && <span className="text-xs text-lime-400/50 ml-1.5">you</span>}
+                                  {m.userId === userId && <span className="text-xs text-lime-700/50 ml-1.5">you</span>}
                                 </p>
                                 <span className={`text-[10px] font-black px-1.5 py-0.5 rounded-md ${
-                                  m.role === "admin" ? "bg-lime-400/10 text-lime-400"
+                                  m.role === "admin" ? "bg-lime-50 text-lime-700"
                                   : m.role === "assistant" ? "bg-amber-400/10 text-amber-400"
-                                  : "bg-white/5 text-white/30"
+                                  : "bg-white/5 text-gray-400"
                                 }`}>
                                   {m.role === "admin" ? "Coach" : m.role === "assistant" ? "Asst" : "Member"}
                                 </span>
@@ -891,7 +891,7 @@ export default function GroupPage() {
                               <div className="flex gap-1.5 flex-shrink-0 items-center">
                                 {m.role === "member" && (<>
                                   <button onClick={() => changeGroupRole(m.userId, "admin")} disabled={manageBusy.has(m.userId)}
-                                    className="text-[10px] font-black text-lime-400/70 bg-lime-400/10 px-2 py-1 rounded-xl hover:bg-lime-400/20 transition-all active:scale-95 disabled:opacity-40">
+                                    className="text-[10px] font-black text-lime-700/70 bg-lime-50 px-2 py-1 rounded-xl hover:bg-lime-100 transition-all active:scale-95 disabled:opacity-40">
                                     Coach
                                   </button>
                                   <button onClick={() => changeGroupRole(m.userId, "assistant")} disabled={manageBusy.has(m.userId)}
@@ -901,22 +901,22 @@ export default function GroupPage() {
                                 </>)}
                                 {m.role === "assistant" && (<>
                                   <button onClick={() => changeGroupRole(m.userId, "admin")} disabled={manageBusy.has(m.userId)}
-                                    className="text-[10px] font-black text-lime-400/70 bg-lime-400/10 px-2 py-1 rounded-xl hover:bg-lime-400/20 transition-all active:scale-95 disabled:opacity-40">
+                                    className="text-[10px] font-black text-lime-700/70 bg-lime-50 px-2 py-1 rounded-xl hover:bg-lime-100 transition-all active:scale-95 disabled:opacity-40">
                                     Coach
                                   </button>
                                   <button onClick={() => changeGroupRole(m.userId, "member")} disabled={manageBusy.has(m.userId)}
-                                    className="text-[10px] font-black text-white/40 bg-white/5 border border-white/10 px-2 py-1 rounded-xl hover:text-white/70 transition-all active:scale-95 disabled:opacity-40">
+                                    className="text-[10px] font-black text-gray-500 bg-white/5 border border-gray-200 px-2 py-1 rounded-xl hover:text-gray-700 transition-all active:scale-95 disabled:opacity-40">
                                     Demote
                                   </button>
                                 </>)}
                                 {m.role === "admin" && (
                                   <button onClick={() => changeGroupRole(m.userId, "member")} disabled={manageBusy.has(m.userId)}
-                                    className="text-[10px] font-black text-white/40 bg-white/5 border border-white/10 px-2.5 py-1 rounded-xl hover:text-white/70 transition-all active:scale-95 disabled:opacity-40">
+                                    className="text-[10px] font-black text-gray-500 bg-white/5 border border-gray-200 px-2.5 py-1 rounded-xl hover:text-gray-700 transition-all active:scale-95 disabled:opacity-40">
                                     Demote
                                   </button>
                                 )}
                                 <button onClick={() => kickGroupMember(m.userId)} disabled={manageBusy.has(m.userId)}
-                                  className="text-[10px] font-bold text-white/25 hover:text-red-400/70 transition-colors disabled:opacity-40"
+                                  className="text-[10px] font-bold text-gray-400 hover:text-red-600/70 transition-colors disabled:opacity-40"
                                   title="Remove from group">
                                   ×
                                 </button>

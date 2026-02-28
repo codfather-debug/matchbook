@@ -141,7 +141,7 @@ const ZONES = [
   {
     label: "Kill Zone",
     sublabel: "Around the service line",
-    color: "bg-lime-400/15 border-lime-400/30 text-lime-400",
+    color: "bg-lime-100 border-lime-400/30 text-lime-700",
     dot: "bg-lime-400",
     tip: "Finish the point. All attacking-zone rules apply. Look to volley or put away.",
   },
@@ -162,7 +162,7 @@ const ZONES = [
   {
     label: "Defend Zone",
     sublabel: "6+ feet behind the baseline",
-    color: "bg-red-500/15 border-red-500/30 text-red-400",
+    color: "bg-red-50 border-red-500/30 text-red-600",
     dot: "bg-red-400",
     tip: "Hit at least 6 ft over the net. Prioritize consistency, depth, and recovery time.",
   },
@@ -181,37 +181,37 @@ const SERVE_GOALS = [
 function StrategyCard({ s }: { s: typeof STRATEGIES[0] }) {
   const [open, setOpen] = useState(false);
   return (
-    <div className={`rounded-2xl border transition-all ${open ? "border-lime-400/20 bg-lime-400/[0.04]" : "border-white/10 bg-white/[0.02]"}`}>
+    <div className={`rounded-2xl border transition-all ${open ? "border-lime-400/20 bg-lime-400/[0.04]" : "border-gray-200 bg-gray-50"}`}>
       <button
         onClick={() => setOpen(v => !v)}
         className="w-full flex items-center justify-between px-4 py-3.5 text-left"
       >
         <div className="flex items-center gap-3">
-          <span className={`text-xs font-black w-6 h-6 rounded-full flex items-center justify-center ${open ? "bg-lime-400 text-black" : "bg-white/10 text-white/40"}`}>
+          <span className={`text-xs font-black w-6 h-6 rounded-full flex items-center justify-center ${open ? "bg-lime-400 text-black" : "bg-white/10 text-gray-500"}`}>
             {s.n}
           </span>
-          <span className="text-sm font-bold text-white/90">{s.title}</span>
+          <span className="text-sm font-bold text-gray-900">{s.title}</span>
         </div>
         <svg
-          className={`text-white/30 transition-transform flex-shrink-0 ml-2 ${open ? "rotate-90" : ""}`}
+          className={`text-gray-400 transition-transform flex-shrink-0 ml-2 ${open ? "rotate-90" : ""}`}
           width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
         >
           <polyline points="9 18 15 12 9 6"/>
         </svg>
       </button>
       {open && (
-        <div className="px-4 pb-4 space-y-3 border-t border-white/[0.06] pt-3">
-          <p className="text-sm text-white/60 italic">{s.summary}</p>
+        <div className="px-4 pb-4 space-y-3 border-t border-gray-200 pt-3">
+          <p className="text-sm text-gray-600 italic">{s.summary}</p>
           <ul className="space-y-1.5">
             {s.points.map((p, i) => (
-              <li key={i} className="flex items-start gap-2 text-sm text-white/70">
-                <span className="text-lime-400 mt-0.5 flex-shrink-0">›</span>
+              <li key={i} className="flex items-start gap-2 text-sm text-gray-700">
+                <span className="text-lime-700 mt-0.5 flex-shrink-0">›</span>
                 {p}
               </li>
             ))}
           </ul>
-          <p className="text-xs text-white/30 pt-1">
-            <span className="text-white/20 font-semibold uppercase tracking-wider text-[10px]">Best against — </span>
+          <p className="text-xs text-gray-400 pt-1">
+            <span className="text-gray-300 font-semibold uppercase tracking-wider text-[10px]">Best against — </span>
             {s.best_against}
           </p>
         </div>
@@ -224,13 +224,13 @@ function StrategyCard({ s }: { s: typeof STRATEGIES[0] }) {
 
 export default function SinglesPlaybookPage() {
   return (
-    <main className="min-h-screen bg-[#1e1e2a] max-w-sm mx-auto pb-10">
+    <main className="min-h-screen bg-white max-w-sm mx-auto pb-10">
 
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-[#1e1e2a]/90 backdrop-blur-xl border-b border-white/[0.06] px-5">
+      <div className="sticky top-0 z-10 bg-white/90 backdrop-blur-xl border-b border-gray-200 px-5">
         <div className="flex items-center justify-between h-14">
-          <Link href="/playbook" className="text-white/40 text-sm font-medium hover:text-white/80 transition-colors">← Playbook</Link>
-          <span className="text-xs font-black tracking-[0.2em] uppercase text-white/30">Singles</span>
+          <Link href="/playbook" className="text-gray-500 text-sm font-medium hover:text-gray-800 transition-colors">← Playbook</Link>
+          <span className="text-xs font-black tracking-[0.2em] uppercase text-gray-400">Singles</span>
           <div className="w-14" />
         </div>
       </div>
@@ -239,31 +239,31 @@ export default function SinglesPlaybookPage() {
 
         {/* Hero stats */}
         <section className="space-y-3">
-          <p className="text-xs font-black tracking-widest uppercase text-white/30">Win % by Position</p>
+          <p className="text-xs font-black tracking-widest uppercase text-gray-400">Win % by Position</p>
           <div className="grid grid-cols-3 gap-2">
             {[
-              { label: "Baseline",       pct: "46%", color: "text-white/70" },
+              { label: "Baseline",       pct: "46%", color: "text-gray-700" },
               { label: "Approaching",    pct: "66%", color: "text-amber-400" },
-              { label: "Serve & Volley", pct: "69%", color: "text-lime-400" },
+              { label: "Serve & Volley", pct: "69%", color: "text-lime-700" },
             ].map(s => (
-              <div key={s.label} className="rounded-2xl bg-white/[0.03] border border-white/10 p-3 text-center">
+              <div key={s.label} className="rounded-2xl bg-gray-50 border border-gray-200 p-3 text-center">
                 <p className={`text-2xl font-black ${s.color}`}>{s.pct}</p>
-                <p className="text-[10px] text-white/30 font-bold uppercase tracking-wider mt-0.5 leading-tight">{s.label}</p>
+                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mt-0.5 leading-tight">{s.label}</p>
               </div>
             ))}
           </div>
-          <div className="rounded-2xl bg-white/[0.03] border border-white/10 p-3.5">
-            <p className="text-xs text-white/40 text-center">
+          <div className="rounded-2xl bg-gray-50 border border-gray-200 p-3.5">
+            <p className="text-xs text-gray-500 text-center">
               Approaching with a heavy forehand to the backhand raises win % to{" "}
-              <span className="text-lime-400 font-bold">71%</span>
+              <span className="text-lime-700 font-bold">71%</span>
             </p>
           </div>
         </section>
 
         {/* Shot distribution */}
         <section className="space-y-3">
-          <p className="text-xs font-black tracking-widest uppercase text-white/30">Shots per Point</p>
-          <div className="rounded-2xl bg-white/[0.03] border border-white/10 overflow-hidden divide-y divide-white/[0.06]">
+          <p className="text-xs font-black tracking-widest uppercase text-gray-400">Shots per Point</p>
+          <div className="rounded-2xl bg-gray-50 border border-gray-200 overflow-hidden divide-y divide-white/[0.06]">
             {[
               { range: "1–4 shots", label: "First Strike", pct: 70, color: "bg-lime-400" },
               { range: "5–8 shots", label: "Pattern Play", pct: 20, color: "bg-amber-400" },
@@ -272,10 +272,10 @@ export default function SinglesPlaybookPage() {
               <div key={r.range} className="px-4 py-3 space-y-1.5">
                 <div className="flex items-center justify-between">
                   <div>
-                    <span className="text-sm font-bold text-white/80">{r.range}</span>
-                    <span className="ml-2 text-xs text-white/30">{r.label}</span>
+                    <span className="text-sm font-bold text-gray-800">{r.range}</span>
+                    <span className="ml-2 text-xs text-gray-400">{r.label}</span>
                   </div>
-                  <span className="text-sm font-black text-white/70">{r.pct}%</span>
+                  <span className="text-sm font-black text-gray-700">{r.pct}%</span>
                 </div>
                 <div className="h-1.5 rounded-full bg-white/10 overflow-hidden">
                   <div className={`h-full rounded-full ${r.color}`} style={{ width: `${r.pct}%` }} />
@@ -283,7 +283,7 @@ export default function SinglesPlaybookPage() {
               </div>
             ))}
           </div>
-          <p className="text-xs text-white/20 text-center px-2">
+          <p className="text-xs text-gray-300 text-center px-2">
             Spend the most time on serve, return, serve+1, and return+1.
           </p>
         </section>
@@ -291,8 +291,8 @@ export default function SinglesPlaybookPage() {
         {/* 8 Strategies */}
         <section className="space-y-3">
           <div>
-            <p className="text-xs font-black tracking-widest uppercase text-white/30">8 Strategies</p>
-            <p className="text-xs text-white/20 mt-0.5">Tap any strategy to expand</p>
+            <p className="text-xs font-black tracking-widest uppercase text-gray-400">8 Strategies</p>
+            <p className="text-xs text-gray-300 mt-0.5">Tap any strategy to expand</p>
           </div>
           <div className="space-y-2">
             {STRATEGIES.map(s => <StrategyCard key={s.n} s={s} />)}
@@ -301,7 +301,7 @@ export default function SinglesPlaybookPage() {
 
         {/* Court Zones */}
         <section className="space-y-3">
-          <p className="text-xs font-black tracking-widest uppercase text-white/30">Court Zones</p>
+          <p className="text-xs font-black tracking-widest uppercase text-gray-400">Court Zones</p>
           <div className="space-y-2">
             {ZONES.map(z => (
               <div key={z.label} className={`rounded-2xl border p-4 ${z.color}`}>
@@ -312,7 +312,7 @@ export default function SinglesPlaybookPage() {
                       <p className="text-sm font-black">{z.label}</p>
                       <p className="text-xs opacity-60">{z.sublabel}</p>
                     </div>
-                    <p className="text-sm text-white/60">{z.tip}</p>
+                    <p className="text-sm text-gray-600">{z.tip}</p>
                   </div>
                 </div>
               </div>
@@ -322,23 +322,23 @@ export default function SinglesPlaybookPage() {
 
         {/* Patterns of Play */}
         <section className="space-y-3">
-          <p className="text-xs font-black tracking-widest uppercase text-white/30">Patterns of Play</p>
+          <p className="text-xs font-black tracking-widest uppercase text-gray-400">Patterns of Play</p>
           <div className="space-y-3">
             {PATTERNS.map(p => (
-              <div key={p.title} className="rounded-2xl border border-white/10 bg-white/[0.02] p-4 space-y-3">
+              <div key={p.title} className="rounded-2xl border border-gray-200 bg-gray-50 p-4 space-y-3">
                 <div className="flex items-center gap-2">
                   <span className="text-xl">{p.icon}</span>
-                  <p className="text-sm font-black text-white">{p.title}</p>
+                  <p className="text-sm font-black text-gray-900">{p.title}</p>
                 </div>
                 <div className="space-y-2">
                   {p.steps.map((step, i) => (
                     <div key={i} className="flex items-start gap-3">
-                      <span className="text-[10px] font-black text-white/30 uppercase tracking-wider w-12 mt-0.5 flex-shrink-0">{step.shot}</span>
-                      <p className="text-sm text-white/70">{step.detail}</p>
+                      <span className="text-[10px] font-black text-gray-400 uppercase tracking-wider w-12 mt-0.5 flex-shrink-0">{step.shot}</span>
+                      <p className="text-sm text-gray-700">{step.detail}</p>
                     </div>
                   ))}
                 </div>
-                <p className="text-xs text-lime-400/70 border-t border-white/[0.06] pt-2">{p.note}</p>
+                <p className="text-xs text-lime-700/70 border-t border-gray-200 pt-2">{p.note}</p>
               </div>
             ))}
           </div>
@@ -346,28 +346,28 @@ export default function SinglesPlaybookPage() {
 
         {/* Serve */}
         <section className="space-y-3">
-          <p className="text-xs font-black tracking-widest uppercase text-white/30">Serve</p>
-          <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-4 space-y-4">
+          <p className="text-xs font-black tracking-widest uppercase text-gray-400">Serve</p>
+          <div className="rounded-2xl border border-gray-200 bg-gray-50 p-4 space-y-4">
             <div className="space-y-2">
-              <p className="text-xs font-black text-white/50 uppercase tracking-wider">Patterns</p>
+              <p className="text-xs font-black text-gray-500 uppercase tracking-wider">Patterns</p>
               <div className="space-y-2">
                 <div className="flex items-start gap-2">
-                  <span className="text-xs text-lime-400 font-black mt-0.5 flex-shrink-0">1ST</span>
-                  <p className="text-sm text-white/70">Out wide to zones 1 & 8 — maximizes return angle for your partner/next shot.</p>
+                  <span className="text-xs text-lime-700 font-black mt-0.5 flex-shrink-0">1ST</span>
+                  <p className="text-sm text-gray-700">Out wide to zones 1 & 8 — maximizes return angle for your partner/next shot.</p>
                 </div>
                 <div className="flex items-start gap-2">
                   <span className="text-xs text-amber-400 font-black mt-0.5 flex-shrink-0">2ND</span>
-                  <p className="text-sm text-white/70">Body-backhand jammer (zones 3 & 7) or into the backhand — limit the returner's options.</p>
+                  <p className="text-sm text-gray-700">Body-backhand jammer (zones 3 & 7) or into the backhand — limit the returner's options.</p>
                 </div>
               </div>
             </div>
-            <div className="space-y-2 border-t border-white/[0.06] pt-3">
-              <p className="text-xs font-black text-white/50 uppercase tracking-wider">Goals</p>
+            <div className="space-y-2 border-t border-gray-200 pt-3">
+              <p className="text-xs font-black text-gray-500 uppercase tracking-wider">Goals</p>
               <div className="grid grid-cols-1 gap-1.5">
                 {SERVE_GOALS.map(g => (
                   <div key={g.label} className="flex items-center justify-between">
-                    <p className="text-sm text-white/60">{g.label}</p>
-                    <span className="text-sm font-black text-white/80">{g.target}</span>
+                    <p className="text-sm text-gray-600">{g.label}</p>
+                    <span className="text-sm font-black text-gray-800">{g.target}</span>
                   </div>
                 ))}
               </div>
@@ -377,25 +377,25 @@ export default function SinglesPlaybookPage() {
 
         {/* Return */}
         <section className="space-y-3">
-          <p className="text-xs font-black tracking-widest uppercase text-white/30">Return</p>
-          <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-4 space-y-3">
+          <p className="text-xs font-black tracking-widest uppercase text-gray-400">Return</p>
+          <div className="rounded-2xl border border-gray-200 bg-gray-50 p-4 space-y-3">
             <div className="space-y-1.5">
               <div className="flex items-start gap-2">
                 <span className="text-xs text-sky-400 font-black mt-0.5 flex-shrink-0 w-8">1ST</span>
                 <div>
-                  <p className="text-sm font-bold text-white/80">Defensive</p>
-                  <p className="text-sm text-white/50">Return deep down the middle — neutralize the serve and start the point.</p>
+                  <p className="text-sm font-bold text-gray-800">Defensive</p>
+                  <p className="text-sm text-gray-500">Return deep down the middle — neutralize the serve and start the point.</p>
                 </div>
               </div>
               <div className="flex items-start gap-2">
-                <span className="text-xs text-lime-400 font-black mt-0.5 flex-shrink-0 w-8">2ND</span>
+                <span className="text-xs text-lime-700 font-black mt-0.5 flex-shrink-0 w-8">2ND</span>
                 <div>
-                  <p className="text-sm font-bold text-white/80">Offensive</p>
-                  <p className="text-sm text-white/50">Step up and take the ball early. Run around it and hit a forehand. Big shots go to big targets.</p>
+                  <p className="text-sm font-bold text-gray-800">Offensive</p>
+                  <p className="text-sm text-gray-500">Step up and take the ball early. Run around it and hit a forehand. Big shots go to big targets.</p>
                 </div>
               </div>
             </div>
-            <p className="text-xs text-white/20 border-t border-white/[0.06] pt-2">
+            <p className="text-xs text-gray-300 border-t border-gray-200 pt-2">
               70% (men) / 75% (women) of returns come back in play.
             </p>
           </div>
@@ -403,22 +403,22 @@ export default function SinglesPlaybookPage() {
 
         {/* Passing Shots */}
         <section className="space-y-3">
-          <p className="text-xs font-black tracking-widest uppercase text-white/30">Passing Shots</p>
-          <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-4 space-y-2">
+          <p className="text-xs font-black tracking-widest uppercase text-gray-400">Passing Shots</p>
+          <div className="rounded-2xl border border-gray-200 bg-gray-50 p-4 space-y-2">
             <div className="flex items-center justify-between">
-              <p className="text-sm text-white/70">Primary</p>
-              <span className="text-sm font-bold text-lime-400">Crosscourt roll</span>
+              <p className="text-sm text-gray-700">Primary</p>
+              <span className="text-sm font-bold text-lime-700">Crosscourt roll</span>
             </div>
             <div className="flex items-center justify-between">
-              <p className="text-sm text-white/70">Secondary</p>
-              <span className="text-sm font-bold text-white/60">Down the line</span>
+              <p className="text-sm text-gray-700">Secondary</p>
+              <span className="text-sm font-bold text-gray-600">Down the line</span>
             </div>
           </div>
         </section>
 
         {/* Keys for Success */}
         <section className="space-y-3">
-          <p className="text-xs font-black tracking-widest uppercase text-white/30">Keys for Success</p>
+          <p className="text-xs font-black tracking-widest uppercase text-gray-400">Keys for Success</p>
           <div className="space-y-2">
             {[
               { icon: "🧠", tip: "The best players in the world win 55% of points. Be ready to lose 45%." },
@@ -428,9 +428,9 @@ export default function SinglesPlaybookPage() {
               { icon: "🔁", tip: "Spend 80% of time developing strengths, 20% minimizing weaknesses." },
               { icon: "🎾", tip: "Play more than you practice. Match experience builds court instincts." },
             ].map((k, i) => (
-              <div key={i} className="flex items-start gap-3 rounded-2xl border border-white/10 bg-white/[0.02] px-4 py-3">
+              <div key={i} className="flex items-start gap-3 rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3">
                 <span className="text-lg flex-shrink-0">{k.icon}</span>
-                <p className="text-sm text-white/65">{k.tip}</p>
+                <p className="text-sm text-gray-600">{k.tip}</p>
               </div>
             ))}
           </div>

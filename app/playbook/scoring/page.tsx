@@ -10,7 +10,7 @@ const FORMATS = [
     title: "Ad Scoring",
     icon: "🎾",
     color: "border-lime-400/20 bg-lime-400/[0.03]",
-    badge: "text-lime-400",
+    badge: "text-lime-700",
     summary: "Standard tennis scoring used in most matches.",
     rules: [
       "Points are scored as: Love (0), 15, 30, 40, Game.",
@@ -58,7 +58,7 @@ const FORMATS = [
     title: "Super Tiebreaker (10-Point)",
     icon: "🏆",
     color: "border-red-400/20 bg-red-400/[0.03]",
-    badge: "text-red-400",
+    badge: "text-red-600",
     summary: "Played in lieu of a full third set. First to 10 points, win by 2.",
     rules: [
       "First to 10 points wins, must win by 2.",
@@ -110,7 +110,7 @@ const SCORE_QUICK = [
 function FormatCard({ f }: { f: typeof FORMATS[0] }) {
   const [open, setOpen] = useState(false);
   return (
-    <div className={`rounded-2xl border transition-all ${open ? f.color : "border-white/10 bg-white/[0.02]"}`}>
+    <div className={`rounded-2xl border transition-all ${open ? f.color : "border-gray-200 bg-gray-50"}`}>
       <button
         onClick={() => setOpen(v => !v)}
         className="w-full flex items-center justify-between px-4 py-3.5 text-left"
@@ -118,21 +118,21 @@ function FormatCard({ f }: { f: typeof FORMATS[0] }) {
         <div className="flex items-center gap-3">
           <span className="text-xl flex-shrink-0">{f.icon}</span>
           <div>
-            <span className={`text-sm font-bold ${open ? f.badge : "text-white/90"}`}>{f.title}</span>
-            {!open && <p className="text-xs text-white/30 mt-0.5">{f.summary}</p>}
+            <span className={`text-sm font-bold ${open ? f.badge : "text-gray-900"}`}>{f.title}</span>
+            {!open && <p className="text-xs text-gray-400 mt-0.5">{f.summary}</p>}
           </div>
         </div>
         <svg
-          className={`text-white/30 transition-transform flex-shrink-0 ml-2 ${open ? "rotate-90" : ""}`}
+          className={`text-gray-400 transition-transform flex-shrink-0 ml-2 ${open ? "rotate-90" : ""}`}
           width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
         >
           <polyline points="9 18 15 12 9 6"/>
         </svg>
       </button>
       {open && (
-        <ul className="px-4 pb-4 space-y-2 border-t border-white/[0.06] pt-3">
+        <ul className="px-4 pb-4 space-y-2 border-t border-gray-200 pt-3">
           {f.rules.map((r, i) => (
-            <li key={i} className="flex items-start gap-2 text-sm text-white/70">
+            <li key={i} className="flex items-start gap-2 text-sm text-gray-700">
               <span className={`mt-0.5 flex-shrink-0 font-black ${f.badge}`}>›</span>
               {r}
             </li>
@@ -149,13 +149,13 @@ export default function ScoringPlaybookPage() {
   const [tbView, setTbView] = useState<"singles" | "doubles">("singles");
 
   return (
-    <main className="min-h-screen bg-[#1e1e2a] max-w-sm mx-auto pb-10">
+    <main className="min-h-screen bg-white max-w-sm mx-auto pb-10">
 
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-[#1e1e2a]/90 backdrop-blur-xl border-b border-white/[0.06] px-5">
+      <div className="sticky top-0 z-10 bg-white/90 backdrop-blur-xl border-b border-gray-200 px-5">
         <div className="flex items-center justify-between h-14">
-          <Link href="/playbook" className="text-white/40 text-sm font-medium hover:text-white/80 transition-colors">← Playbook</Link>
-          <span className="text-xs font-black tracking-[0.2em] uppercase text-white/30">Scoring</span>
+          <Link href="/playbook" className="text-gray-500 text-sm font-medium hover:text-gray-800 transition-colors">← Playbook</Link>
+          <span className="text-xs font-black tracking-[0.2em] uppercase text-gray-400">Scoring</span>
           <div className="w-14" />
         </div>
       </div>
@@ -164,12 +164,12 @@ export default function ScoringPlaybookPage() {
 
         {/* Quick reference */}
         <section className="space-y-3">
-          <p className="text-xs font-black tracking-widest uppercase text-white/30">Quick Reference</p>
-          <div className="rounded-2xl border border-white/10 bg-white/[0.02] divide-y divide-white/[0.06] overflow-hidden">
+          <p className="text-xs font-black tracking-widest uppercase text-gray-400">Quick Reference</p>
+          <div className="rounded-2xl border border-gray-200 bg-gray-50 divide-y divide-white/[0.06] overflow-hidden">
             {SCORE_QUICK.map(s => (
               <div key={s.situation} className="flex items-center justify-between px-4 py-3">
-                <p className="text-sm text-white/60">{s.situation}</p>
-                <span className="text-sm font-black text-white/90 ml-2">{s.call}</span>
+                <p className="text-sm text-gray-600">{s.situation}</p>
+                <span className="text-sm font-black text-gray-900 ml-2">{s.call}</span>
               </div>
             ))}
           </div>
@@ -178,8 +178,8 @@ export default function ScoringPlaybookPage() {
         {/* Format cards */}
         <section className="space-y-3">
           <div>
-            <p className="text-xs font-black tracking-widest uppercase text-white/30">Match Formats</p>
-            <p className="text-xs text-white/20 mt-0.5">Tap to expand</p>
+            <p className="text-xs font-black tracking-widest uppercase text-gray-400">Match Formats</p>
+            <p className="text-xs text-gray-300 mt-0.5">Tap to expand</p>
           </div>
           <div className="space-y-2">
             {FORMATS.map(f => <FormatCard key={f.id} f={f} />)}
@@ -188,38 +188,38 @@ export default function ScoringPlaybookPage() {
 
         {/* Tiebreak serving order */}
         <section className="space-y-3">
-          <p className="text-xs font-black tracking-widest uppercase text-white/30">Tiebreak Serving Order</p>
+          <p className="text-xs font-black tracking-widest uppercase text-gray-400">Tiebreak Serving Order</p>
           {/* Toggle */}
-          <div className="flex gap-2 p-1 rounded-2xl bg-white/[0.04] border border-white/10">
+          <div className="flex gap-2 p-1 rounded-2xl bg-gray-50 border border-gray-200">
             {(["singles", "doubles"] as const).map(t => (
               <button key={t} onClick={() => setTbView(t)}
-                className={`flex-1 py-2 rounded-xl text-sm font-bold capitalize transition-all ${tbView === t ? "bg-sky-400 text-black shadow" : "text-white/40 hover:text-white/70"}`}>
+                className={`flex-1 py-2 rounded-xl text-sm font-bold capitalize transition-all ${tbView === t ? "bg-sky-400 text-black shadow" : "text-gray-500 hover:text-gray-700"}`}>
                 {t}
               </button>
             ))}
           </div>
-          <div className="rounded-2xl border border-white/10 bg-white/[0.02] overflow-hidden">
-            <div className="grid grid-cols-3 border-b border-white/[0.06]">
-              <div className="px-3 py-2 text-[10px] font-black text-white/30 uppercase tracking-wider">Points</div>
-              <div className="px-3 py-2 text-[10px] font-black text-white/30 uppercase tracking-wider">Server</div>
-              <div className="px-3 py-2 text-[10px] font-black text-white/30 uppercase tracking-wider">Court</div>
+          <div className="rounded-2xl border border-gray-200 bg-gray-50 overflow-hidden">
+            <div className="grid grid-cols-3 border-b border-gray-200">
+              <div className="px-3 py-2 text-[10px] font-black text-gray-400 uppercase tracking-wider">Points</div>
+              <div className="px-3 py-2 text-[10px] font-black text-gray-400 uppercase tracking-wider">Server</div>
+              <div className="px-3 py-2 text-[10px] font-black text-gray-400 uppercase tracking-wider">Court</div>
             </div>
             {tieBreakRows(tbView).map((row, i) => (
               row.server === "" ? (
-                <div key={i} className="col-span-3 px-3 py-1.5 bg-white/[0.04] border-y border-white/[0.06]">
+                <div key={i} className="col-span-3 px-3 py-1.5 bg-gray-50 border-y border-gray-200">
                   <p className="text-[10px] font-black text-sky-400 uppercase tracking-widest text-center">↔ Change Ends</p>
                 </div>
               ) : (
-                <div key={i} className={`grid grid-cols-3 border-b border-white/[0.04] ${i % 2 === 0 ? "" : "bg-white/[0.01]"}`}>
-                  <div className="px-3 py-2.5 text-sm font-bold text-white/70">{row.pts}</div>
+                <div key={i} className={`grid grid-cols-3 border-b border-gray-100 ${i % 2 === 0 ? "" : "bg-gray-50"}`}>
+                  <div className="px-3 py-2.5 text-sm font-bold text-gray-700">{row.pts}</div>
                   <div className="px-3 py-2.5 text-sm font-black text-sky-400">{row.server}</div>
-                  <div className="px-3 py-2.5 text-xs text-white/40">{row.court}</div>
+                  <div className="px-3 py-2.5 text-xs text-gray-500">{row.court}</div>
                 </div>
               )
             ))}
           </div>
           {tbView === "doubles" && (
-            <p className="text-xs text-white/20 text-center px-2">Team (A & B) vs (C & D). Assumes D served game 12.</p>
+            <p className="text-xs text-gray-300 text-center px-2">Team (A & B) vs (C & D). Assumes D served game 12.</p>
           )}
         </section>
 

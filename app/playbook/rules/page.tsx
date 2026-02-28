@@ -10,7 +10,7 @@ const SECTIONS = [
     title: "Principles",
     icon: "🤝",
     color: "border-lime-400/20 bg-lime-400/[0.03]",
-    badge: "text-lime-400",
+    badge: "text-lime-700",
     rules: [
       { n: 1, title: "Courtesy is expected", body: "Tennis requires cooperation and courtesy from both players at all times." },
       { n: 2, title: "Points played in good faith stand", body: "All points played in good faith count — even if a mistake is discovered afterward (e.g., net was too high, wrong court). Corrective action may only be taken after a point is completed." },
@@ -55,7 +55,7 @@ const SECTIONS = [
     title: "Serving",
     icon: "🎾",
     color: "border-red-400/20 bg-red-400/[0.03]",
-    badge: "text-red-400",
+    badge: "text-red-600",
     rules: [
       { n: 22, title: "Third ball request", body: "When a server requests three balls, the receiver must comply when the third ball is readily available. Distant balls are retrieved at the end of a game." },
       { n: 23, title: "Avoid foot faults", body: "It's a foot fault whenever a foot even just touches the baseline, even if you don't follow the serve to the net." },
@@ -72,8 +72,8 @@ const SECTIONS = [
     id: "hindrance",
     title: "Hindrance",
     icon: "🚫",
-    color: "border-white/10 bg-white/[0.02]",
-    badge: "text-white/50",
+    color: "border-gray-200 bg-gray-50",
+    badge: "text-gray-500",
     rules: [
       { n: 33, title: "Stop play immediately", body: "A player who claims a hindrance must stop play as soon as possible." },
       { n: 34, title: "Talking during points", body: "Singles players should not talk during points. Doubles partners may talk when the ball is moving toward them, but not when it's moving toward the opponent's court. Talking that interferes with an opponent's play is a hindrance." },
@@ -87,8 +87,8 @@ const SECTIONS = [
     id: "balls",
     title: "Ball Issues",
     icon: "⚪",
-    color: "border-white/10 bg-white/[0.02]",
-    badge: "text-white/50",
+    color: "border-gray-200 bg-gray-50",
+    badge: "text-gray-500",
     rules: [
       { n: 18, title: "Let when a ball rolls onto court", body: "Any player may call a let as soon as they become aware of a ball entering the playing area. The right to call a let is lost if the player unreasonably delays." },
       { n: 19, title: "Self-call violations", body: "Promptly acknowledge when: a ball touches you; you touch the net or opponent's court; you hit the ball before it crosses the net; you double-hit a ball; or the ball bounces twice in your court. Your opponent cannot make these calls for you." },
@@ -100,8 +100,8 @@ const SECTIONS = [
     id: "misc",
     title: "Miscellaneous",
     icon: "📋",
-    color: "border-white/10 bg-white/[0.02]",
-    badge: "text-white/50",
+    color: "border-gray-200 bg-gray-50",
+    badge: "text-gray-500",
     rules: [
       { n: 40, title: "Stalling", body: "Stalling violates continuous play rules. Actions that constitute stalling: warming up longer than allotted; playing at one-third normal pace; taking more than 90 seconds on a changeover or 2 minutes on a set break; excessive ball bouncing before serves." },
       { n: 41, title: "When to contact an official", body: "Contact an official for: stalling, flagrant foot faults, extreme grunting, medical timeouts, scoring disputes, or a pattern of bad calls. You may refuse to play until an official responds." },
@@ -116,32 +116,32 @@ const SECTIONS = [
 function SectionCard({ s }: { s: typeof SECTIONS[0] }) {
   const [open, setOpen] = useState(false);
   return (
-    <div className={`rounded-2xl border transition-all ${open ? s.color : "border-white/10 bg-white/[0.02]"}`}>
+    <div className={`rounded-2xl border transition-all ${open ? s.color : "border-gray-200 bg-gray-50"}`}>
       <button
         onClick={() => setOpen(v => !v)}
         className="w-full flex items-center justify-between px-4 py-3.5 text-left"
       >
         <div className="flex items-center gap-3">
           <span className="text-xl flex-shrink-0">{s.icon}</span>
-          <span className={`text-sm font-bold ${open ? s.badge : "text-white/90"}`}>{s.title}</span>
-          <span className="text-xs text-white/20">{s.rules.length} rules</span>
+          <span className={`text-sm font-bold ${open ? s.badge : "text-gray-900"}`}>{s.title}</span>
+          <span className="text-xs text-gray-300">{s.rules.length} rules</span>
         </div>
         <svg
-          className={`text-white/30 transition-transform flex-shrink-0 ml-2 ${open ? "rotate-90" : ""}`}
+          className={`text-gray-400 transition-transform flex-shrink-0 ml-2 ${open ? "rotate-90" : ""}`}
           width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
         >
           <polyline points="9 18 15 12 9 6"/>
         </svg>
       </button>
       {open && (
-        <div className="border-t border-white/[0.06] divide-y divide-white/[0.04]">
+        <div className="border-t border-gray-200 divide-y divide-white/[0.04]">
           {s.rules.map(r => (
             <div key={r.n} className="px-4 py-3.5 space-y-1">
               <div className="flex items-start gap-2">
                 <span className={`text-[10px] font-black mt-0.5 flex-shrink-0 ${s.badge}`}>§{r.n}</span>
-                <p className="text-sm font-bold text-white/85">{r.title}</p>
+                <p className="text-sm font-bold text-gray-800">{r.title}</p>
               </div>
-              <p className="text-sm text-white/50 leading-relaxed pl-6">{r.body}</p>
+              <p className="text-sm text-gray-500 leading-relaxed pl-6">{r.body}</p>
             </div>
           ))}
         </div>
@@ -154,13 +154,13 @@ function SectionCard({ s }: { s: typeof SECTIONS[0] }) {
 
 export default function TennisRulesPage() {
   return (
-    <main className="min-h-screen bg-[#1e1e2a] max-w-sm mx-auto pb-10">
+    <main className="min-h-screen bg-white max-w-sm mx-auto pb-10">
 
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-[#1e1e2a]/90 backdrop-blur-xl border-b border-white/[0.06] px-5">
+      <div className="sticky top-0 z-10 bg-white/90 backdrop-blur-xl border-b border-gray-200 px-5">
         <div className="flex items-center justify-between h-14">
-          <Link href="/playbook" className="text-white/40 text-sm font-medium hover:text-white/80 transition-colors">← Playbook</Link>
-          <span className="text-xs font-black tracking-[0.2em] uppercase text-white/30">Rules</span>
+          <Link href="/playbook" className="text-gray-500 text-sm font-medium hover:text-gray-800 transition-colors">← Playbook</Link>
+          <span className="text-xs font-black tracking-[0.2em] uppercase text-gray-400">Rules</span>
           <div className="w-14" />
         </div>
       </div>
@@ -168,26 +168,26 @@ export default function TennisRulesPage() {
       <div className="px-5 py-5 space-y-7">
 
         {/* Hero */}
-        <section className="rounded-2xl border border-white/10 bg-white/[0.02] p-4 space-y-1">
-          <p className="text-sm font-black text-white/80">The Code — USTA Unwritten Rules</p>
-          <p className="text-xs text-white/40 leading-relaxed">
+        <section className="rounded-2xl border border-gray-200 bg-gray-50 p-4 space-y-1">
+          <p className="text-sm font-black text-gray-800">The Code — USTA Unwritten Rules</p>
+          <p className="text-xs text-gray-500 leading-relaxed">
             These are the principles of conduct expected from players when no official is present. When in doubt, give the point to your opponent.
           </p>
         </section>
 
         {/* Golden rule highlight */}
         <div className="rounded-2xl border border-lime-400/20 bg-lime-400/[0.05] px-4 py-3.5 flex items-start gap-3">
-          <span className="text-lime-400 text-xl flex-shrink-0">★</span>
-          <p className="text-sm text-white/70 leading-relaxed">
-            <span className="font-bold text-white/90">Golden Rule:</span> Any doubt must be resolved in favor of your opponent. A ball cannot be called out unless you clearly see space between where it lands and the line.
+          <span className="text-lime-700 text-xl flex-shrink-0">★</span>
+          <p className="text-sm text-gray-700 leading-relaxed">
+            <span className="font-bold text-gray-900">Golden Rule:</span> Any doubt must be resolved in favor of your opponent. A ball cannot be called out unless you clearly see space between where it lands and the line.
           </p>
         </div>
 
         {/* Rule sections */}
         <section className="space-y-3">
           <div>
-            <p className="text-xs font-black tracking-widest uppercase text-white/30">The Code</p>
-            <p className="text-xs text-white/20 mt-0.5">Tap a section to expand all rules</p>
+            <p className="text-xs font-black tracking-widest uppercase text-gray-400">The Code</p>
+            <p className="text-xs text-gray-300 mt-0.5">Tap a section to expand all rules</p>
           </div>
           <div className="space-y-2">
             {SECTIONS.map(s => <SectionCard key={s.id} s={s} />)}
@@ -196,8 +196,8 @@ export default function TennisRulesPage() {
 
         {/* Quick dos and don'ts */}
         <section className="space-y-3">
-          <p className="text-xs font-black tracking-widest uppercase text-white/30">Do&apos;s & Don&apos;ts</p>
-          <div className="rounded-2xl border border-white/10 bg-white/[0.02] divide-y divide-white/[0.06] overflow-hidden">
+          <p className="text-xs font-black tracking-widest uppercase text-gray-400">Do&apos;s & Don&apos;ts</p>
+          <div className="rounded-2xl border border-gray-200 bg-gray-50 divide-y divide-white/[0.06] overflow-hidden">
             {[
               { do: true,  text: "Call the ball good when uncertain" },
               { do: true,  text: "Reverse out calls if you realize the ball was in" },
@@ -210,10 +210,10 @@ export default function TennisRulesPage() {
               { do: false, text: "React visibly after a disputed call" },
             ].map((item, i) => (
               <div key={i} className="flex items-start gap-3 px-4 py-3">
-                <span className={`font-black text-sm flex-shrink-0 mt-0.5 ${item.do ? "text-lime-400" : "text-red-400"}`}>
+                <span className={`font-black text-sm flex-shrink-0 mt-0.5 ${item.do ? "text-lime-700" : "text-red-600"}`}>
                   {item.do ? "✓" : "✗"}
                 </span>
-                <p className="text-sm text-white/65">{item.text}</p>
+                <p className="text-sm text-gray-600">{item.text}</p>
               </div>
             ))}
           </div>

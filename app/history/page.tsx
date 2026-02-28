@@ -61,17 +61,17 @@ export default function HistoryPage() {
   });
 
   return (
-    <main className="min-h-screen bg-[#1e1e2a] max-w-sm mx-auto pb-24">
+    <main className="min-h-screen bg-white max-w-sm mx-auto pb-24">
       {/* Header */}
-      <div className="px-5 pt-5 pb-4 border-b border-white/[0.06]">
+      <div className="px-5 pt-5 pb-4 border-b border-gray-200">
         <div className="flex items-end justify-between">
           <div>
-            <p className="text-white/30 text-xs font-bold tracking-widest uppercase">Matchbook</p>
-            <h1 className="text-2xl font-black text-white mt-0.5">Match History</h1>
+            <p className="text-gray-400 text-xs font-bold tracking-widest uppercase">Matchbook</p>
+            <h1 className="text-2xl font-black text-gray-900 mt-0.5">Match History</h1>
           </div>
           <button
             onClick={signOut}
-            className="text-white/30 text-xs font-medium hover:text-white/60 transition-colors"
+            className="text-gray-400 text-xs font-medium hover:text-gray-600 transition-colors"
           >
             Sign out
           </button>
@@ -90,7 +90,7 @@ export default function HistoryPage() {
                 className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
                   surfaceFilter === f
                     ? "bg-lime-400 text-black"
-                    : "bg-white/[0.05] text-white/40 hover:text-white/70"
+                    : "bg-gray-100 text-gray-500 hover:text-gray-700"
                 }`}
               >
                 {f === "all" ? "All Surfaces" : `${SURFACE_EMOJI[f]} ${f.charAt(0).toUpperCase() + f.slice(1)}`}
@@ -106,9 +106,9 @@ export default function HistoryPage() {
                 className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
                   resultFilter === f
                     ? f === "win" ? "bg-lime-400 text-black"
-                    : f === "loss" ? "bg-red-500 text-white"
+                    : f === "loss" ? "bg-red-500 text-gray-900"
                     : "bg-lime-400 text-black"
-                    : "bg-white/[0.05] text-white/40 hover:text-white/70"
+                    : "bg-gray-100 text-gray-500 hover:text-gray-700"
                 }`}
               >
                 {f === "all" ? "All Results" : f === "win" ? "Wins" : "Losses"}
@@ -116,7 +116,7 @@ export default function HistoryPage() {
             ))}
           </div>
           {(surfaceFilter !== "all" || resultFilter !== "all") && (
-            <p className="text-xs text-white/30 pb-1">{visible.length} match{visible.length !== 1 ? "es" : ""} shown</p>
+            <p className="text-xs text-gray-400 pb-1">{visible.length} match{visible.length !== 1 ? "es" : ""} shown</p>
           )}
         </div>
       )}
@@ -124,20 +124,20 @@ export default function HistoryPage() {
       {/* Feed */}
       <div className="px-5 py-4 space-y-3">
         {loading ? (
-          <p className="text-white/30 text-center py-16">Loading…</p>
+          <p className="text-gray-400 text-center py-16">Loading…</p>
         ) : matches.length === 0 ? (
           <div className="text-center py-16 space-y-3">
-            <p className="text-white/30">No matches yet.</p>
+            <p className="text-gray-400">No matches yet.</p>
             <Link href="/log" className="inline-block bg-lime-400 text-black px-5 py-2.5 rounded-2xl text-sm font-black hover:bg-lime-300 transition-all">
               + Log your first match
             </Link>
           </div>
         ) : visible.length === 0 ? (
           <div className="text-center py-12 space-y-2">
-            <p className="text-white/30">No matches match the current filters.</p>
+            <p className="text-gray-400">No matches match the current filters.</p>
             <button
               onClick={() => { setSurfaceFilter("all"); setResultFilter("all"); }}
-              className="text-lime-400 text-sm font-semibold"
+              className="text-lime-700 text-sm font-semibold"
             >
               Clear filters
             </button>
@@ -160,7 +160,7 @@ export default function HistoryPage() {
               <Link
                 key={m.id}
                 href={`/match/${m.id}`}
-                className="flex rounded-2xl overflow-hidden bg-white/[0.03] border border-white/[0.06] transition-all active:scale-[0.98] hover:bg-white/[0.05]"
+                className="flex rounded-2xl overflow-hidden bg-gray-50 border border-gray-200 transition-all active:scale-[0.98] hover:bg-gray-100"
               >
                 {/* Left accent bar */}
                 <div className={`w-1 flex-shrink-0 ${win ? "bg-lime-400" : "bg-red-500"}`} />
@@ -172,21 +172,21 @@ export default function HistoryPage() {
                       <Link
                         href={`/opponent/${encodeURIComponent(m.opponentName)}`}
                         onClick={e => e.stopPropagation()}
-                        className="text-white font-black text-base leading-tight hover:text-lime-300 transition-colors block truncate"
+                        className="text-gray-900 font-black text-base leading-tight hover:text-lime-700 transition-colors block truncate"
                       >
                         {m.opponentName}
                       </Link>
-                      <p className="text-white/35 text-xs mt-0.5">
+                      <p className="text-gray-400 text-xs mt-0.5">
                         {SURFACE_EMOJI[m.surface]} {scoreSets}
                       </p>
                     </div>
                     <div className="flex flex-col items-end gap-1 flex-shrink-0">
                       <span className={`text-sm font-black px-2.5 py-0.5 rounded-full ${
-                        win ? "bg-lime-400/15 text-lime-400" : "bg-red-500/15 text-red-400"
+                        win ? "bg-lime-100 text-lime-700" : "bg-red-50 text-red-600"
                       }`}>
                         {win ? "W" : "L"}
                       </span>
-                      <span className="text-[10px] text-white/20 font-medium">{date}</span>
+                      <span className="text-[10px] text-gray-300 font-medium">{date}</span>
                     </div>
                   </div>
 
@@ -194,7 +194,7 @@ export default function HistoryPage() {
                   {m.opponentStyle.length > 0 && (
                     <div className="flex flex-wrap gap-1">
                       {m.opponentStyle.map((s) => (
-                        <span key={s} className="text-[10px] px-2 py-0.5 rounded-full bg-white/[0.06] text-white/40 font-medium">
+                        <span key={s} className="text-[10px] px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 font-medium">
                           {s}
                         </span>
                       ))}
@@ -203,7 +203,7 @@ export default function HistoryPage() {
 
                   {/* Key to win */}
                   {m.scouting.keyToWin && (
-                    <p className="text-xs text-white/25 italic truncate">🔑 {m.scouting.keyToWin}</p>
+                    <p className="text-xs text-gray-400 italic truncate">🔑 {m.scouting.keyToWin}</p>
                   )}
                 </div>
               </Link>

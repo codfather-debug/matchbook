@@ -46,35 +46,17 @@ export default function BottomNav({ active }: { active: Tab }) {
   }, []);
 
   const base = "flex flex-col items-center justify-center gap-0.5 text-[9px] font-bold transition-colors";
-  const on   = "text-lime-400";
-  const off  = "text-white/30 hover:text-white/60";
+  const on   = "text-lime-600";
+  const off  = "text-gray-400 hover:text-gray-600";
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-[#1e1e2a]/90 backdrop-blur-2xl border-t border-white/[0.06] pb-safe shadow-[0_-12px_50px_rgba(0,0,0,0.7)]">
-
-      {/* Floating profile button — top-right of nav */}
-      <div className="absolute -top-5 right-4 z-10">
-        <Link
-          href="/player-profile"
-          className={`w-9 h-9 rounded-full flex items-center justify-center border transition-all active:scale-90 shadow-lg
-            ${active === "profile"
-              ? "bg-lime-400 border-lime-400 text-black shadow-[0_0_16px_rgba(163,230,53,0.4)]"
-              : "bg-[#1e1e2a] border-white/20 text-white/40 hover:text-white/80 hover:border-white/40"
-            }`}
-        >
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="12" cy="8" r="4"/>
-            <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
-          </svg>
-        </Link>
-      </div>
-
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-2xl border-t border-gray-200 pb-safe shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
       <div className="max-w-sm mx-auto flex items-center justify-around h-16 px-1">
 
         {/* Log */}
         <Link href="/log" className={`${base} flex-1 py-2 ${active === "log" ? on : off}`}>
-          <div className={`w-7 h-7 rounded-full flex items-center justify-center transition-all ${active === "log" ? "bg-lime-400" : "bg-lime-400/20"}`}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={active === "log" ? "black" : "rgb(163 230 53)"} strokeWidth="3" strokeLinecap="round">
+          <div className={`w-7 h-7 rounded-full flex items-center justify-center transition-all ${active === "log" ? "bg-lime-400" : "bg-lime-100"}`}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={active === "log" ? "black" : "rgb(101 163 13)"} strokeWidth="3" strokeLinecap="round">
               <line x1="12" y1="5" x2="12" y2="19"/>
               <line x1="5" y1="12" x2="19" y2="12"/>
             </svg>
@@ -94,7 +76,7 @@ export default function BottomNav({ active }: { active: Tab }) {
 
         {/* Dashboard — center accent */}
         <Link href="/dashboard" className="flex-1 flex flex-col items-center justify-center -mt-3">
-          <div className={`w-11 h-11 rounded-full flex items-center justify-center transition-all active:scale-90 ${active === "dashboard" ? "bg-lime-300 shadow-[0_0_24px_rgba(163,230,53,0.5)]" : "bg-lime-400 shadow-[0_0_16px_rgba(163,230,53,0.3)] hover:bg-lime-300 hover:shadow-[0_0_24px_rgba(163,230,53,0.5)]"}`}>
+          <div className={`w-11 h-11 rounded-full flex items-center justify-center transition-all active:scale-90 ${active === "dashboard" ? "bg-lime-500 shadow-[0_0_12px_rgba(101,163,13,0.25)]" : "bg-lime-400 shadow-[0_0_10px_rgba(163,230,53,0.2)] hover:bg-lime-500"}`}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <rect x="3" y="3" width="7" height="7" rx="1"/>
               <rect x="14" y="3" width="7" height="7" rx="1"/>
@@ -102,7 +84,7 @@ export default function BottomNav({ active }: { active: Tab }) {
               <rect x="14" y="14" width="7" height="7" rx="1"/>
             </svg>
           </div>
-          <span className="text-[9px] font-bold text-lime-400 mt-0.5">Dashboard</span>
+          <span className="text-[9px] font-bold text-lime-600 mt-0.5">Dashboard</span>
         </Link>
 
         {/* Playbook */}
@@ -124,7 +106,7 @@ export default function BottomNav({ active }: { active: Tab }) {
               <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
             </svg>
             {notifCount > 0 && (
-              <span className="absolute -top-1.5 -right-2 min-w-[16px] h-4 bg-red-500 rounded-full text-[9px] font-black text-white flex items-center justify-center px-0.5 leading-none">
+              <span className="absolute -top-1.5 -right-2 min-w-[16px] h-4 bg-red-500 rounded-full text-[9px] font-black text-gray-900 flex items-center justify-center px-0.5 leading-none">
                 {notifCount > 9 ? "9+" : notifCount}
               </span>
             )}
