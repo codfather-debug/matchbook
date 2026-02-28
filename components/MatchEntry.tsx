@@ -852,7 +852,7 @@ export default function MatchEntry({ initialData, initialOpponentName, onSave, o
       </div>
 
       {/* Footer */}
-      <div className="sticky bottom-0 bg-white/95 backdrop-blur-xl border-t border-white/10 px-5 py-4">
+      <div className="sticky bottom-0 bg-[#111827]/95 backdrop-blur-xl border-t border-white/10 px-5 py-4">
         <div className="flex gap-3">
           {stepIndex > 0 && (
             <button type="button" onClick={() => setStep(STEPS[stepIndex - 1])}

@@ -61,33 +61,35 @@ export default function HistoryPage() {
   });
 
   return (
-    <main className="min-h-screen max-w-sm mx-auto pb-24 relative overflow-hidden" style={{background:"linear-gradient(to bottom, #fff4ed 0%, #ffffff 40%)"}}>
+    <main className="min-h-screen max-w-sm mx-auto pb-24 relative" style={{background:"#fff8f3"}}>
 
-      {/* Clay court watermark */}
-      <div className="absolute inset-x-0 top-0 h-72 pointer-events-none select-none" aria-hidden="true">
-        <svg viewBox="0 0 390 290" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
-          {/* Court surface tint */}
-          <rect width="390" height="290" fill="rgba(192,90,40,0.045)"/>
-          {/* Doubles sidelines (outer rectangle) */}
-          <rect x="22" y="22" width="346" height="246" stroke="rgba(160,70,20,0.18)" strokeWidth="2"/>
-          {/* Singles sidelines */}
-          <line x1="70" y1="22" x2="70" y2="268" stroke="rgba(160,70,20,0.13)" strokeWidth="1.5"/>
-          <line x1="320" y1="22" x2="320" y2="268" stroke="rgba(160,70,20,0.13)" strokeWidth="1.5"/>
-          {/* Net */}
-          <line x1="22" y1="145" x2="368" y2="145" stroke="rgba(160,70,20,0.22)" strokeWidth="2.5"/>
-          {/* Service lines */}
-          <line x1="70" y1="85" x2="320" y2="85" stroke="rgba(160,70,20,0.13)" strokeWidth="1.5"/>
-          <line x1="70" y1="205" x2="320" y2="205" stroke="rgba(160,70,20,0.13)" strokeWidth="1.5"/>
+      {/* Clay court — full-page aerial watermark, behind all content */}
+      {/* SVG proportioned to real court: 78ft × 36ft → 844px × 390px at mobile scale */}
+      <div className="absolute inset-0 z-0 pointer-events-none select-none" aria-hidden="true">
+        <svg viewBox="0 0 390 844" preserveAspectRatio="xMidYMin meet" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
+          {/* Court surface warm fill */}
+          <rect width="390" height="844" fill="rgba(192,90,40,0.05)"/>
+          {/* Doubles court outline — 36ft wide × 78ft long */}
+          <rect x="20" y="43" width="350" height="758" stroke="rgba(150,65,15,0.2)" strokeWidth="2"/>
+          {/* Singles sidelines — 4.5ft alleys each side */}
+          <line x1="64" y1="43" x2="64" y2="801" stroke="rgba(150,65,15,0.14)" strokeWidth="1.5"/>
+          <line x1="326" y1="43" x2="326" y2="801" stroke="rgba(150,65,15,0.14)" strokeWidth="1.5"/>
+          {/* Net — centre of court */}
+          <line x1="20" y1="422" x2="370" y2="422" stroke="rgba(150,65,15,0.25)" strokeWidth="3"/>
+          {/* Service lines — 21ft from net */}
+          <line x1="64" y1="218" x2="326" y2="218" stroke="rgba(150,65,15,0.14)" strokeWidth="1.5"/>
+          <line x1="64" y1="626" x2="326" y2="626" stroke="rgba(150,65,15,0.14)" strokeWidth="1.5"/>
           {/* Centre service lines */}
-          <line x1="195" y1="85" x2="195" y2="145" stroke="rgba(160,70,20,0.13)" strokeWidth="1.5"/>
-          <line x1="195" y1="145" x2="195" y2="205" stroke="rgba(160,70,20,0.13)" strokeWidth="1.5"/>
+          <line x1="195" y1="218" x2="195" y2="422" stroke="rgba(150,65,15,0.14)" strokeWidth="1.5"/>
+          <line x1="195" y1="422" x2="195" y2="626" stroke="rgba(150,65,15,0.14)" strokeWidth="1.5"/>
           {/* Baseline centre marks */}
-          <line x1="195" y1="22" x2="195" y2="30" stroke="rgba(160,70,20,0.18)" strokeWidth="2"/>
-          <line x1="195" y1="268" x2="195" y2="260" stroke="rgba(160,70,20,0.18)" strokeWidth="2"/>
+          <line x1="195" y1="43" x2="195" y2="54" stroke="rgba(150,65,15,0.2)" strokeWidth="2"/>
+          <line x1="195" y1="801" x2="195" y2="790" stroke="rgba(150,65,15,0.2)" strokeWidth="2"/>
         </svg>
-        {/* Fade out at bottom */}
-        <div className="absolute inset-0" style={{background:"linear-gradient(to bottom, transparent 45%, #fff4ed 75%, #ffffff 100%)"}}/>
       </div>
+
+      {/* All content sits above the court */}
+      <div className="relative z-10">
 
       {/* Header */}
       <div className="px-5 pt-5 pb-4 border-b border-gray-200">
@@ -240,6 +242,7 @@ export default function HistoryPage() {
       </div>
 
       <BottomNav active="history" />
+      </div>{/* end relative z-10 */}
     </main>
   );
 }
