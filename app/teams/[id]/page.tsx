@@ -54,6 +54,8 @@ interface ChallengeRow {
   match_id?: string;
   challenger_name?: string;
   opponent_name?: string;
+  pending_match_result?: string;
+  pending_match_score?: string;
 }
 
 interface ManagedMember {
@@ -240,10 +242,32 @@ export default function TeamPage() {
     const profileMap = Object.fromEntries((profiles ?? []).map(p => [p.id, p]));
     const name = (id: string) => profileMap[id]?.display_name ?? `@${profileMap[id]?.username ?? id}`;
 
+    // For pending_confirmation rows, fetch match data so opponent can see the score
+    type SetData = { player?: number | null; opponent?: number | null };
+    type MatchData = { result?: string; score?: { sets: SetData[] } };
+    const pendingMatchIds = rows
+      .filter(r => r.status === "pending_confirmation" && r.match_id)
+      .map(r => r.match_id as string);
+    const matchInfoMap: Record<string, { result: string; scoreStr: string }> = {};
+    if (pendingMatchIds.length > 0) {
+      const { data: matchRows } = await supabase
+        .from("matches").select("id, data").in("id", pendingMatchIds);
+      for (const m of matchRows ?? []) {
+        const d = m.data as MatchData;
+        const scoreStr = (d?.score?.sets ?? [])
+          .filter(s => s.player != null && s.opponent != null)
+          .map(s => `${s.player}-${s.opponent}`)
+          .join(", ");
+        matchInfoMap[m.id] = { result: d?.result ?? "unknown", scoreStr };
+      }
+    }
+
     setChallenges(rows.map(r => ({
       ...r,
       challenger_name: name(r.challenger_id),
       opponent_name: name(r.opponent_id),
+      pending_match_result: r.match_id ? matchInfoMap[r.match_id]?.result : undefined,
+      pending_match_score: r.match_id ? matchInfoMap[r.match_id]?.scoreStr : undefined,
     })));
   }, [teamId]);
 
@@ -433,6 +457,18 @@ export default function TeamPage() {
       await supabase.from("challenges").update({ status: "accepted" }).eq("id", id);
     } else {
       await supabase.from("challenges").delete().eq("id", id);
+    }
+    await loadChallenges(userId);
+    setChallengeBusy(s => { const n = new Set(s); n.delete(id); return n; });
+  }
+
+  async function confirmChallengeScore(id: string, accept: boolean) {
+    setChallengeBusy(s => new Set(s).add(id));
+    if (accept) {
+      await supabase.from("challenges").update({ status: "completed" }).eq("id", id);
+    } else {
+      // Dispute: reset to accepted so challenger can re-log the correct score
+      await supabase.from("challenges").update({ status: "accepted", match_id: null }).eq("id", id);
     }
     await loadChallenges(userId);
     setChallengeBusy(s => { const n = new Set(s); n.delete(id); return n; });
@@ -711,16 +747,20 @@ export default function TeamPage() {
                 {challenges.map(c => {
                   const isChallenger = c.challenger_id === userId;
                   const iReceived = c.opponent_id === userId && c.status === "pending";
+                  const needsConfirm = c.status === "pending_confirmation" && c.opponent_id === userId;
+                  const waitingConfirm = c.status === "pending_confirmation" && c.challenger_id === userId;
+                  const statusLabel =
+                    c.status === "pending" && isChallenger ? "Waiting for response…" :
+                    c.status === "pending_confirmation" ? "Awaiting score confirmation" :
+                    c.status;
                   return (
-                    <div key={c.id} className="bg-white/[0.03] border border-white/[0.06] rounded-2xl px-4 py-3">
+                    <div key={c.id} className="bg-white/[0.03] border border-white/[0.06] rounded-2xl px-4 py-3 space-y-2">
                       <div className="flex items-center justify-between">
                         <div>
                           <p className="text-sm font-semibold text-white/80">
                             {isChallenger ? `vs ${c.opponent_name}` : `from ${c.challenger_name}`}
                           </p>
-                          <p className="text-xs text-white/30 capitalize mt-0.5">
-                            {c.status === "pending" && isChallenger ? "Waiting for response…" : c.status}
-                          </p>
+                          <p className="text-xs text-white/30 capitalize mt-0.5">{statusLabel}</p>
                         </div>
                         {iReceived && (
                           <div className="flex gap-2">
@@ -743,7 +783,7 @@ export default function TeamPage() {
                         {c.status === "accepted" && (
                           <div className="flex gap-2">
                             <Link
-                              href={`/log?opponent=${encodeURIComponent(isChallenger ? (c.opponent_name ?? "") : (c.challenger_name ?? ""))}&challengeId=${c.id}&challengeType=team`}
+                              href={`/log?opponent=${encodeURIComponent(isChallenger ? (c.opponent_name ?? "") : (c.challenger_name ?? ""))}&challengeId=${c.id}&challengeType=team&returnTo=/teams/${teamId}`}
                               className="text-xs font-black text-lime-400 bg-lime-400/10 px-3 py-1.5 rounded-xl hover:bg-lime-400/20 transition-all"
                             >
                               Log Match
@@ -767,6 +807,43 @@ export default function TeamPage() {
                           </Link>
                         )}
                       </div>
+
+                      {/* Score confirmation UI for the opponent */}
+                      {needsConfirm && (
+                        <div className="p-3 bg-amber-400/5 border border-amber-400/20 rounded-xl space-y-2">
+                          <p className="text-xs font-bold text-amber-400/80">Confirm the score</p>
+                          <p className="text-xs text-white/50">
+                            {c.challenger_name} logged:{" "}
+                            <span className={c.pending_match_result === "win" ? "text-red-400 font-semibold" : "text-lime-400 font-semibold"}>
+                              {c.pending_match_result === "win" ? "their win" : "your win"}
+                            </span>
+                            {c.pending_match_score ? ` · ${c.pending_match_score}` : ""}
+                          </p>
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => confirmChallengeScore(c.id, false)}
+                              disabled={challengeBusy.has(c.id)}
+                              className="flex-1 text-xs font-bold text-white/40 bg-white/5 border border-white/10 py-1.5 rounded-xl hover:text-red-400/70 transition-all disabled:opacity-40"
+                            >
+                              Dispute
+                            </button>
+                            <button
+                              onClick={() => confirmChallengeScore(c.id, true)}
+                              disabled={challengeBusy.has(c.id)}
+                              className="flex-1 text-xs font-black text-lime-400 bg-lime-400/10 py-1.5 rounded-xl hover:bg-lime-400/20 transition-all disabled:opacity-40"
+                            >
+                              Confirm ✓
+                            </button>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Waiting indicator for the challenger */}
+                      {waitingConfirm && (
+                        <p className="text-xs text-amber-400/60">
+                          Waiting for {c.opponent_name} to confirm the score…
+                        </p>
+                      )}
                     </div>
                   );
                 })}

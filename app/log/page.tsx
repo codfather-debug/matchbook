@@ -10,6 +10,7 @@ function LogPageInner() {
   const opponent = params.get("opponent") ?? "";
   const challengeId = params.get("challengeId");
   const challengeType = params.get("challengeType") ?? "team";
+  const returnTo = params.get("returnTo") ?? "/";
 
   return (
     <MatchEntry
@@ -24,18 +25,18 @@ function LogPageInner() {
           .select("id")
           .single();
 
-        // Mark challenge completed if launched from a challenge
+        // Mark challenge as pending_confirmation — opponent must confirm the score
         if (challengeId && saved) {
           const table = challengeType === "group" ? "group_challenges" : "challenges";
           await supabase
             .from(table)
-            .update({ status: "completed", match_id: saved.id })
+            .update({ status: "pending_confirmation", match_id: saved.id })
             .eq("id", challengeId);
         }
 
-        router.push("/");
+        router.push(returnTo);
       }}
-      onCancel={() => router.push("/")}
+      onCancel={() => router.push(returnTo)}
     />
   );
 }

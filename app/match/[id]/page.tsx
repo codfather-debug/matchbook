@@ -127,8 +127,13 @@ export default function MatchDetailPage() {
   const [confirmDelete, setConfirmDelete] = useState(false);
 
   async function handleDelete() {
-    await supabase.from("matches").delete().eq("id", id);
-    router.push("/");
+    const { error } = await supabase.from("matches").delete().eq("id", id);
+    if (error) {
+      alert("Delete failed — you may need to run the matches DELETE policy SQL in Supabase.");
+      setConfirmDelete(false);
+      return;
+    }
+    router.push("/history");
   }
 
   useEffect(() => {
