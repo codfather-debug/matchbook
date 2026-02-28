@@ -169,6 +169,11 @@ export default function DashboardPage() {
     setShowOnboarding(false);
   }
 
+  async function signOut() {
+    await supabase.auth.signOut();
+    router.push("/auth");
+  }
+
   if (loading) {
     return (
       <main className="min-h-screen flex items-center justify-center" style={{background:"radial-gradient(ellipse 140% 40% at 50% 0%, rgba(163,230,53,0.15) 0%, transparent 65%), #ffffff"}}>
@@ -446,6 +451,14 @@ export default function DashboardPage() {
                 <p className="text-xs text-gray-400">Badges & progress</p>
               </Link>
             </div>
+
+            {/* Sign Out */}
+            <button
+              onClick={signOut}
+              className="w-full py-3 rounded-2xl border border-red-200 text-red-500 text-sm font-bold hover:bg-red-50 hover:border-red-300 transition-all active:scale-[0.98]"
+            >
+              Sign Out
+            </button>
           </>
       </div>
 

@@ -39,6 +39,8 @@ export default function PlayerProfilePage() {
   const [savingName, setSavingName] = useState(false);
   const [shareStats, setShareStats] = useState(true);
   const [shareHistory, setShareHistory] = useState(true);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -50,10 +52,11 @@ export default function PlayerProfilePage() {
 
       // Load profile settings
       const { data: profile } = await supabase
-        .from("profiles").select("share_stats, share_history, display_name").eq("id", user.id).single();
+        .from("profiles").select("share_stats, share_history, display_name, avatar_url").eq("id", user.id).single();
       if (profile) {
         setShareStats(profile.share_stats ?? true);
         setShareHistory(profile.share_history ?? true);
+        if (profile.avatar_url) setAvatarUrl(profile.avatar_url);
         if (profile.display_name) {
           setDisplayName(profile.display_name);
           const parts = profile.display_name.split(" ");
@@ -86,10 +89,30 @@ export default function PlayerProfilePage() {
     setSavingName(false);
   }
 
+  async function signOut() {
+    await supabase.auth.signOut();
+    router.push("/auth");
+  }
+
   async function updatePrivacy(field: "share_stats" | "share_history", value: boolean) {
     if (field === "share_stats") setShareStats(value);
     else setShareHistory(value);
     await supabase.from("profiles").update({ [field]: value }).eq("id", userId);
+  }
+
+  async function uploadAvatar(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file || !userId) return;
+    setUploadingAvatar(true);
+    const { error } = await supabase.storage
+      .from("avatars")
+      .upload(userId, file, { upsert: true, contentType: file.type });
+    if (!error) {
+      const { data: { publicUrl } } = supabase.storage.from("avatars").getPublicUrl(userId);
+      await supabase.from("profiles").update({ avatar_url: publicUrl }).eq("id", userId);
+      setAvatarUrl(publicUrl);
+    }
+    setUploadingAvatar(false);
   }
 
   if (loading) {
@@ -170,21 +193,51 @@ export default function PlayerProfilePage() {
     <main className="min-h-screen bg-white max-w-sm mx-auto pb-24">
       {/* Header */}
       <div className="px-5 pt-5 pb-5 border-b border-gray-200">
-        <p className="text-gray-400 text-xs font-bold tracking-widest uppercase mb-3">Player Profile</p>
-        <div className="flex items-end justify-between">
-          <div>
-            <h1 className="text-2xl font-black text-gray-900">{displayName || email}</h1>
+        <p className="text-gray-400 text-xs font-bold tracking-widest uppercase mb-4">Player Profile</p>
+        <div className="flex items-center gap-4">
+          {/* Avatar circle */}
+          <label className="relative shrink-0 cursor-pointer group">
+            <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-gray-200 bg-gray-100 flex items-center justify-center">
+              {avatarUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-2xl font-black text-lime-600">
+                  {(displayName || email)[0]?.toUpperCase() ?? "?"}
+                </span>
+              )}
+            </div>
+            {/* Upload overlay */}
+            <div className="absolute -bottom-0.5 -right-0.5 w-5 h-5 rounded-full bg-lime-400 border-2 border-white flex items-center justify-center shadow-sm group-hover:bg-lime-300 transition-colors">
+              {uploadingAvatar ? (
+                <svg className="animate-spin" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="3">
+                  <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4"/>
+                </svg>
+              ) : (
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="3" strokeLinecap="round">
+                  <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
+              )}
+            </div>
+            <input type="file" accept="image/*" className="hidden" onChange={uploadAvatar} disabled={uploadingAvatar} />
+          </label>
+
+          {/* Name + stats */}
+          <div className="flex-1 min-w-0">
+            <h1 className="text-xl font-black text-gray-900 truncate">{displayName || email}</h1>
             <p className="text-gray-500 text-sm mt-0.5">{record.wins}W – {record.losses}L · {winRate}% win rate</p>
             <p className="text-gray-400 text-xs mt-0.5">{matches.length} matches logged</p>
           </div>
-          <div className={`text-right`}>
-            {streak !== 0 && (
+
+          {/* Streak */}
+          {streak !== 0 && (
+            <div className="text-right shrink-0">
               <div className={`text-2xl font-black ${streak > 0 ? "text-lime-700" : "text-red-600"}`}>
                 {streak > 0 ? `+${streak}W` : `${Math.abs(streak)}L`}
               </div>
-            )}
-            {streak !== 0 && <p className="text-xs text-gray-400">current streak</p>}
-          </div>
+              <p className="text-xs text-gray-400">streak</p>
+            </div>
+          )}
         </div>
       </div>
 
@@ -323,6 +376,14 @@ export default function PlayerProfilePage() {
             </div>
           </div>
         </section>
+
+        {/* Sign Out */}
+        <button
+          onClick={signOut}
+          className="w-full py-3 rounded-2xl border border-red-200 text-red-500 text-sm font-bold hover:bg-red-50 hover:border-red-300 transition-all active:scale-[0.98]"
+        >
+          Sign Out
+        </button>
 
       </div>
 
