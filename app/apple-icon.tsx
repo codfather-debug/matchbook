@@ -1,62 +1,51 @@
 import { ImageResponse } from "next/og";
 
+export const runtime = "edge";
 export const size = { width: 180, height: 180 };
 export const contentType = "image/png";
 
 export default function AppleIcon() {
   return new ImageResponse(
     (
+      // Full-bleed tennis ball — iOS applies its own squircle mask on top
       <div
         style={{
-          background: "#0c0c0e",
-          width: "100%",
-          height: "100%",
           display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          borderRadius: "40px",
+          width: 180,
+          height: 180,
+          backgroundColor: "#c8e245",
+          overflow: "hidden",
+          position: "relative",
         }}
       >
-        {/* Outer ring */}
+        {/* Top seam arc */}
         <div
           style={{
             position: "absolute",
-            width: 120,
-            height: 120,
+            top: 22,
+            left: 0,
+            width: 180,
+            height: 50,
+            borderTop: "13px solid rgba(255,255,255,0.9)",
+            borderLeft: "13px solid rgba(255,255,255,0.9)",
+            borderRight: "13px solid rgba(255,255,255,0.9)",
             borderRadius: "50%",
-            border: "5px solid rgba(163,230,53,0.25)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
           }}
         />
-        {/* Arc fill */}
+        {/* Bottom seam arc */}
         <div
           style={{
             position: "absolute",
-            width: 120,
-            height: 120,
+            bottom: 22,
+            left: 0,
+            width: 180,
+            height: 50,
+            borderBottom: "13px solid rgba(255,255,255,0.9)",
+            borderLeft: "13px solid rgba(255,255,255,0.9)",
+            borderRight: "13px solid rgba(255,255,255,0.9)",
             borderRadius: "50%",
-            border: "5px solid #a3e635",
-            borderBottom: "5px solid transparent",
-            borderLeft: "5px solid transparent",
-            transform: "rotate(-45deg)",
-            display: "flex",
           }}
         />
-        {/* M letter */}
-        <div
-          style={{
-            color: "#ffffff",
-            fontSize: 72,
-            fontWeight: 900,
-            letterSpacing: "-4px",
-            lineHeight: 1,
-            display: "flex",
-          }}
-        >
-          M
-        </div>
       </div>
     ),
     { ...size }

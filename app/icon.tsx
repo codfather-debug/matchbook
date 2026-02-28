@@ -1,5 +1,6 @@
 import { ImageResponse } from "next/og";
 
+export const runtime = "edge";
 export const size = { width: 32, height: 32 };
 export const contentType = "image/png";
 
@@ -8,26 +9,43 @@ export default function Icon() {
     (
       <div
         style={{
-          background: "#0c0c0e",
-          width: "100%",
-          height: "100%",
           display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          borderRadius: "8px",
+          width: 32,
+          height: 32,
+          borderRadius: "50%",
+          backgroundColor: "#c8e245",
+          overflow: "hidden",
+          position: "relative",
         }}
       >
+        {/* Top seam arc */}
         <div
           style={{
-            color: "#a3e635",
-            fontSize: 22,
-            fontWeight: 900,
-            lineHeight: 1,
-            display: "flex",
+            position: "absolute",
+            top: 4,
+            left: 1,
+            width: 30,
+            height: 9,
+            borderTop: "2.5px solid white",
+            borderLeft: "2.5px solid white",
+            borderRight: "2.5px solid white",
+            borderRadius: "50%",
           }}
-        >
-          M
-        </div>
+        />
+        {/* Bottom seam arc */}
+        <div
+          style={{
+            position: "absolute",
+            bottom: 4,
+            left: 1,
+            width: 30,
+            height: 9,
+            borderBottom: "2.5px solid white",
+            borderLeft: "2.5px solid white",
+            borderRight: "2.5px solid white",
+            borderRadius: "50%",
+          }}
+        />
       </div>
     ),
     { ...size }
