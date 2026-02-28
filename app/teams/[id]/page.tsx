@@ -5,6 +5,7 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import BottomNav from "@/components/BottomNav";
 import ProfileCard from "@/components/ProfileCard";
+import AvatarCircle from "@/components/AvatarCircle";
 
 type SubTab = "leaderboard" | "feed" | "wall" | "challenges" | "manage";
 
@@ -12,6 +13,7 @@ interface MemberStat {
   userId: string;
   displayName: string;
   username: string;
+  avatarUrl?: string;
   wins: number;
   losses: number;
   winPct: number;
@@ -33,6 +35,7 @@ interface WallReply {
   created_at: string;
   display_name?: string;
   username?: string;
+  avatar_url?: string;
 }
 
 interface WallPost {
@@ -42,6 +45,7 @@ interface WallPost {
   created_at: string;
   display_name?: string;
   username?: string;
+  avatar_url?: string;
   replies: WallReply[];
 }
 
@@ -62,6 +66,7 @@ interface ManagedMember {
   userId: string;
   displayName: string;
   username: string;
+  avatarUrl?: string;
   role: string;
 }
 
@@ -120,7 +125,7 @@ export default function TeamPage() {
     const userIds = members.map(m => m.user_id);
     const { data: profiles } = await supabase
       .from("profiles")
-      .select("id, username, display_name")
+      .select("id, username, display_name, avatar_url")
       .in("id", userIds);
 
     const profileMap = Object.fromEntries((profiles ?? []).map(p => [p.id, p]));
@@ -137,6 +142,7 @@ export default function TeamPage() {
         userId: uid,
         displayName: profileMap[uid]?.display_name ?? "",
         username: profileMap[uid]?.username ?? uid,
+        avatarUrl: profileMap[uid]?.avatar_url ?? undefined,
         wins,
         losses,
         winPct: total > 0 ? Math.round((wins / total) * 100) : 0,
@@ -195,7 +201,7 @@ export default function TeamPage() {
 
     const uids = [...new Set(postRows.map(p => p.user_id))];
     const { data: profiles } = await supabase
-      .from("profiles").select("id, display_name, username").in("id", uids);
+      .from("profiles").select("id, display_name, username, avatar_url").in("id", uids);
     const profileMap = Object.fromEntries((profiles ?? []).map(p => [p.id, p]));
 
     type RawPost = { id: string; user_id: string; content: string; created_at: string; reply_to_id?: string | null };
@@ -208,6 +214,7 @@ export default function TeamPage() {
           id: p.id, user_id: p.user_id, content: p.content, created_at: p.created_at,
           display_name: profileMap[p.user_id]?.display_name,
           username: profileMap[p.user_id]?.username ?? p.user_id,
+          avatar_url: profileMap[p.user_id]?.avatar_url,
           replies: [],
         };
         postMap[p.id] = wp;
@@ -220,6 +227,7 @@ export default function TeamPage() {
           id: p.id, user_id: p.user_id, content: p.content, created_at: p.created_at,
           display_name: profileMap[p.user_id]?.display_name,
           username: profileMap[p.user_id]?.username ?? p.user_id,
+          avatar_url: profileMap[p.user_id]?.avatar_url,
         });
       }
     }
@@ -279,13 +287,14 @@ export default function TeamPage() {
     if (!rows || rows.length === 0) { setManagedMembers([]); return; }
     const uids = rows.map(r => r.user_id);
     const { data: profiles } = await supabase
-      .from("profiles").select("id, display_name, username").in("id", uids);
+      .from("profiles").select("id, display_name, username, avatar_url").in("id", uids);
     const pm = Object.fromEntries((profiles ?? []).map(p => [p.id, p]));
     setManagedMembers(rows.map(r => ({
       userId: r.user_id,
       role: r.role,
       displayName: pm[r.user_id]?.display_name ?? "",
       username: pm[r.user_id]?.username ?? r.user_id,
+      avatarUrl: pm[r.user_id]?.avatar_url ?? undefined,
     })));
   }, [teamId]);
 
@@ -646,11 +655,7 @@ export default function TeamPage() {
                     {/* Post header */}
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 rounded-full bg-lime-100 flex items-center justify-center">
-                          <span className="text-[10px] font-black text-lime-700">
-                            {(p.display_name || p.username || "?")[0].toUpperCase()}
-                          </span>
-                        </div>
+                        <AvatarCircle name={p.display_name || p.username || "?"} avatarUrl={p.avatar_url} size={24} textClassName="text-[10px] font-black text-lime-700" />
                         <span className="text-xs font-bold text-gray-500">
                           {p.display_name ?? `@${p.username}`}
                           {p.user_id === userId && <span className="text-lime-700/50 ml-1">· you</span>}
@@ -905,11 +910,7 @@ export default function TeamPage() {
                         {managedMembers.map(m => (
                           <div key={m.userId} className="flex items-center justify-between px-4 py-3 gap-2">
                             <div className="flex items-center gap-2.5 min-w-0">
-                              <div className="w-8 h-8 rounded-full bg-lime-50 flex items-center justify-center flex-shrink-0">
-                                <span className="text-xs font-black text-lime-700">
-                                  {(m.displayName || m.username)[0].toUpperCase()}
-                                </span>
-                              </div>
+                              <AvatarCircle name={m.displayName || m.username} avatarUrl={m.avatarUrl} size={32} textClassName="text-xs font-black text-lime-700" />
                               <div className="min-w-0">
                                 <p className="text-sm font-semibold text-gray-800 truncate">
                                   {m.displayName || `@${m.username}`}

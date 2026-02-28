@@ -39,6 +39,7 @@ export default function PlayerProfilePage() {
   const [savingName, setSavingName] = useState(false);
   const [shareStats, setShareStats] = useState(true);
   const [shareHistory, setShareHistory] = useState(true);
+  const [discoverable, setDiscoverable] = useState(true);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
@@ -52,10 +53,11 @@ export default function PlayerProfilePage() {
 
       // Load profile settings
       const { data: profile } = await supabase
-        .from("profiles").select("share_stats, share_history, display_name, avatar_url").eq("id", user.id).single();
+        .from("profiles").select("share_stats, share_history, display_name, avatar_url, discoverable").eq("id", user.id).single();
       if (profile) {
         setShareStats(profile.share_stats ?? true);
         setShareHistory(profile.share_history ?? true);
+        setDiscoverable(profile.discoverable ?? true);
         if (profile.avatar_url) setAvatarUrl(profile.avatar_url);
         if (profile.display_name) {
           setDisplayName(profile.display_name);
@@ -94,9 +96,10 @@ export default function PlayerProfilePage() {
     router.push("/auth");
   }
 
-  async function updatePrivacy(field: "share_stats" | "share_history", value: boolean) {
+  async function updatePrivacy(field: "share_stats" | "share_history" | "discoverable", value: boolean) {
     if (field === "share_stats") setShareStats(value);
-    else setShareHistory(value);
+    else if (field === "share_history") setShareHistory(value);
+    else setDiscoverable(value);
     await supabase.from("profiles").update({ [field]: value }).eq("id", userId);
   }
 
@@ -372,6 +375,18 @@ export default function PlayerProfilePage() {
                 className={`relative w-12 h-6 rounded-full transition-colors ${shareHistory ? "bg-lime-400" : "bg-white/20"}`}
               >
                 <span className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-transform ${shareHistory ? "translate-x-7" : "translate-x-1"}`} />
+              </button>
+            </div>
+            <div className="flex items-center justify-between px-4 py-3.5">
+              <div>
+                <p className="text-sm font-semibold text-gray-800">Discoverable by others</p>
+                <p className="text-xs text-gray-400 mt-0.5">Appear in player search results</p>
+              </div>
+              <button
+                onClick={() => updatePrivacy("discoverable", !discoverable)}
+                className={`relative w-12 h-6 rounded-full transition-colors ${discoverable ? "bg-lime-400" : "bg-white/20"}`}
+              >
+                <span className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-transform ${discoverable ? "translate-x-7" : "translate-x-1"}`} />
               </button>
             </div>
           </div>

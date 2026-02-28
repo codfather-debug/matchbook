@@ -5,12 +5,13 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import BottomNav from "@/components/BottomNav";
 import ProfileCard from "@/components/ProfileCard";
+import AvatarCircle from "@/components/AvatarCircle";
 import { upsertProfile } from "@/lib/profile";
 import { hasProfanity } from "@/lib/profanity";
 
-interface FriendProfile { friendshipId: string; userId: string; username: string; displayName?: string; }
-interface PendingRequest { friendshipId: string; userId: string; username: string; displayName?: string; }
-interface SearchResult { id: string; username: string; display_name?: string; }
+interface FriendProfile { friendshipId: string; userId: string; username: string; displayName?: string; avatarUrl?: string; }
+interface PendingRequest { friendshipId: string; userId: string; username: string; displayName?: string; avatarUrl?: string; }
+interface SearchResult { id: string; username: string; display_name?: string; avatar_url?: string; }
 interface FriendshipRow { id: string; requester_id: string; addressee_id: string; status: string; }
 interface TeamRow { id: string; name: string; invite_code: string; member_count?: number; role?: string; }
 interface GroupRow { id: string; name: string; member_count?: number; }
@@ -88,11 +89,11 @@ export default function FriendsPage() {
 
     const otherIds = [...new Set(rows.map(r => r.requester_id === uid ? r.addressee_id : r.requester_id))];
 
-    type ProfileRow = { id: string; username: string; display_name?: string };
+    type ProfileRow = { id: string; username: string; display_name?: string; avatar_url?: string };
     let profileMap: Record<string, ProfileRow> = {};
     if (otherIds.length > 0) {
       const { data: profileRows } = await supabase
-        .from("profiles").select("id, username, display_name").in("id", otherIds);
+        .from("profiles").select("id, username, display_name, avatar_url").in("id", otherIds);
       profileMap = Object.fromEntries((profileRows ?? []).map(p => [p.id, p]));
     }
 
@@ -104,6 +105,7 @@ export default function FriendsPage() {
           userId: r.requester_id,
           username: profileMap[r.requester_id]?.username ?? r.requester_id,
           displayName: profileMap[r.requester_id]?.display_name,
+          avatarUrl: profileMap[r.requester_id]?.avatar_url,
         }))
     );
 
@@ -117,6 +119,7 @@ export default function FriendsPage() {
             userId: friendId,
             username: profileMap[friendId]?.username ?? friendId,
             displayName: profileMap[friendId]?.display_name,
+            avatarUrl: profileMap[friendId]?.avatar_url,
           };
         })
     );
@@ -220,7 +223,7 @@ export default function FriendsPage() {
         .filter(r => r.status === "accepted")
         .map(r => r.requester_id === uid ? r.addressee_id : r.requester_id),
     ]);
-    let query = supabase.from("profiles").select("id, username, display_name").neq("id", uid);
+    let query = supabase.from("profiles").select("id, username, display_name, avatar_url").neq("id", uid).neq("discoverable", false);
     if (q.trim().length >= 2) {
       query = query.or(`username.ilike.%${q.trim()}%,display_name.ilike.%${q.trim()}%`);
     }
@@ -560,13 +563,8 @@ export default function FriendsPage() {
                 <div className="rounded-2xl border border-gray-200 bg-gray-50 divide-y divide-white/[0.06]">
                   {discoverList.map(r => (
                     <div key={r.id} className="flex items-center gap-3 px-4 py-3">
-                      <button
-                        onClick={() => setProfileUserId(r.id)}
-                        className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0 active:scale-90 transition-transform"
-                      >
-                        <span className="text-sm font-black text-gray-500">
-                          {(r.display_name || r.username)[0].toUpperCase()}
-                        </span>
+                      <button onClick={() => setProfileUserId(r.id)} className="active:scale-90 transition-transform flex-shrink-0">
+                        <AvatarCircle name={r.display_name || r.username} avatarUrl={r.avatar_url} size={36} textClassName="text-sm font-black text-gray-500" />
                       </button>
                       <button onClick={() => setProfileUserId(r.id)} className="flex-1 text-left min-w-0">
                         <p className="text-sm font-semibold text-gray-800 truncate">{r.display_name ?? `@${r.username}`}</p>
@@ -598,11 +596,7 @@ export default function FriendsPage() {
                 <div className="rounded-2xl border border-gray-200 bg-gray-50 divide-y divide-white/[0.06]">
                   {pending.map(p => (
                     <div key={p.friendshipId} className="flex items-center gap-3 px-4 py-3">
-                      <div className="w-10 h-10 rounded-full bg-lime-50 flex items-center justify-center flex-shrink-0">
-                        <span className="text-base font-black text-lime-700">
-                          {(p.displayName || p.username)[0].toUpperCase()}
-                        </span>
-                      </div>
+                      <AvatarCircle name={p.displayName || p.username} avatarUrl={p.avatarUrl} size={40} />
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-semibold text-gray-800 truncate">{p.displayName ?? `@${p.username}`}</p>
                         {p.displayName && <p className="text-xs text-gray-400">@{p.username}</p>}
@@ -644,13 +638,8 @@ export default function FriendsPage() {
                 <div className="rounded-2xl border border-gray-200 bg-gray-50 divide-y divide-white/[0.06]">
                   {friends.map(f => (
                     <div key={f.friendshipId} className="flex items-center gap-3 px-4 py-3">
-                      <button
-                        onClick={() => setProfileUserId(f.userId)}
-                        className="w-10 h-10 rounded-full bg-lime-50 flex items-center justify-center flex-shrink-0 active:scale-90 transition-transform"
-                      >
-                        <span className="text-base font-black text-lime-700">
-                          {(f.displayName || f.username)[0].toUpperCase()}
-                        </span>
+                      <button onClick={() => setProfileUserId(f.userId)} className="active:scale-90 transition-transform flex-shrink-0">
+                        <AvatarCircle name={f.displayName || f.username} avatarUrl={f.avatarUrl} size={40} />
                       </button>
                       <button
                         onClick={() => setProfileUserId(f.userId)}

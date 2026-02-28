@@ -5,11 +5,13 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import BottomNav from "@/components/BottomNav";
 import ProfileCard from "@/components/ProfileCard";
+import AvatarCircle from "@/components/AvatarCircle";
 
 interface Member {
   userId: string;
   displayName?: string;
   username: string;
+  avatarUrl?: string;
   wins: number;
   losses: number;
   winPct: number;
@@ -31,6 +33,7 @@ interface WallReply {
   created_at: string;
   playerName: string;
   initial: string;
+  avatarUrl?: string;
 }
 
 interface WallPost {
@@ -40,6 +43,7 @@ interface WallPost {
   created_at: string;
   playerName: string;
   initial: string;
+  avatarUrl?: string;
   replies: WallReply[];
 }
 
@@ -47,6 +51,7 @@ interface ManagedGroupMember {
   userId: string;
   displayName?: string;
   username: string;
+  avatarUrl?: string;
   role: string;
 }
 
@@ -114,9 +119,9 @@ export default function GroupPage() {
     if (userIds.length === 0) { setMembers([]); setFeed([]); return; }
 
     const { data: profiles } = await supabase
-      .from("profiles").select("id, display_name, username").in("id", userIds);
-    const pm: Record<string, { display_name?: string; username?: string }> = Object.fromEntries(
-      (profiles ?? []).map((p: { id: string; display_name?: string; username?: string }) => [p.id, p])
+      .from("profiles").select("id, display_name, username, avatar_url").in("id", userIds);
+    const pm: Record<string, { display_name?: string; username?: string; avatar_url?: string }> = Object.fromEntries(
+      (profiles ?? []).map((p: { id: string; display_name?: string; username?: string; avatar_url?: string }) => [p.id, p])
     );
 
     const { data: matchRows } = await supabase
@@ -142,6 +147,7 @@ export default function GroupPage() {
           userId: id, wins, losses,
           displayName: pm[id]?.display_name,
           username: pm[id]?.username ?? id,
+          avatarUrl: pm[id]?.avatar_url ?? undefined,
           winPct: total > 0 ? Math.round((wins / total) * 100) : 0,
         };
       }).sort((a: Member, b: Member) => b.winPct - a.winPct || (b.wins + b.losses) - (a.wins + a.losses))
@@ -173,9 +179,9 @@ export default function GroupPage() {
 
     const uids = [...new Set((rows as { user_id: string }[]).map(r => r.user_id))];
     const { data: profiles } = await supabase
-      .from("profiles").select("id, display_name, username").in("id", uids);
-    const pm: Record<string, { display_name?: string; username?: string }> = Object.fromEntries(
-      (profiles ?? []).map((p: { id: string; display_name?: string; username?: string }) => [p.id, p])
+      .from("profiles").select("id, display_name, username, avatar_url").in("id", uids);
+    const pm: Record<string, { display_name?: string; username?: string; avatar_url?: string }> = Object.fromEntries(
+      (profiles ?? []).map((p: { id: string; display_name?: string; username?: string; avatar_url?: string }) => [p.id, p])
     );
 
     type RawRow = { id: string; user_id: string; content: string; created_at: string; reply_to_id?: string | null };
@@ -188,6 +194,7 @@ export default function GroupPage() {
           id: r.id, userId: r.user_id, content: r.content, created_at: r.created_at,
           playerName: pm[r.user_id]?.display_name ?? `@${pm[r.user_id]?.username ?? r.user_id}`,
           initial: (pm[r.user_id]?.display_name || pm[r.user_id]?.username || "?")[0].toUpperCase(),
+          avatarUrl: pm[r.user_id]?.avatar_url ?? undefined,
           replies: [],
         };
         postMap[r.id] = wp;
@@ -200,6 +207,7 @@ export default function GroupPage() {
           id: r.id, userId: r.user_id, content: r.content, created_at: r.created_at,
           playerName: pm[r.user_id]?.display_name ?? `@${pm[r.user_id]?.username ?? r.user_id}`,
           initial: (pm[r.user_id]?.display_name || pm[r.user_id]?.username || "?")[0].toUpperCase(),
+          avatarUrl: pm[r.user_id]?.avatar_url ?? undefined,
         });
       }
     }
@@ -268,13 +276,14 @@ export default function GroupPage() {
     if (!rows || rows.length === 0) { setManagedGroupMembers([]); return; }
     const uids = rows.map((r: { user_id: string }) => r.user_id);
     const { data: profiles } = await supabase
-      .from("profiles").select("id, display_name, username").in("id", uids);
+      .from("profiles").select("id, display_name, username, avatar_url").in("id", uids);
     const pm = Object.fromEntries((profiles ?? []).map(p => [p.id, p]));
     setManagedGroupMembers((rows as { user_id: string; role: string }[]).map(r => ({
       userId: r.user_id,
       role: r.role ?? "member",
       displayName: (pm[r.user_id] as { display_name?: string } | undefined)?.display_name,
       username: (pm[r.user_id] as { username?: string } | undefined)?.username ?? r.user_id,
+      avatarUrl: (pm[r.user_id] as { avatar_url?: string } | undefined)?.avatar_url ?? undefined,
     })));
   }, [groupId]);
 
@@ -515,11 +524,7 @@ export default function GroupPage() {
                   <div key={m.userId} className="flex items-center justify-between px-4 py-3 gap-3">
                     <div className="flex items-center gap-3 min-w-0">
                       <span className="text-xs font-black text-gray-300 w-4 flex-shrink-0">{i + 1}</span>
-                      <div className="w-8 h-8 rounded-full bg-lime-50 flex items-center justify-center flex-shrink-0">
-                        <span className="text-xs font-black text-lime-700">
-                          {(m.displayName || m.username)[0].toUpperCase()}
-                        </span>
-                      </div>
+                      <AvatarCircle name={m.displayName || m.username} avatarUrl={m.avatarUrl} size={32} textClassName="text-xs font-black text-lime-700" />
                       <div className="min-w-0">
                         <button
                           onClick={() => setProfileUserId(m.userId)}
@@ -609,9 +614,7 @@ export default function GroupPage() {
                   <div key={p.id} className="bg-gray-50 border border-gray-200 rounded-2xl px-4 py-3 space-y-2">
                     {/* Post */}
                     <div className="flex items-start gap-3">
-                      <div className="w-8 h-8 rounded-full bg-lime-50 flex items-center justify-center flex-shrink-0">
-                        <span className="text-xs font-black text-lime-700">{p.initial}</span>
-                      </div>
+                      <AvatarCircle name={p.playerName} avatarUrl={p.avatarUrl} size={32} textClassName="text-xs font-black text-lime-700" />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between gap-2 mb-1">
                           <span className="text-xs font-bold text-gray-500">{p.playerName}</span>
@@ -633,9 +636,7 @@ export default function GroupPage() {
                       <div className="ml-11 border-l border-gray-200 pl-3 space-y-2">
                         {p.replies.map(r => (
                           <div key={r.id} className="flex items-start gap-2">
-                            <div className="w-5 h-5 rounded-full bg-lime-50 flex items-center justify-center flex-shrink-0 mt-0.5">
-                              <span className="text-[8px] font-black text-lime-700">{r.initial}</span>
-                            </div>
+                            <AvatarCircle name={r.playerName} avatarUrl={r.avatarUrl} size={20} textClassName="text-[8px] font-black text-lime-700" />
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-1.5 mb-0.5">
                                 <span className="text-[10px] font-bold text-gray-500">{r.playerName}</span>
@@ -868,11 +869,7 @@ export default function GroupPage() {
                         {managedGroupMembers.map(m => (
                           <div key={m.userId} className="flex items-center justify-between px-4 py-3 gap-2">
                             <div className="flex items-center gap-2.5 min-w-0">
-                              <div className="w-8 h-8 rounded-full bg-lime-50 flex items-center justify-center flex-shrink-0">
-                                <span className="text-xs font-black text-lime-700">
-                                  {(m.displayName || m.username)[0].toUpperCase()}
-                                </span>
-                              </div>
+                              <AvatarCircle name={m.displayName || m.username} avatarUrl={m.avatarUrl} size={32} textClassName="text-xs font-black text-lime-700" />
                               <div className="min-w-0">
                                 <p className="text-sm font-semibold text-gray-800 truncate">
                                   {m.displayName ?? `@${m.username}`}
