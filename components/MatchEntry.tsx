@@ -202,8 +202,8 @@ function StepDots({ current }: { current: Step }) {
 function SectionHeader({ title, sub }: { title: string; sub?: string }) {
   return (
     <div className="mb-5">
-      <h2 className="text-xl font-black tracking-tight text-gray-900">{title}</h2>
-      {sub && <p className="text-sm text-gray-500 mt-0.5">{sub}</p>}
+      <h2 className="text-xl font-black tracking-tight text-white">{title}</h2>
+      {sub && <p className="text-sm text-white/50 mt-0.5">{sub}</p>}
     </div>
   );
 }
@@ -216,7 +216,7 @@ function Pill({ active, onClick, children }: { active: boolean; onClick: () => v
       className={`px-3 py-1.5 rounded-full border text-xs font-semibold transition-all active:scale-95 ${
         active
           ? "bg-lime-400 text-black border-lime-400"
-          : "border-gray-200 text-gray-500 bg-white/5 hover:border-gray-300 hover:text-gray-800"
+          : "border-white/10 text-white/50 bg-white/5 hover:border-white/20 hover:text-white/90"
       }`}
     >{children}</button>
   );
@@ -232,9 +232,9 @@ function RatingPicker({ label, value, onChange }: {
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <p className="text-sm font-bold text-gray-600">{label}</p>
+        <p className="text-sm font-bold text-white/60">{label}</p>
         {value !== null && (
-          <span className={`text-sm font-black ${value >= 7 ? "text-lime-700" : value >= 4 ? "text-amber-400" : "text-red-600"}`}>
+          <span className={`text-sm font-black ${value >= 7 ? "text-lime-400" : value >= 4 ? "text-amber-400" : "text-red-600"}`}>
             {value}/10
           </span>
         )}
@@ -244,8 +244,8 @@ function RatingPicker({ label, value, onChange }: {
           <button key={n} type="button" onClick={() => onChange(n)}
             className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all active:scale-95 ${
               value === n
-                ? n >= 7 ? "bg-lime-400 text-black" : n >= 4 ? "bg-amber-400 text-black" : "bg-red-500 text-gray-900"
-                : "bg-white/5 text-gray-400 hover:bg-white/10 hover:text-gray-700"
+                ? n >= 7 ? "bg-lime-400 text-black" : n >= 4 ? "bg-amber-400 text-black" : "bg-red-500 text-white"
+                : "bg-white/5 text-white/40 hover:bg-white/10 hover:text-white/70"
             }`}
           >{n}</button>
         ))}
@@ -261,35 +261,35 @@ function SetInput({ setNum, value, onChange }: { setNum: number; value: SetScore
   const isTiebreak = played &&
     ((value.player === 7 && value.opponent === 6) || (value.player === 6 && value.opponent === 7));
 
-  const numInput = "w-full bg-white/10 text-gray-900 text-center text-2xl font-black rounded-xl p-2 outline-none focus:ring-2 focus:ring-lime-400/60 placeholder:text-gray-300 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none";
+  const numInput = "w-full bg-white/10 text-white text-center text-2xl font-black rounded-xl p-2 outline-none focus:ring-2 focus:ring-lime-400/60 placeholder:text-white/30 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none";
 
   return (
     <div className="space-y-1">
-      <div className={`flex items-center gap-3 p-3 rounded-2xl border transition-all ${played ? "border-gray-200 bg-white/5" : "border-gray-200 bg-gray-50"}`}>
-        <span className="text-xs font-bold text-gray-400 w-8 shrink-0">S{setNum}</span>
+      <div className={`flex items-center gap-3 p-3 rounded-2xl border transition-all ${played ? "border-white/10 bg-white/5" : "border-white/10 bg-white/[0.04]"}`}>
+        <span className="text-xs font-bold text-white/40 w-8 shrink-0">S{setNum}</span>
         <div className="flex items-center gap-2 flex-1">
           <input type="number" min={0} max={7} placeholder="You" value={value.player ?? ""}
             onChange={e => onChange({ ...value, player: e.target.value === "" ? null : Number(e.target.value) })}
             className={numInput} />
-          <span className="text-gray-400 font-bold text-lg">–</span>
+          <span className="text-white/40 font-bold text-lg">–</span>
           <input type="number" min={0} max={7} placeholder="Them" value={value.opponent ?? ""}
             onChange={e => onChange({ ...value, opponent: e.target.value === "" ? null : Number(e.target.value) })}
             className={numInput} />
         </div>
         {played && (
-          <span className={`text-xs font-bold shrink-0 w-6 text-right ${(value.player ?? 0) > (value.opponent ?? 0) ? "text-lime-700" : "text-red-600"}`}>
+          <span className={`text-xs font-bold shrink-0 w-6 text-right ${(value.player ?? 0) > (value.opponent ?? 0) ? "text-lime-400" : "text-red-600"}`}>
             {(value.player ?? 0) > (value.opponent ?? 0) ? "W" : "L"}
           </span>
         )}
       </div>
       {isTiebreak && (
         <div className="flex items-center gap-3 px-3 py-2 rounded-2xl border border-lime-400/20 bg-lime-400/[0.04]">
-          <span className="text-xs font-bold text-lime-700/50 w-8 shrink-0">TB</span>
+          <span className="text-xs font-bold text-lime-400/50 w-8 shrink-0">TB</span>
           <div className="flex items-center gap-2 flex-1">
             <input type="number" min={0} placeholder="You" value={value.tiebreak?.player ?? ""}
               onChange={e => onChange({ ...value, tiebreak: { player: e.target.value === "" ? null : Number(e.target.value), opponent: value.tiebreak?.opponent ?? null } })}
               className={numInput.replace("text-2xl", "text-lg")} />
-            <span className="text-gray-400 font-bold">–</span>
+            <span className="text-white/40 font-bold">–</span>
             <input type="number" min={0} placeholder="Them" value={value.tiebreak?.opponent ?? ""}
               onChange={e => onChange({ ...value, tiebreak: { player: value.tiebreak?.player ?? null, opponent: e.target.value === "" ? null : Number(e.target.value) } })}
               className={numInput.replace("text-2xl", "text-lg")} />
@@ -313,29 +313,29 @@ function ScoutPanel({ scout, hand, setHand }: {
           keyToWin, setKeyToWin, keyToWinEdited, setKeyToWinEdited,
           styles, toggleStyle, weapon, hole } = scout;
   const suggested = suggestStyle(weapon, hole);
-  const ta = "w-full bg-white/5 border border-gray-200 rounded-2xl p-3 text-gray-900 text-sm placeholder:text-gray-400 outline-none focus:ring-2 focus:ring-lime-400/50 focus:border-lime-400/30 resize-none transition-all";
+  const ta = "w-full bg-white/5 border border-white/10 rounded-2xl p-3 text-white text-sm placeholder:text-white/30 outline-none focus:ring-2 focus:ring-lime-400/50 focus:border-lime-400/30 resize-none transition-all";
 
   return (
     <div className="space-y-6">
       {/* Handedness */}
       <div className="space-y-2">
-        <label className="text-xs font-bold text-gray-500 uppercase tracking-widest">Handedness</label>
+        <label className="text-xs font-bold text-white/50 uppercase tracking-widest">Handedness</label>
         <div className="flex gap-2">
           <button type="button" onClick={() => setHand(hand === "right" ? null : "right")}
-            className={`flex-1 py-3 rounded-2xl border text-sm font-bold transition-all active:scale-95 ${hand === "right" ? "bg-lime-400 text-black border-lime-400" : "border-gray-200 text-gray-500 bg-gray-50 hover:border-gray-200"}`}>
+            className={`flex-1 py-3 rounded-2xl border text-sm font-bold transition-all active:scale-95 ${hand === "right" ? "bg-lime-400 text-black border-lime-400" : "border-white/10 text-white/50 bg-white/[0.04] hover:border-white/20"}`}>
             Righty
           </button>
           <button type="button" onClick={() => setHand(hand === "left" ? null : "left")}
-            className={`flex-1 py-3 rounded-2xl border text-sm font-bold transition-all active:scale-95 ${hand === "left" ? "bg-lime-400 text-black border-lime-400" : "border-gray-200 text-gray-500 bg-gray-50 hover:border-gray-200"}`}>
+            className={`flex-1 py-3 rounded-2xl border text-sm font-bold transition-all active:scale-95 ${hand === "left" ? "bg-lime-400 text-black border-lime-400" : "border-white/10 text-white/50 bg-white/[0.04] hover:border-white/20"}`}>
             Lefty
           </button>
         </div>
       </div>
 
       <div className="space-y-3">
-        <label className="flex items-center gap-2 text-sm font-bold text-gray-700">
+        <label className="flex items-center gap-2 text-sm font-bold text-white/70">
           <span>⚡</span> Their Weapon
-          {weaponChips.length > 0 && <span className="text-xs font-normal text-gray-400">({weaponChips.length} selected)</span>}
+          {weaponChips.length > 0 && <span className="text-xs font-normal text-white/40">({weaponChips.length} selected)</span>}
         </label>
         <div className="flex flex-wrap gap-1.5">
           {WEAPON_OPTIONS.map(opt => (
@@ -348,14 +348,14 @@ function ScoutPanel({ scout, hand, setHand }: {
         {weaponChips.length === 0 && (
           <input type="text" placeholder="Or describe it yourself…" value={weaponCustom}
             onChange={e => setWeaponCustom(e.target.value)}
-            className="w-full bg-white/5 border border-gray-200 rounded-2xl px-4 py-3 text-gray-900 text-sm placeholder:text-gray-400 outline-none focus:ring-2 focus:ring-lime-400/50 focus:border-lime-400/30 transition-all" />
+            className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white text-sm placeholder:text-white/30 outline-none focus:ring-2 focus:ring-lime-400/50 focus:border-lime-400/30 transition-all" />
         )}
       </div>
 
       <div className="space-y-3">
-        <label className="flex items-center gap-2 text-sm font-bold text-gray-700">
+        <label className="flex items-center gap-2 text-sm font-bold text-white/70">
           <span>🎯</span> Their Weakness
-          {holeChips.length > 0 && <span className="text-xs font-normal text-gray-400">({holeChips.length} selected)</span>}
+          {holeChips.length > 0 && <span className="text-xs font-normal text-white/40">({holeChips.length} selected)</span>}
         </label>
         <div className="flex flex-wrap gap-1.5">
           {HOLE_OPTIONS.map(opt => (
@@ -368,38 +368,38 @@ function ScoutPanel({ scout, hand, setHand }: {
         {holeChips.length === 0 && (
           <input type="text" placeholder="Or describe it yourself…" value={holeCustom}
             onChange={e => setHoleCustom(e.target.value)}
-            className="w-full bg-white/5 border border-gray-200 rounded-2xl px-4 py-3 text-gray-900 text-sm placeholder:text-gray-400 outline-none focus:ring-2 focus:ring-lime-400/50 focus:border-lime-400/30 transition-all" />
+            className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white text-sm placeholder:text-white/30 outline-none focus:ring-2 focus:ring-lime-400/50 focus:border-lime-400/30 transition-all" />
         )}
       </div>
 
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <label className="flex items-center gap-2 text-sm font-bold text-gray-700"><span>🔑</span> Key to Win</label>
+          <label className="flex items-center gap-2 text-sm font-bold text-white/70"><span>🔑</span> Key to Win</label>
           {keyToWinEdited && (weapon || hole) && (
             <button type="button" onClick={() => { setKeyToWinEdited(false); setKeyToWin(generateKeyToWin(weapon, hole)); }}
-              className="text-xs text-lime-700/70 hover:text-lime-700 transition-colors">↺ Regenerate</button>
+              className="text-xs text-lime-400/70 hover:text-lime-400 transition-colors">↺ Regenerate</button>
           )}
         </div>
         <textarea rows={2} placeholder="One sentence strategy for next time…" value={keyToWin}
           onChange={e => { setKeyToWin(e.target.value); setKeyToWinEdited(true); }}
           className={ta} />
-        {keyToWin && !keyToWinEdited && <p className="text-xs text-lime-700/50">✨ Auto-generated — tap to edit</p>}
+        {keyToWin && !keyToWinEdited && <p className="text-xs text-lime-400/50">✨ Auto-generated — tap to edit</p>}
       </div>
 
       <div className="space-y-3">
-        <label className="text-xs font-bold text-gray-500 uppercase tracking-widest block">Playstyle Tags</label>
+        <label className="text-xs font-bold text-white/50 uppercase tracking-widest block">Playstyle Tags</label>
         {suggested && !styles.includes(suggested) && (
           <button type="button" onClick={() => toggleStyle(suggested)}
-            className="flex items-center gap-2 px-3 py-2 rounded-2xl border border-lime-400/30 bg-lime-400/5 text-lime-700/80 text-xs font-semibold transition-all hover:bg-lime-50 active:scale-95">
+            className="flex items-center gap-2 px-3 py-2 rounded-2xl border border-lime-400/30 bg-lime-400/5 text-lime-400/80 text-xs font-semibold transition-all hover:bg-lime-400/10 active:scale-95">
             <span>✨</span> Suggested: {PLAY_STYLES.find(p => p.value === suggested)?.label} — tap to add
           </button>
         )}
         <div className="grid grid-cols-2 gap-2">
           {PLAY_STYLES.map(ps => (
             <button key={ps.value} type="button" onClick={() => toggleStyle(ps.value)}
-              className={`p-3 rounded-2xl border text-left transition-all active:scale-95 ${styles.includes(ps.value) ? "bg-lime-50 border-lime-400/40" : "border-gray-200 bg-gray-50 hover:border-gray-200"}`}>
-              <p className={`text-sm font-bold ${styles.includes(ps.value) ? "text-lime-700" : "text-gray-700"}`}>{ps.label}</p>
-              <p className="text-xs text-gray-400 mt-0.5">{ps.desc}</p>
+              className={`p-3 rounded-2xl border text-left transition-all active:scale-95 ${styles.includes(ps.value) ? "bg-lime-400/10 border-lime-400/40" : "border-white/10 bg-white/[0.04] hover:border-white/20"}`}>
+              <p className={`text-sm font-bold ${styles.includes(ps.value) ? "text-lime-400" : "text-white/70"}`}>{ps.label}</p>
+              <p className="text-xs text-white/40 mt-0.5">{ps.desc}</p>
             </button>
           ))}
         </div>
@@ -408,12 +408,12 @@ function ScoutPanel({ scout, hand, setHand }: {
             {styles.map(s => {
               const ps = PLAY_STYLES.find(p => p.value === s)!;
               return (
-                <div key={s} className="rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3">
+                <div key={s} className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3">
                   <div className="flex items-baseline gap-2 mb-1">
-                    <p className="text-xs font-black text-gray-500 uppercase tracking-widest">vs {ps.label}</p>
-                    <p className="text-xs text-gray-400">{ps.desc}</p>
+                    <p className="text-xs font-black text-white/50 uppercase tracking-widest">vs {ps.label}</p>
+                    <p className="text-xs text-white/40">{ps.desc}</p>
                   </div>
-                  <p className="text-sm text-gray-700">{STYLE_TIPS[s]}</p>
+                  <p className="text-sm text-white/70">{STYLE_TIPS[s]}</p>
                 </div>
               );
             })}
@@ -432,16 +432,16 @@ function ScoutReviewBlock({ label, weapon, hole, keyToWin, styles, handedness }:
 }) {
   if (!weapon && !hole && !keyToWin && styles.length === 0 && !handedness) return null;
   return (
-    <div className="rounded-2xl border border-gray-200 bg-gray-50 p-4 space-y-2">
-      <p className="text-xs font-black tracking-widest uppercase text-gray-400">{label}</p>
-      {handedness && <div><span className="text-xs text-gray-400">✋ Handedness — </span><span className="text-sm text-gray-800">{handedness === "right" ? "Righty" : "Lefty"}</span></div>}
-      {weapon  && <div><span className="text-xs text-gray-400">⚡ Weapon — </span><span className="text-sm text-gray-800">{weapon}</span></div>}
-      {hole    && <div><span className="text-xs text-gray-400">🎯 Weakness — </span><span className="text-sm text-gray-800">{hole}</span></div>}
-      {keyToWin && <div><span className="text-xs text-gray-400">🔑 Key — </span><span className="text-sm text-gray-900 font-medium">{keyToWin}</span></div>}
+    <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4 space-y-2">
+      <p className="text-xs font-black tracking-widest uppercase text-white/40">{label}</p>
+      {handedness && <div><span className="text-xs text-white/40">✋ Handedness — </span><span className="text-sm text-white/90">{handedness === "right" ? "Righty" : "Lefty"}</span></div>}
+      {weapon  && <div><span className="text-xs text-white/40">⚡ Weapon — </span><span className="text-sm text-white/90">{weapon}</span></div>}
+      {hole    && <div><span className="text-xs text-white/40">🎯 Weakness — </span><span className="text-sm text-white/90">{hole}</span></div>}
+      {keyToWin && <div><span className="text-xs text-white/40">🔑 Key — </span><span className="text-sm text-white font-medium">{keyToWin}</span></div>}
       {styles.length > 0 && (
         <div className="flex flex-wrap gap-1.5 pt-1">
           {styles.map(s => (
-            <span key={s} className="px-3 py-1 rounded-full bg-white/5 border border-gray-200 text-gray-600 text-xs font-semibold">
+            <span key={s} className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-white/60 text-xs font-semibold">
               {PLAY_STYLES.find(p => p.value === s)?.label}
             </span>
           ))}
@@ -583,18 +583,18 @@ export default function MatchEntry({ initialData, initialOpponentName, onSave, o
     onSave?.(base);
   }
 
-  const inputCls = "w-full bg-white/5 border border-gray-200 rounded-2xl px-4 py-3.5 text-gray-900 text-base placeholder:text-gray-400 outline-none focus:ring-2 focus:ring-lime-400/50 focus:border-lime-400/30 transition-all font-medium";
-  const taCls    = "w-full bg-white/5 border border-gray-200 rounded-2xl p-3 text-gray-900 text-sm placeholder:text-gray-400 outline-none focus:ring-2 focus:ring-lime-400/50 focus:border-lime-400/30 resize-none transition-all";
+  const inputCls = "w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3.5 text-white text-base placeholder:text-white/30 outline-none focus:ring-2 focus:ring-lime-400/50 focus:border-lime-400/30 transition-all font-medium";
+  const taCls    = "w-full bg-white/5 border border-white/10 rounded-2xl p-3 text-white text-sm placeholder:text-white/30 outline-none focus:ring-2 focus:ring-lime-400/50 focus:border-lime-400/30 resize-none transition-all";
 
   return (
-    <div className="min-h-screen bg-white flex flex-col">
+    <div className="min-h-screen bg-[#111827] flex flex-col">
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-white/90 backdrop-blur-xl border-b border-gray-200 px-5">
+      <div className="sticky top-0 z-10 bg-[#111827]/90 backdrop-blur-xl border-b border-white/10 px-5">
         <div className="flex items-center justify-between h-14">
-          <button onClick={onCancel} className="text-gray-500 text-sm font-medium hover:text-gray-800 transition-colors">Cancel</button>
-          <span className="text-xs font-bold tracking-[0.2em] uppercase text-gray-400">{isEditing ? "Edit Match" : "Log Match"}</span>
+          <button onClick={onCancel} className="text-white/50 text-sm font-medium hover:text-white/90 transition-colors">Cancel</button>
+          <span className="text-xs font-bold tracking-[0.2em] uppercase text-white/40">{isEditing ? "Edit Match" : "Log Match"}</span>
           {step === "review" ? (
-            <button onClick={handleSave} className="text-sm font-black text-lime-700 hover:text-lime-700 transition-colors">
+            <button onClick={handleSave} className="text-sm font-black text-lime-400 hover:text-lime-400 transition-colors">
               {isEditing ? "Update" : "Save"}
             </button>
           ) : <div className="w-12" />}
@@ -611,30 +611,30 @@ export default function MatchEntry({ initialData, initialOpponentName, onSave, o
             <SectionHeader title="Game Plan" sub="Set your intentions before the match — all fields optional" />
 
             <div className="space-y-2">
-              <label className="text-xs font-bold text-gray-500 uppercase tracking-widest block">Primary Strategy</label>
+              <label className="text-xs font-bold text-white/50 uppercase tracking-widest block">Primary Strategy</label>
               <textarea rows={2} placeholder="e.g. Serve wide and attack the short ball, stay back on clay…"
                 value={planStrategy} onChange={e => setPlanStrategy(e.target.value)} className={taCls} />
             </div>
 
             <div className="space-y-2">
-              <label className="text-xs font-bold text-gray-500 uppercase tracking-widest block">Target Weakness</label>
+              <label className="text-xs font-bold text-white/50 uppercase tracking-widest block">Target Weakness</label>
               <input type="text" placeholder="e.g. Second serve, backhand under pressure…"
                 value={planWeakness} onChange={e => setPlanWeakness(e.target.value)} className={inputCls} />
             </div>
 
             <div className="space-y-2">
-              <label className="text-xs font-bold text-gray-500 uppercase tracking-widest block">Focus Word</label>
+              <label className="text-xs font-bold text-white/50 uppercase tracking-widest block">Focus Word</label>
               <input type="text" placeholder="One word: Calm, Attack, Trust, Process…"
                 value={planFocusWord} onChange={e => setPlanFocusWord(e.target.value)} className={inputCls} />
             </div>
 
             <RatingPicker label="Pre-Match Confidence" value={planConfidence} onChange={setPlanConfidence} />
 
-            <div className="rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 space-y-2">
-              <p className="text-xs text-gray-400 font-semibold">Need strategy ideas?</p>
+            <div className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 space-y-2">
+              <p className="text-xs text-white/40 font-semibold">Need strategy ideas?</p>
               <div className="flex gap-2">
                 <Link href="/playbook/singles" target="_blank"
-                  className="flex-1 text-center py-2 rounded-xl bg-lime-50 border border-lime-400/20 text-lime-700 text-xs font-black hover:bg-lime-100 transition-all">
+                  className="flex-1 text-center py-2 rounded-xl bg-lime-400/10 border border-lime-400/20 text-lime-400 text-xs font-black hover:bg-lime-400/20 transition-all">
                   Singles →
                 </Link>
                 <Link href="/playbook/doubles" target="_blank"
@@ -652,7 +652,7 @@ export default function MatchEntry({ initialData, initialOpponentName, onSave, o
             <SectionHeader title="Who'd you play?" sub="Basic match details" />
 
             <div>
-              <label className="text-xs font-bold text-gray-500 uppercase tracking-widest block mb-2">{isDoubles ? "Opponent 1" : "Opponent"}</label>
+              <label className="text-xs font-bold text-white/50 uppercase tracking-widest block mb-2">{isDoubles ? "Opponent 1" : "Opponent"}</label>
               <input autoFocus type="text" placeholder="e.g. Rafael Nadal"
                 value={opponentName}
                 onChange={e => setOpponentName(e.target.value)}
@@ -666,7 +666,7 @@ export default function MatchEntry({ initialData, initialOpponentName, onSave, o
                     .slice(0, 5)
                     .map(n => (
                       <button key={n} type="button" onMouseDown={() => setOpponentName(n)}
-                        className="px-3 py-1 rounded-full bg-gray-100 border border-gray-200 text-gray-600 text-xs font-semibold hover:bg-white/10 transition-all">
+                        className="px-3 py-1 rounded-full bg-white/[0.07] border border-white/10 text-white/60 text-xs font-semibold hover:bg-white/10 transition-all">
                         {n}
                       </button>
                     ))}
@@ -676,7 +676,7 @@ export default function MatchEntry({ initialData, initialOpponentName, onSave, o
                 <div className="flex flex-wrap gap-1.5 mt-2">
                   {prevOpponents.slice(0, 6).map(n => (
                     <button key={n} type="button" onMouseDown={() => setOpponentName(n)}
-                      className="px-3 py-1 rounded-full bg-gray-100 border border-gray-200 text-gray-600 text-xs font-semibold hover:bg-white/10 transition-all">
+                      className="px-3 py-1 rounded-full bg-white/[0.07] border border-white/10 text-white/60 text-xs font-semibold hover:bg-white/10 transition-all">
                       {n}
                     </button>
                   ))}
@@ -685,18 +685,18 @@ export default function MatchEntry({ initialData, initialOpponentName, onSave, o
             </div>
             {isDoubles && (
               <div>
-                <label className="text-xs font-bold text-gray-500 uppercase tracking-widest block mb-2">Opponent 2</label>
+                <label className="text-xs font-bold text-white/50 uppercase tracking-widest block mb-2">Opponent 2</label>
                 <input type="text" placeholder="e.g. Roger Federer"
                   value={opponent2Name} onChange={e => setOpponent2Name(e.target.value)} className={inputCls} />
               </div>
             )}
 
             <div>
-              <label className="text-xs font-bold text-gray-500 uppercase tracking-widest block mb-3">Surface</label>
+              <label className="text-xs font-bold text-white/50 uppercase tracking-widest block mb-3">Surface</label>
               <div className="grid grid-cols-3 gap-2">
                 {SURFACES.map(s => (
                   <button key={s.value} type="button" onClick={() => setSurface(s.value)}
-                    className={`flex flex-col items-center gap-1.5 p-4 rounded-2xl border text-sm font-bold transition-all active:scale-95 ${surface === s.value ? s.color + " shadow-lg" : "border-gray-200 text-gray-500 bg-gray-50 hover:border-gray-200 hover:text-gray-600"}`}>
+                    className={`flex flex-col items-center gap-1.5 p-4 rounded-2xl border text-sm font-bold transition-all active:scale-95 ${surface === s.value ? s.color + " shadow-lg" : "border-white/10 text-white/50 bg-white/[0.04] hover:border-white/20 hover:text-white/60"}`}>
                     <span className="text-2xl">{s.emoji}</span>{s.label}
                   </button>
                 ))}
@@ -704,11 +704,11 @@ export default function MatchEntry({ initialData, initialOpponentName, onSave, o
             </div>
 
             <div>
-              <label className="text-xs font-bold text-gray-500 uppercase tracking-widest block mb-3">Format</label>
+              <label className="text-xs font-bold text-white/50 uppercase tracking-widest block mb-3">Format</label>
               <div className="grid grid-cols-2 gap-2">
                 {(["singles", "doubles"] as MatchType[]).map(t => (
                   <button key={t} type="button" onClick={() => setMatchType(t)}
-                    className={`py-3.5 rounded-2xl border text-sm font-bold capitalize transition-all active:scale-95 ${matchType === t ? "bg-lime-50 border-lime-400/50 text-lime-700" : "border-gray-200 text-gray-500 bg-gray-50 hover:border-gray-200 hover:text-gray-600"}`}>
+                    className={`py-3.5 rounded-2xl border text-sm font-bold capitalize transition-all active:scale-95 ${matchType === t ? "bg-lime-400/10 border-lime-400/50 text-lime-400" : "border-white/10 text-white/50 bg-white/[0.04] hover:border-white/20 hover:text-white/60"}`}>
                     {t}
                   </button>
                 ))}
@@ -727,7 +727,7 @@ export default function MatchEntry({ initialData, initialOpponentName, onSave, o
               ))}
             </div>
             {setsPlayed(score) > 0 && (
-              <div className={`rounded-2xl p-4 text-center border ${isWin ? "bg-lime-50 border-lime-400/30 text-lime-700" : "bg-red-50 border-red-500/30 text-red-600"}`}>
+              <div className={`rounded-2xl p-4 text-center border ${isWin ? "bg-lime-400/10 border-lime-400/30 text-lime-400" : "bg-red-50 border-red-500/30 text-red-600"}`}>
                 <div className="text-3xl font-black mb-0.5">{isWin ? "WIN" : "LOSS"}</div>
                 <div className="text-sm opacity-60">{scoreLabel(score)}</div>
               </div>
@@ -740,10 +740,10 @@ export default function MatchEntry({ initialData, initialOpponentName, onSave, o
           <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
             <SectionHeader title="Build your dossier" sub="Strategic intel for the rematch" />
             {isDoubles && (
-              <div className="flex gap-2 p-1 rounded-2xl bg-gray-50 border border-gray-200">
+              <div className="flex gap-2 p-1 rounded-2xl bg-white/[0.04] border border-white/10">
                 {([1, 2] as const).map(tab => (
                   <button key={tab} type="button" onClick={() => setScoutTab(tab)}
-                    className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all ${scoutTab === tab ? "bg-lime-400 text-black shadow" : "text-gray-500 hover:text-gray-700"}`}>
+                    className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all ${scoutTab === tab ? "bg-lime-400 text-black shadow" : "text-white/50 hover:text-white/70"}`}>
                     {tab === 1 ? opponentName || "Opponent 1" : opponent2Name || "Opponent 2"}
                   </button>
                 ))}
@@ -767,26 +767,26 @@ export default function MatchEntry({ initialData, initialOpponentName, onSave, o
               <RatingPicker label="Focus"             value={reflFocus}   onChange={setReflFocus} />
               <RatingPicker label="Emotional Control" value={reflEmoCtrl} onChange={setReflEmoCtrl} />
               <RatingPicker label="Confidence"        value={reflConf}    onChange={setReflConf} />
-              <div className="h-px bg-gray-100" />
+              <div className="h-px bg-white/[0.07]" />
               <RatingPicker label="Execution Score"   value={reflExec}    onChange={setReflExec} />
             </div>
 
             <div className="space-y-3">
-              <label className="text-xs font-bold text-gray-500 uppercase tracking-widest">Did you stick to your game plan?</label>
+              <label className="text-xs font-bold text-white/50 uppercase tracking-widest">Did you stick to your game plan?</label>
               <div className="grid grid-cols-2 gap-2">
                 <button type="button" onClick={() => setReflStuck(true)}
-                  className={`py-3.5 rounded-2xl border text-sm font-bold transition-all active:scale-95 ${reflStuck === true ? "bg-lime-50 border-lime-400/40 text-lime-700" : "border-gray-200 text-gray-500 bg-gray-50 hover:border-gray-200"}`}>
+                  className={`py-3.5 rounded-2xl border text-sm font-bold transition-all active:scale-95 ${reflStuck === true ? "bg-lime-400/10 border-lime-400/40 text-lime-400" : "border-white/10 text-white/50 bg-white/[0.04] hover:border-white/20"}`}>
                   Yes ✓
                 </button>
                 <button type="button" onClick={() => setReflStuck(false)}
-                  className={`py-3.5 rounded-2xl border text-sm font-bold transition-all active:scale-95 ${reflStuck === false ? "bg-red-50 border-red-500/40 text-red-600" : "border-gray-200 text-gray-500 bg-gray-50 hover:border-gray-200"}`}>
+                  className={`py-3.5 rounded-2xl border text-sm font-bold transition-all active:scale-95 ${reflStuck === false ? "bg-red-50 border-red-500/40 text-red-600" : "border-white/10 text-white/50 bg-white/[0.04] hover:border-white/20"}`}>
                   Not quite
                 </button>
               </div>
             </div>
 
             <div className="space-y-2">
-              <label className="text-xs font-bold text-gray-500 uppercase tracking-widest">Post-Match Notes</label>
+              <label className="text-xs font-bold text-white/50 uppercase tracking-widest">Post-Match Notes</label>
               <textarea rows={3} placeholder="What worked? What would you change? Key takeaways…"
                 value={reflNotes} onChange={e => setReflNotes(e.target.value)} className={taCls} />
             </div>
@@ -801,42 +801,42 @@ export default function MatchEntry({ initialData, initialOpponentName, onSave, o
             <div className={`rounded-3xl p-5 border ${isWin ? "bg-gradient-to-br from-lime-400/15 to-lime-400/5 border-lime-400/30" : "bg-gradient-to-br from-red-500/15 to-red-500/5 border-red-500/30"}`}>
               <div className="flex items-center justify-between">
                 <div>
-                  <div className={`text-xs font-black tracking-[0.2em] uppercase mb-1 ${isWin ? "text-lime-700" : "text-red-600"}`}>
+                  <div className={`text-xs font-black tracking-[0.2em] uppercase mb-1 ${isWin ? "text-lime-400" : "text-red-600"}`}>
                     {isWin ? "Victory" : "Defeat"}
                   </div>
-                  <div className="text-2xl font-black text-gray-900">
+                  <div className="text-2xl font-black text-white">
                     {isDoubles ? `${opponentName} & ${opponent2Name}` : opponentName}
                   </div>
-                  <div className="text-gray-500 text-sm mt-0.5">
+                  <div className="text-white/50 text-sm mt-0.5">
                     {scoreLabel(score)} · {SURFACES.find(s => s.value === surface)?.emoji} {surface?.charAt(0).toUpperCase()}{surface?.slice(1)} · {matchType}
                   </div>
                 </div>
-                <div className={`text-5xl font-black ${isWin ? "text-lime-700" : "text-red-600"}`}>{isWin ? "W" : "L"}</div>
+                <div className={`text-5xl font-black ${isWin ? "text-lime-400" : "text-red-600"}`}>{isWin ? "W" : "L"}</div>
               </div>
             </div>
 
             {/* Plan summary */}
             {(planStrategy || planWeakness || planFocusWord || planConfidence !== null) && (
-              <div className="rounded-2xl border border-gray-200 bg-gray-50 p-4 space-y-2">
-                <p className="text-xs font-black tracking-widest uppercase text-gray-400">Game Plan</p>
-                {planStrategy   && <div><span className="text-xs text-gray-400">🎯 Strategy — </span><span className="text-sm text-gray-800">{planStrategy}</span></div>}
-                {planWeakness   && <div><span className="text-xs text-gray-400">⚠️ Target — </span><span className="text-sm text-gray-800">{planWeakness}</span></div>}
-                {planFocusWord  && <div><span className="text-xs text-gray-400">💬 Focus — </span><span className="text-sm text-gray-900 font-bold">{planFocusWord}</span></div>}
-                {planConfidence !== null && <div><span className="text-xs text-gray-400">💪 Confidence — </span><span className="text-sm text-gray-800">{planConfidence}/10</span></div>}
+              <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4 space-y-2">
+                <p className="text-xs font-black tracking-widest uppercase text-white/40">Game Plan</p>
+                {planStrategy   && <div><span className="text-xs text-white/40">🎯 Strategy — </span><span className="text-sm text-white/90">{planStrategy}</span></div>}
+                {planWeakness   && <div><span className="text-xs text-white/40">⚠️ Target — </span><span className="text-sm text-white/90">{planWeakness}</span></div>}
+                {planFocusWord  && <div><span className="text-xs text-white/40">💬 Focus — </span><span className="text-sm text-white font-bold">{planFocusWord}</span></div>}
+                {planConfidence !== null && <div><span className="text-xs text-white/40">💪 Confidence — </span><span className="text-sm text-white/90">{planConfidence}/10</span></div>}
               </div>
             )}
 
             {/* Reflection summary */}
             {(reflEnergy !== null || reflExec !== null) && (
-              <div className="rounded-2xl border border-gray-200 bg-gray-50 p-4 space-y-2">
-                <p className="text-xs font-black tracking-widest uppercase text-gray-400">Reflection</p>
+              <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4 space-y-2">
+                <p className="text-xs font-black tracking-widest uppercase text-white/40">Reflection</p>
                 <div className="grid grid-cols-3 gap-2">
-                  {reflEnergy  !== null && <div className="text-center"><p className="text-xs text-gray-400">Energy</p><p className="text-lg font-black text-gray-900">{reflEnergy}</p></div>}
-                  {reflFocus   !== null && <div className="text-center"><p className="text-xs text-gray-400">Focus</p><p className="text-lg font-black text-gray-900">{reflFocus}</p></div>}
-                  {reflEmoCtrl !== null && <div className="text-center"><p className="text-xs text-gray-400">Emotion</p><p className="text-lg font-black text-gray-900">{reflEmoCtrl}</p></div>}
-                  {reflConf    !== null && <div className="text-center"><p className="text-xs text-gray-400">Conf.</p><p className="text-lg font-black text-gray-900">{reflConf}</p></div>}
-                  {reflExec    !== null && <div className="text-center"><p className="text-xs text-gray-400">Execution</p><p className="text-lg font-black text-gray-900">{reflExec}</p></div>}
-                  {reflStuck   !== null && <div className="text-center"><p className="text-xs text-gray-400">Stuck to Plan</p><p className={`text-sm font-black ${reflStuck ? "text-lime-700" : "text-red-600"}`}>{reflStuck ? "Yes" : "No"}</p></div>}
+                  {reflEnergy  !== null && <div className="text-center"><p className="text-xs text-white/40">Energy</p><p className="text-lg font-black text-white">{reflEnergy}</p></div>}
+                  {reflFocus   !== null && <div className="text-center"><p className="text-xs text-white/40">Focus</p><p className="text-lg font-black text-white">{reflFocus}</p></div>}
+                  {reflEmoCtrl !== null && <div className="text-center"><p className="text-xs text-white/40">Emotion</p><p className="text-lg font-black text-white">{reflEmoCtrl}</p></div>}
+                  {reflConf    !== null && <div className="text-center"><p className="text-xs text-white/40">Conf.</p><p className="text-lg font-black text-white">{reflConf}</p></div>}
+                  {reflExec    !== null && <div className="text-center"><p className="text-xs text-white/40">Execution</p><p className="text-lg font-black text-white">{reflExec}</p></div>}
+                  {reflStuck   !== null && <div className="text-center"><p className="text-xs text-white/40">Stuck to Plan</p><p className={`text-sm font-black ${reflStuck ? "text-lime-400" : "text-red-600"}`}>{reflStuck ? "Yes" : "No"}</p></div>}
                 </div>
               </div>
             )}
@@ -852,11 +852,11 @@ export default function MatchEntry({ initialData, initialOpponentName, onSave, o
       </div>
 
       {/* Footer */}
-      <div className="sticky bottom-0 bg-white/95 backdrop-blur-xl border-t border-gray-200 px-5 py-4">
+      <div className="sticky bottom-0 bg-white/95 backdrop-blur-xl border-t border-white/10 px-5 py-4">
         <div className="flex gap-3">
           {stepIndex > 0 && (
             <button type="button" onClick={() => setStep(STEPS[stepIndex - 1])}
-              className="flex-1 py-4 rounded-2xl border border-gray-200 text-gray-600 font-bold text-sm transition-all active:scale-95 hover:border-gray-200 hover:text-gray-800">
+              className="flex-1 py-4 rounded-2xl border border-white/10 text-white/60 font-bold text-sm transition-all active:scale-95 hover:border-white/20 hover:text-white/90">
               Back
             </button>
           )}
@@ -867,7 +867,7 @@ export default function MatchEntry({ initialData, initialOpponentName, onSave, o
             </button>
           ) : (
             <button type="button" onClick={handleSave}
-              className={`flex-[2] py-4 rounded-2xl font-black text-sm transition-all active:scale-95 shadow-lg ${isWin ? "bg-lime-400 text-black hover:bg-lime-300 shadow-lime-400/20" : "bg-red-500 text-gray-900 hover:bg-red-400 shadow-red-500/20"}`}>
+              className={`flex-[2] py-4 rounded-2xl font-black text-sm transition-all active:scale-95 shadow-lg ${isWin ? "bg-lime-400 text-black hover:bg-lime-300 shadow-lime-400/20" : "bg-red-500 text-white hover:bg-red-400 shadow-red-500/20"}`}>
               {isEditing ? (isWin ? "Update Win 🏆" : "Update Match") : (isWin ? "Save Win 🏆" : "Save Match")}
             </button>
           )}

@@ -525,7 +525,7 @@ export default function TeamPage() {
             <button
               onClick={leaveTeam}
               disabled={leaveBusy}
-              className="text-xs font-bold text-gray-400 hover:text-red-600/70 transition-colors disabled:opacity-40"
+              className="text-xs font-bold text-red-500 hover:text-red-600 transition-colors disabled:opacity-40"
             >
               Leave
             </button>
@@ -661,7 +661,7 @@ export default function TeamPage() {
                         {(p.user_id === userId || isAdmin) && (
                           <button
                             onClick={() => deletePost(p.id)}
-                            className="text-gray-300 hover:text-red-600/60 transition-colors text-sm leading-none"
+                            className="text-red-500 hover:text-red-600 transition-colors text-sm leading-none"
                             title="Delete post"
                           >
                             ×
@@ -685,7 +685,7 @@ export default function TeamPage() {
                               {(r.user_id === userId || isAdmin) && (
                                 <button
                                   onClick={() => deleteReply(r.id)}
-                                  className="text-gray-300 hover:text-red-600/60 transition-colors text-xs leading-none ml-auto"
+                                  className="text-red-500 hover:text-red-600 transition-colors text-xs leading-none ml-auto"
                                   title="Delete reply"
                                 >
                                   ×
@@ -791,7 +791,7 @@ export default function TeamPage() {
                             <button
                               onClick={() => respondChallenge(c.id, false)}
                               disabled={challengeBusy.has(c.id)}
-                              className="text-xs font-bold text-gray-400 hover:text-red-600/70 transition-colors disabled:opacity-40"
+                              className="text-xs font-bold text-red-500 hover:text-red-600 transition-colors disabled:opacity-40"
                               title="Cancel challenge"
                             >
                               ×
@@ -953,7 +953,7 @@ export default function TeamPage() {
                                   </button>
                                 )}
                                 <button onClick={() => kickMember(m.userId)} disabled={manageBusy.has(m.userId)}
-                                  className="text-[10px] font-bold text-gray-400 hover:text-red-600/70 transition-colors disabled:opacity-40"
+                                  className="text-[10px] font-bold text-red-500 hover:text-red-600 transition-colors disabled:opacity-40"
                                   title="Remove from team">
                                   ×
                                 </button>

@@ -106,7 +106,7 @@ export default function BottomNav({ active }: { active: Tab }) {
               <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
             </svg>
             {notifCount > 0 && (
-              <span className="absolute -top-1.5 -right-2 min-w-[16px] h-4 bg-red-500 rounded-full text-[9px] font-black text-gray-900 flex items-center justify-center px-0.5 leading-none">
+              <span className="absolute -top-1.5 -right-2 min-w-[16px] h-4 bg-red-500 rounded-full text-[9px] font-black text-white flex items-center justify-center px-0.5 leading-none">
                 {notifCount > 9 ? "9+" : notifCount}
               </span>
             )}

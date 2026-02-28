@@ -479,7 +479,7 @@ export default function GroupPage() {
           <button
             onClick={leaveOrDelete}
             disabled={leaveBusy}
-            className={`text-xs font-bold mt-1 transition-colors disabled:opacity-40 ${isCreator ? "text-red-600/50 hover:text-red-600/80" : "text-gray-400 hover:text-red-600/70"}`}
+            className={`text-xs font-bold mt-1 transition-colors disabled:opacity-40 ${isCreator ? "text-red-500 hover:text-red-600" : "text-red-500 hover:text-red-600"}`}
           >
             {isCreator ? "Delete" : "Leave"}
           </button>
@@ -622,7 +622,7 @@ export default function GroupPage() {
                       {p.userId === userId && (
                         <button
                           onClick={() => deletePost(p.id)}
-                          className="text-gray-300 hover:text-red-600/60 transition-colors flex-shrink-0 text-sm leading-none mt-0.5"
+                          className="text-red-500 hover:text-red-600 transition-colors flex-shrink-0 text-sm leading-none mt-0.5"
                         >
                           ×
                         </button>
@@ -643,7 +643,7 @@ export default function GroupPage() {
                                 {(r.userId === userId || isCreator) && (
                                   <button
                                     onClick={() => deleteReply(r.id)}
-                                    className="text-gray-300 hover:text-red-600/60 transition-colors text-xs leading-none ml-auto"
+                                    className="text-red-500 hover:text-red-600 transition-colors text-xs leading-none ml-auto"
                                     title="Delete reply"
                                   >
                                     ×
@@ -756,7 +756,7 @@ export default function GroupPage() {
                             </Link>
                             <button
                               onClick={() => respondChallenge(c.id, false)}
-                              className="text-xs font-bold text-gray-400 hover:text-red-600/70 transition-colors"
+                              className="text-xs font-bold text-red-500 hover:text-red-600 transition-colors"
                               title="Cancel challenge"
                             >
                               ×
@@ -916,7 +916,7 @@ export default function GroupPage() {
                                   </button>
                                 )}
                                 <button onClick={() => kickGroupMember(m.userId)} disabled={manageBusy.has(m.userId)}
-                                  className="text-[10px] font-bold text-gray-400 hover:text-red-600/70 transition-colors disabled:opacity-40"
+                                  className="text-[10px] font-bold text-red-500 hover:text-red-600 transition-colors disabled:opacity-40"
                                   title="Remove from group">
                                   ×
                                 </button>

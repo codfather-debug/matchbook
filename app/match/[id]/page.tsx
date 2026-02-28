@@ -481,7 +481,7 @@ export default function MatchDetailPage() {
           ) : (
             <button
               onClick={() => setConfirmDelete(true)}
-              className="w-full py-3 rounded-2xl border border-gray-200 text-gray-300 text-sm font-semibold hover:border-red-500/30 hover:text-red-600/60 transition-all active:scale-95"
+              className="w-full py-3 rounded-2xl border border-red-200 text-red-500 text-sm font-semibold hover:bg-red-50 hover:border-red-400 hover:text-red-600 transition-all active:scale-95"
             >
               Delete Match
             </button>
