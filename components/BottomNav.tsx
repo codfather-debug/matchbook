@@ -3,7 +3,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 
-type Tab = "log" | "dashboard" | "playbook" | "friends" | "profile";
+type Tab = "log" | "history" | "dashboard" | "playbook" | "friends" | "profile";
 
 export default function BottomNav({ active }: { active: Tab }) {
   const [notifCount, setNotifCount] = useState(0);
@@ -18,12 +18,18 @@ export default function BottomNav({ active }: { active: Tab }) {
           // Pending friend requests sent to me
           supabase.from("friendships").select("id", { count: "exact", head: true })
             .eq("addressee_id", user.id).eq("status", "pending"),
-          // Pending team challenges where I'm the opponent
+          // Pending team challenges (I'm the opponent)
           supabase.from("challenges").select("id", { count: "exact", head: true })
             .eq("opponent_id", user.id).eq("status", "pending"),
-          // Pending group challenges where I'm the opponent
+          // Pending group challenges (I'm the opponent)
           supabase.from("group_challenges").select("id", { count: "exact", head: true })
             .eq("opponent_id", user.id).eq("status", "pending"),
+          // Score confirmations needed from me — team
+          supabase.from("challenges").select("id", { count: "exact", head: true })
+            .eq("opponent_id", user.id).eq("status", "pending_confirmation"),
+          // Score confirmations needed from me — group
+          supabase.from("group_challenges").select("id", { count: "exact", head: true })
+            .eq("opponent_id", user.id).eq("status", "pending_confirmation"),
         ]);
 
         const total = results.reduce((sum, r) => {
@@ -44,7 +50,25 @@ export default function BottomNav({ active }: { active: Tab }) {
   const off  = "text-white/30 hover:text-white/60";
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-[#0c0c0e]/90 backdrop-blur-2xl border-t border-white/[0.05] pb-safe shadow-[0_-12px_50px_rgba(0,0,0,0.85)]">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-[#1e1e2a]/90 backdrop-blur-2xl border-t border-white/[0.06] pb-safe shadow-[0_-12px_50px_rgba(0,0,0,0.7)]">
+
+      {/* Floating profile button — top-right of nav */}
+      <div className="absolute -top-5 right-4 z-10">
+        <Link
+          href="/player-profile"
+          className={`w-9 h-9 rounded-full flex items-center justify-center border transition-all active:scale-90 shadow-lg
+            ${active === "profile"
+              ? "bg-lime-400 border-lime-400 text-black shadow-[0_0_16px_rgba(163,230,53,0.4)]"
+              : "bg-[#1e1e2a] border-white/20 text-white/40 hover:text-white/80 hover:border-white/40"
+            }`}
+        >
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="8" r="4"/>
+            <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+          </svg>
+        </Link>
+      </div>
+
       <div className="max-w-sm mx-auto flex items-center justify-around h-16 px-1">
 
         {/* Log */}
@@ -58,13 +82,14 @@ export default function BottomNav({ active }: { active: Tab }) {
           Log
         </Link>
 
-        {/* Playbook */}
-        <Link href="/playbook" className={`${base} ${active === "playbook" ? on : off} flex-1 py-2`}>
+        {/* History */}
+        <Link href="/history" className={`${base} flex-1 py-2 ${active === "history" ? on : off}`}>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M4 19.5A2.5 2.5 0 016.5 17H20"/>
-            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/>
+            <polyline points="12 8 12 12 14 14"/>
+            <path d="M3.05 11a9 9 0 1 0 .5-4.5"/>
+            <polyline points="3 3 3 8 8 8"/>
           </svg>
-          Playbook
+          History
         </Link>
 
         {/* Dashboard — center accent */}
@@ -80,7 +105,16 @@ export default function BottomNav({ active }: { active: Tab }) {
           <span className="text-[9px] font-bold text-lime-400 mt-0.5">Dashboard</span>
         </Link>
 
-        {/* Friends — with notification badge (friend requests + challenges) */}
+        {/* Playbook */}
+        <Link href="/playbook" className={`${base} ${active === "playbook" ? on : off} flex-1 py-2`}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M4 19.5A2.5 2.5 0 016.5 17H20"/>
+            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/>
+          </svg>
+          Playbook
+        </Link>
+
+        {/* Friends — with notification badge */}
         <Link href="/friends" className={`${base} ${active === "friends" ? on : off} flex-1 py-2`}>
           <div className="relative">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -96,15 +130,6 @@ export default function BottomNav({ active }: { active: Tab }) {
             )}
           </div>
           Friends
-        </Link>
-
-        {/* Profile */}
-        <Link href="/player-profile" className={`${base} ${active === "profile" ? on : off} flex-1 py-2`}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="12" cy="8" r="4"/>
-            <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
-          </svg>
-          Profile
         </Link>
 
       </div>

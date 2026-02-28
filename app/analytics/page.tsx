@@ -95,7 +95,7 @@ export default function AnalyticsPage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-[#0c0c0e] flex items-center justify-center">
+      <main className="min-h-screen bg-[#1e1e2a] flex items-center justify-center">
         <p className="text-white/30 text-sm">Loading…</p>
       </main>
     );
@@ -119,7 +119,7 @@ export default function AnalyticsPage() {
   const execSeries   = getExecutionSeries(filtered);
 
   return (
-    <main className="min-h-screen bg-[#0c0c0e] max-w-sm mx-auto pb-24">
+    <main className="min-h-screen bg-[#1e1e2a] max-w-sm mx-auto pb-24">
       {/* Header */}
       <div className="px-5 pt-5 pb-4 border-b border-white/[0.06]">
         <p className="text-white/30 text-xs font-bold tracking-widest uppercase mb-0.5">Matchbook</p>

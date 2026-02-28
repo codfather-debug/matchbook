@@ -587,9 +587,9 @@ export default function MatchEntry({ initialData, initialOpponentName, onSave, o
   const taCls    = "w-full bg-white/5 border border-white/10 rounded-2xl p-3 text-white text-sm placeholder:text-white/25 outline-none focus:ring-2 focus:ring-lime-400/50 focus:border-lime-400/30 resize-none transition-all";
 
   return (
-    <div className="min-h-screen bg-[#0c0c0e] flex flex-col">
+    <div className="min-h-screen bg-[#1e1e2a] flex flex-col">
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-[#0c0c0e]/90 backdrop-blur-xl border-b border-white/[0.06] px-5">
+      <div className="sticky top-0 z-10 bg-[#1e1e2a]/90 backdrop-blur-xl border-b border-white/[0.06] px-5">
         <div className="flex items-center justify-between h-14">
           <button onClick={onCancel} className="text-white/40 text-sm font-medium hover:text-white/80 transition-colors">Cancel</button>
           <span className="text-xs font-bold tracking-[0.2em] uppercase text-white/30">{isEditing ? "Edit Match" : "Log Match"}</span>
@@ -852,7 +852,7 @@ export default function MatchEntry({ initialData, initialOpponentName, onSave, o
       </div>
 
       {/* Footer */}
-      <div className="sticky bottom-0 bg-[#0c0c0e]/95 backdrop-blur-xl border-t border-white/[0.06] px-5 py-4">
+      <div className="sticky bottom-0 bg-[#1e1e2a]/95 backdrop-blur-xl border-t border-white/[0.06] px-5 py-4">
         <div className="flex gap-3">
           {stepIndex > 0 && (
             <button type="button" onClick={() => setStep(STEPS[stepIndex - 1])}

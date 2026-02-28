@@ -38,7 +38,7 @@ export default function AuthPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#0c0c0e] flex flex-col items-center justify-center px-5">
+    <main className="min-h-screen bg-[#1e1e2a] flex flex-col items-center justify-center px-5">
       <div className="w-full max-w-sm space-y-8">
 
         {/* Logo */}

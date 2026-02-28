@@ -171,7 +171,7 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-[#0c0c0e] flex items-center justify-center">
+      <main className="min-h-screen bg-[#1e1e2a] flex items-center justify-center">
         <p className="text-white/30 text-sm">Loading…</p>
       </main>
     );
@@ -239,7 +239,7 @@ export default function DashboardPage() {
           </div>
         </div>
       )}
-    <main className="min-h-screen bg-[#0c0c0e] max-w-sm mx-auto pb-24 relative z-10">
+    <main className="min-h-screen bg-[#1e1e2a] max-w-sm mx-auto pb-24 relative z-10">
 
       <div className="px-5 py-5 space-y-5">
 

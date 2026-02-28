@@ -56,7 +56,7 @@ export default function Onboarding({ onDismiss }: OnboardingProps) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 bg-[#0c0c0e]/95 backdrop-blur-xl flex flex-col items-center justify-center px-6">
+    <div className="fixed inset-0 z-50 bg-[#1e1e2a]/95 backdrop-blur-xl flex flex-col items-center justify-center px-6">
       {/* Skip */}
       <button
         onClick={onDismiss}

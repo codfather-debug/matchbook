@@ -203,10 +203,10 @@ function PillarCard({ p }: { p: typeof PILLARS[0] }) {
 
 export default function MentalPlaybookPage() {
   return (
-    <main className="min-h-screen bg-[#0c0c0e] max-w-sm mx-auto pb-10">
+    <main className="min-h-screen bg-[#1e1e2a] max-w-sm mx-auto pb-10">
 
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-[#0c0c0e]/90 backdrop-blur-xl border-b border-white/[0.06] px-5">
+      <div className="sticky top-0 z-10 bg-[#1e1e2a]/90 backdrop-blur-xl border-b border-white/[0.06] px-5">
         <div className="flex items-center justify-between h-14">
           <Link href="/playbook" className="text-white/40 text-sm font-medium hover:text-white/80 transition-colors">← Playbook</Link>
           <span className="text-xs font-black tracking-[0.2em] uppercase text-white/30">Mental</span>

@@ -162,7 +162,7 @@ export default function MatchDetailPage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-[#0c0c0e] flex items-center justify-center">
+      <main className="min-h-screen bg-[#1e1e2a] flex items-center justify-center">
         <p className="text-white/30 text-sm">Loading…</p>
       </main>
     );
@@ -170,7 +170,7 @@ export default function MatchDetailPage() {
 
   if (!match) {
     return (
-      <main className="min-h-screen bg-[#0c0c0e] flex flex-col items-center justify-center gap-4">
+      <main className="min-h-screen bg-[#1e1e2a] flex flex-col items-center justify-center gap-4">
         <p className="text-white/50">Match not found.</p>
         <Link href="/" className="text-lime-400 text-sm font-semibold">← Back to feed</Link>
       </main>
@@ -188,9 +188,9 @@ export default function MatchDetailPage() {
   );
 
   return (
-    <main className="min-h-screen bg-[#0c0c0e] max-w-sm mx-auto pb-10">
+    <main className="min-h-screen bg-[#1e1e2a] max-w-sm mx-auto pb-10">
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-[#0c0c0e]/90 backdrop-blur-xl border-b border-white/[0.06] px-5">
+      <div className="sticky top-0 z-10 bg-[#1e1e2a]/90 backdrop-blur-xl border-b border-white/[0.06] px-5">
         <div className="flex items-center justify-between h-14">
           <Link
             href="/"

@@ -93,7 +93,7 @@ export default function FriendProfilePage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-[#0c0c0e] flex items-center justify-center">
+      <main className="min-h-screen bg-[#1e1e2a] flex items-center justify-center">
         <div className="space-y-3 text-center">
           <div className="w-12 h-12 rounded-full border-2 border-white/10 border-t-lime-400 animate-spin mx-auto" />
           <p className="text-white/20 text-xs">Loading profile…</p>
@@ -104,7 +104,7 @@ export default function FriendProfilePage() {
 
   if (error) {
     return (
-      <main className="min-h-screen bg-[#0c0c0e] flex flex-col items-center justify-center gap-4">
+      <main className="min-h-screen bg-[#1e1e2a] flex flex-col items-center justify-center gap-4">
         <p className="text-white/50">{error}</p>
         <Link href="/friends" className="text-lime-400 text-sm font-semibold">← Back to friends</Link>
       </main>
@@ -115,8 +115,8 @@ export default function FriendProfilePage() {
 
   if (!isFriend) {
     return (
-      <main className="min-h-screen bg-[#0c0c0e] max-w-sm mx-auto flex flex-col">
-        <div className="sticky top-0 z-10 bg-[#0c0c0e]/80 backdrop-blur-xl border-b border-white/[0.06] px-5">
+      <main className="min-h-screen bg-[#1e1e2a] max-w-sm mx-auto flex flex-col">
+        <div className="sticky top-0 z-10 bg-[#1e1e2a]/80 backdrop-blur-xl border-b border-white/[0.06] px-5">
           <div className="flex items-center h-14">
             <Link href="/friends" className="text-white/40 text-sm font-medium hover:text-white/80 transition-colors">← Back</Link>
           </div>
@@ -168,7 +168,7 @@ export default function FriendProfilePage() {
     : "rgba(248,113,113,0.10)";
 
   return (
-    <main className="min-h-screen bg-[#0c0c0e] max-w-sm mx-auto pb-10">
+    <main className="min-h-screen bg-[#1e1e2a] max-w-sm mx-auto pb-10">
 
       {/* Back nav — floats over hero */}
       <div className="sticky top-0 z-20 px-5">

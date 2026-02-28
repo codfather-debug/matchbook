@@ -63,7 +63,7 @@ const BOOKS = [
 
 export default function PlaybookIndexPage() {
   return (
-    <main className="min-h-screen bg-[#0c0c0e] max-w-sm mx-auto pb-24">
+    <main className="min-h-screen bg-[#1e1e2a] max-w-sm mx-auto pb-24">
       {/* Header */}
       <div className="px-5 pt-5 pb-4 border-b border-white/[0.06]">
         <p className="text-white/30 text-xs font-bold tracking-widest uppercase">Matchbook</p>
