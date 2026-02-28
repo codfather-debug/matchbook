@@ -42,6 +42,7 @@ export default function PlayerProfilePage() {
   const [discoverable, setDiscoverable] = useState(true);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [profileError, setProfileError] = useState("");
 
   useEffect(() => {
     async function load() {
@@ -86,7 +87,9 @@ export default function PlayerProfilePage() {
     const full = [firstName.trim(), lastName.trim()].filter(Boolean).join(" ");
     if (!full) return;
     setSavingName(true);
-    await supabase.from("profiles").update({ display_name: full }).eq("id", userId);
+    setProfileError("");
+    const { error } = await supabase.from("profiles").update({ display_name: full }).eq("id", userId);
+    if (error) { setProfileError("Failed to save name. Please try again."); setSavingName(false); return; }
     setDisplayName(full);
     setSavingName(false);
   }
@@ -100,20 +103,31 @@ export default function PlayerProfilePage() {
     if (field === "share_stats") setShareStats(value);
     else if (field === "share_history") setShareHistory(value);
     else setDiscoverable(value);
-    await supabase.from("profiles").update({ [field]: value }).eq("id", userId);
+    const { error } = await supabase.from("profiles").update({ [field]: value }).eq("id", userId);
+    if (error) {
+      // Revert optimistic update
+      if (field === "share_stats") setShareStats(!value);
+      else if (field === "share_history") setShareHistory(!value);
+      else setDiscoverable(!value);
+      setProfileError("Failed to update privacy setting. Please try again.");
+    }
   }
 
   async function uploadAvatar(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file || !userId) return;
     setUploadingAvatar(true);
+    setProfileError("");
     const { error } = await supabase.storage
       .from("avatars")
       .upload(userId, file, { upsert: true, contentType: file.type });
-    if (!error) {
+    if (error) {
+      setProfileError("Failed to upload photo. Please try again.");
+    } else {
       const { data: { publicUrl } } = supabase.storage.from("avatars").getPublicUrl(userId);
-      await supabase.from("profiles").update({ avatar_url: publicUrl }).eq("id", userId);
-      setAvatarUrl(publicUrl);
+      const { error: dbError } = await supabase.from("profiles").update({ avatar_url: publicUrl }).eq("id", userId);
+      if (dbError) { setProfileError("Photo uploaded but failed to save. Please try again."); }
+      else { setAvatarUrl(publicUrl); }
     }
     setUploadingAvatar(false);
   }
@@ -347,6 +361,7 @@ export default function PlayerProfilePage() {
           >
             {savingName ? "Saving…" : "Save Name"}
           </button>
+          {profileError && <p className="text-xs text-red-500 text-center">{profileError}</p>}
         </section>
 
         {/* Privacy Settings */}

@@ -42,7 +42,19 @@ export default function EditMatchPage() {
     );
   }
 
-  if (!match) return null;
+  if (!match) {
+    return (
+      <main className="min-h-screen bg-[#111827] flex flex-col items-center justify-center gap-4 p-6">
+        <p className="text-white/60 text-sm">Match not found.</p>
+        <button
+          onClick={() => router.back()}
+          className="text-sm font-bold text-lime-400 underline underline-offset-2"
+        >
+          Go back
+        </button>
+      </main>
+    );
+  }
 
   return (
     <MatchEntry

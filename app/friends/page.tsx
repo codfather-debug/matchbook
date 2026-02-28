@@ -318,6 +318,14 @@ export default function FriendsPage() {
   }, []);
 
   useEffect(() => {
+    const p = new URLSearchParams(window.location.search);
+    const t = p.get("tab");
+    if (t === "friends" || t === "teams" || t === "groups" || t === "challenges") {
+      setActiveTab(t);
+    }
+  }, []);
+
+  useEffect(() => {
     async function init() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { router.push("/auth"); return; }

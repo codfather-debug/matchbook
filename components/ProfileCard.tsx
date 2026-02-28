@@ -14,7 +14,7 @@ interface ProfileData {
   wins: number;
   losses: number;
   winPct: number;
-  recentMatches: { id: string; opponent_name: string; result: string; surface: string }[];
+  recentMatches: { id: string; opponentName: string; result: string; surface: string }[];
 }
 
 export default function ProfileCard({ userId, onClose }: Props) {
@@ -25,13 +25,14 @@ export default function ProfileCard({ userId, onClose }: Props) {
       const [{ data: profile }, { data: matches }] = await Promise.all([
         supabase.from("profiles").select("display_name, username, avatar_url").eq("id", userId).single(),
         supabase.from("matches")
-          .select("id, opponent_name, result, surface, created_at")
+          .select("id, created_at, data")
           .eq("user_id", userId)
           .order("created_at", { ascending: false })
           .limit(100),
       ]);
-      const wins = (matches ?? []).filter(m => m.result === "win").length;
-      const losses = (matches ?? []).filter(m => m.result === "loss").length;
+      const rows = (matches ?? []) as { id: string; data: { opponentName?: string; result?: string; surface?: string } }[];
+      const wins = rows.filter(m => m.data?.result === "win").length;
+      const losses = rows.filter(m => m.data?.result === "loss").length;
       const total = wins + losses;
       setData({
         displayName: profile?.display_name,
@@ -40,7 +41,12 @@ export default function ProfileCard({ userId, onClose }: Props) {
         wins,
         losses,
         winPct: total > 0 ? Math.round((wins / total) * 100) : 0,
-        recentMatches: (matches ?? []).slice(0, 5),
+        recentMatches: rows.slice(0, 5).map(m => ({
+          id: m.id,
+          opponentName: m.data?.opponentName ?? "Unknown",
+          result: m.data?.result ?? "",
+          surface: m.data?.surface ?? "",
+        })),
       });
     }
     load();
@@ -109,7 +115,7 @@ export default function ProfileCard({ userId, onClose }: Props) {
                       key={m.id}
                       className="flex items-center justify-between bg-gray-50 border border-gray-100 rounded-xl px-3 py-2"
                     >
-                      <p className="text-sm text-gray-700 truncate">vs {m.opponent_name}</p>
+                      <p className="text-sm text-gray-700 truncate">vs {m.opponentName}</p>
                       <div className="flex items-center gap-2 flex-shrink-0">
                         <span className="text-[10px] text-gray-400 capitalize">{m.surface}</span>
                         <span className={`text-xs font-black px-1.5 py-0.5 rounded-lg ${

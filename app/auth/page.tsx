@@ -13,10 +13,12 @@ export default function AuthPage() {
   const router = useRouter();
 
   async function handleGoogle() {
-    await supabase.auth.signInWithOAuth({
+    setError("");
+    const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: { redirectTo: `${window.location.origin}/auth/callback` },
     });
+    if (error) setError("Google sign-in failed. Please try again.");
   }
 
   async function handleSubmit() {

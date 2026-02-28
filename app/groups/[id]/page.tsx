@@ -100,6 +100,8 @@ export default function GroupPage() {
   const [challenges, setChallenges] = useState<GroupChallenge[]>([]);
   const [postContent, setPostContent] = useState("");
   const [postBusy, setPostBusy] = useState(false);
+  const [postError, setPostError] = useState("");
+  const [challengeBusy, setChallengeBusy] = useState<Set<string>>(new Set());
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [replyText, setReplyText] = useState("");
   const [profileUserId, setProfileUserId] = useState<string | null>(null);
@@ -342,10 +344,13 @@ export default function GroupPage() {
 
   async function submitPost() {
     if (!postContent.trim()) return;
+    if (postContent.trim().length > 500) { setPostError("Posts must be 500 characters or fewer."); return; }
+    setPostError("");
     setPostBusy(true);
-    await supabase.from("group_posts").insert({
+    const { error } = await supabase.from("group_posts").insert({
       group_id: groupId, user_id: userId, content: postContent.trim(),
     });
+    if (error) { setPostError("Failed to post. Please try again."); setPostBusy(false); return; }
     setPostContent("");
     await loadPosts();
     setPostBusy(false);
@@ -410,10 +415,13 @@ export default function GroupPage() {
 
   async function submitReply(postId: string) {
     if (!replyText.trim()) return;
+    if (replyText.trim().length > 500) { setPostError("Replies must be 500 characters or fewer."); return; }
+    setPostError("");
     setPostBusy(true);
-    await supabase.from("group_posts").insert({
+    const { error } = await supabase.from("group_posts").insert({
       group_id: groupId, user_id: userId, content: replyText.trim(), reply_to_id: postId,
     });
+    if (error) { setPostError("Failed to post reply. Please try again."); setPostBusy(false); return; }
     setReplyText("");
     setReplyingTo(null);
     await loadPosts();
@@ -441,12 +449,15 @@ export default function GroupPage() {
   }
 
   async function respondChallenge(challengeId: string, accept: boolean) {
+    if (challengeBusy.has(challengeId)) return;
+    setChallengeBusy(s => { const n = new Set(s); n.add(challengeId); return n; });
     if (accept) {
       await supabase.from("group_challenges").update({ status: "accepted" }).eq("id", challengeId);
     } else {
       await supabase.from("group_challenges").delete().eq("id", challengeId);
     }
     await loadChallenges(userId);
+    setChallengeBusy(s => { const n = new Set(s); n.delete(challengeId); return n; });
   }
 
   async function confirmGroupChallengeScore(id: string, accept: boolean) {
@@ -564,7 +575,7 @@ export default function GroupPage() {
               </div>
             ) : (
               feed.map(m => (
-                <Link key={m.id} href={`/match/${m.id}`} className="block bg-gray-50 border border-gray-200 rounded-2xl px-4 py-3 hover:border-gray-200 transition-all">
+                <div key={m.id} className="bg-gray-50 border border-gray-200 rounded-2xl px-4 py-3">
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-xs font-bold text-gray-400">{m.player_name}</span>
                     <span className="text-[10px] text-gray-300">{relativeTime(m.created_at)}</span>
@@ -578,7 +589,7 @@ export default function GroupPage() {
                       </span>
                     </div>
                   </div>
-                </Link>
+                </div>
               ))
             )}
           </section>
@@ -590,14 +601,19 @@ export default function GroupPage() {
             <div className="space-y-2">
               <textarea
                 value={postContent}
-                onChange={e => setPostContent(e.target.value)}
+                onChange={e => { setPostContent(e.target.value); setPostError(""); }}
                 placeholder="Post to the group…"
                 rows={3}
+                maxLength={500}
                 className="w-full bg-white/5 border border-gray-200 rounded-2xl px-4 py-3 text-gray-900 text-sm placeholder:text-gray-400 outline-none focus:ring-2 focus:ring-lime-400/50 focus:border-lime-400/30 transition-all resize-none"
               />
+              <div className="flex items-center justify-between">
+                <span className={`text-[10px] ${postContent.length > 480 ? "text-red-500" : "text-gray-400"}`}>{postContent.length}/500</span>
+                {postError && <span className="text-[10px] text-red-500">{postError}</span>}
+              </div>
               <button
                 onClick={submitPost}
-                disabled={postBusy || !postContent.trim()}
+                disabled={postBusy || !postContent.trim() || postContent.length > 500}
                 className="text-xs font-black text-black bg-lime-400 px-4 py-2 rounded-xl hover:bg-lime-300 transition-all active:scale-95 disabled:opacity-40"
               >
                 {postBusy ? "Posting…" : "Post"}
@@ -732,13 +748,15 @@ export default function GroupPage() {
                           <div className="flex gap-2 flex-shrink-0">
                             <button
                               onClick={() => respondChallenge(c.id, false)}
-                              className="text-xs font-bold text-gray-400 bg-white/5 border border-gray-200 px-2.5 py-1.5 rounded-xl hover:text-gray-500 transition-all"
+                              disabled={challengeBusy.has(c.id)}
+                              className="text-xs font-bold text-gray-400 bg-white/5 border border-gray-200 px-2.5 py-1.5 rounded-xl hover:text-gray-500 transition-all disabled:opacity-40"
                             >
                               Decline
                             </button>
                             <button
                               onClick={() => respondChallenge(c.id, true)}
-                              className="text-xs font-black text-lime-700 bg-lime-50 px-2.5 py-1.5 rounded-xl hover:bg-lime-100 transition-all"
+                              disabled={challengeBusy.has(c.id)}
+                              className="text-xs font-black text-lime-700 bg-lime-50 px-2.5 py-1.5 rounded-xl hover:bg-lime-100 transition-all disabled:opacity-40"
                             >
                               Accept
                             </button>

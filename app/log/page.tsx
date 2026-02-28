@@ -10,7 +10,8 @@ function LogPageInner() {
   const opponent = params.get("opponent") ?? "";
   const challengeId = params.get("challengeId");
   const challengeType = params.get("challengeType") ?? "team";
-  const returnTo = params.get("returnTo") ?? "/";
+  const rawReturnTo = params.get("returnTo") ?? "/";
+  const returnTo = rawReturnTo.startsWith("/") && !rawReturnTo.startsWith("//") ? rawReturnTo : "/";
 
   return (
     <MatchEntry

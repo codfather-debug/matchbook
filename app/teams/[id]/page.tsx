@@ -104,6 +104,7 @@ export default function TeamPage() {
   const [posts, setPosts] = useState<WallPost[]>([]);
   const [postText, setPostText] = useState("");
   const [postBusy, setPostBusy] = useState(false);
+  const [postError, setPostError] = useState("");
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [replyText, setReplyText] = useState("");
   const [challenges, setChallenges] = useState<ChallengeRow[]>([]);
@@ -359,8 +360,11 @@ export default function TeamPage() {
 
   async function submitPost() {
     if (!postText.trim()) return;
+    if (postText.trim().length > 500) { setPostError("Posts must be 500 characters or fewer."); return; }
+    setPostError("");
     setPostBusy(true);
-    await supabase.from("team_posts").insert({ team_id: teamId, user_id: userId, content: postText.trim() });
+    const { error } = await supabase.from("team_posts").insert({ team_id: teamId, user_id: userId, content: postText.trim() });
+    if (error) { setPostError("Failed to post. Please try again."); setPostBusy(false); return; }
     setPostText("");
     await loadWall();
     setPostBusy(false);
@@ -368,10 +372,13 @@ export default function TeamPage() {
 
   async function submitReply(postId: string) {
     if (!replyText.trim()) return;
+    if (replyText.trim().length > 500) { setPostError("Replies must be 500 characters or fewer."); return; }
+    setPostError("");
     setPostBusy(true);
-    await supabase.from("team_posts").insert({
+    const { error } = await supabase.from("team_posts").insert({
       team_id: teamId, user_id: userId, content: replyText.trim(), reply_to_id: postId,
     });
+    if (error) { setPostError("Failed to post reply. Please try again."); setPostBusy(false); return; }
     setReplyText("");
     setReplyingTo(null);
     await loadWall();
@@ -604,7 +611,7 @@ export default function TeamPage() {
               <p className="text-gray-400 text-sm text-center py-8">No matches logged yet</p>
             ) : (
               feed.map(m => (
-                <Link key={m.id} href={`/match/${m.id}`} className="block bg-gray-50 border border-gray-200 rounded-2xl px-4 py-3 hover:border-gray-200 transition-all">
+                <div key={m.id} className="bg-gray-50 border border-gray-200 rounded-2xl px-4 py-3">
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-xs font-bold text-gray-400">{m.player_name}</span>
                     <span className="text-[10px] text-gray-300">{relativeTime(m.created_at)}</span>
@@ -618,7 +625,7 @@ export default function TeamPage() {
                       </span>
                     </div>
                   </div>
-                </Link>
+                </div>
               ))
             )}
           </div>
@@ -631,14 +638,19 @@ export default function TeamPage() {
             <div className="space-y-2">
               <textarea
                 value={postText}
-                onChange={e => setPostText(e.target.value)}
+                onChange={e => { setPostText(e.target.value); setPostError(""); }}
                 placeholder="Post something to the team…"
                 rows={2}
+                maxLength={500}
                 className="w-full bg-white/5 border border-gray-200 rounded-2xl px-4 py-3 text-gray-900 text-sm placeholder:text-gray-400 outline-none focus:ring-2 focus:ring-lime-400/50 focus:border-lime-400/30 transition-all resize-none"
               />
+              <div className="flex items-center justify-between">
+                <span className={`text-[10px] ${postText.length > 480 ? "text-red-500" : "text-gray-400"}`}>{postText.length}/500</span>
+                {postError && <span className="text-[10px] text-red-500">{postError}</span>}
+              </div>
               <button
                 onClick={submitPost}
-                disabled={postBusy || !postText.trim()}
+                disabled={postBusy || !postText.trim() || postText.length > 500}
                 className="w-full text-sm font-black text-black bg-lime-400 py-2.5 rounded-2xl hover:bg-lime-300 transition-all active:scale-95 disabled:opacity-40"
               >
                 {postBusy ? "Posting…" : "Post"}
