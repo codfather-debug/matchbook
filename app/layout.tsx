@@ -13,6 +13,9 @@ export const metadata: Metadata = {
     statusBarStyle: "black-translucent",
     title: "Matchbook",
   },
+  icons: {
+    apple: [{ url: "/apple-icon.png", sizes: "180x180" }],
+  },
   themeColor: "#0c0c0e",
 };
 
