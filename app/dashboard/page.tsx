@@ -171,7 +171,7 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-white flex items-center justify-center">
+      <main className="min-h-screen flex items-center justify-center" style={{background:"radial-gradient(ellipse 140% 40% at 50% 0%, rgba(163,230,53,0.15) 0%, transparent 65%), #ffffff"}}>
         <p className="text-gray-400 text-sm">Loading…</p>
       </main>
     );
@@ -239,7 +239,7 @@ export default function DashboardPage() {
           </div>
         </div>
       )}
-    <main className="min-h-screen bg-white max-w-sm mx-auto pb-24 relative z-10">
+    <main className="min-h-screen max-w-sm mx-auto pb-24 relative z-10" style={{background:"radial-gradient(ellipse 140% 40% at 50% 0%, rgba(163,230,53,0.15) 0%, transparent 65%), #ffffff"}}>
 
       <div className="px-5 py-5 space-y-5">
 

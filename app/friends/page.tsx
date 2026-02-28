@@ -495,14 +495,14 @@ export default function FriendsPage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-white flex items-center justify-center">
+      <main className="min-h-screen flex items-center justify-center" style={{background:"radial-gradient(at 10% 10%, rgba(163,230,53,0.12) 0px, transparent 50%), radial-gradient(at 90% 10%, rgba(56,189,248,0.09) 0px, transparent 50%), radial-gradient(at 50% 90%, rgba(251,191,36,0.07) 0px, transparent 50%), #ffffff"}}>
         <p className="text-gray-400 text-sm">Loading…</p>
       </main>
     );
   }
 
   return (
-    <main className="min-h-screen bg-white max-w-sm mx-auto pb-24">
+    <main className="min-h-screen max-w-sm mx-auto pb-24" style={{background:"radial-gradient(at 10% 10%, rgba(163,230,53,0.12) 0px, transparent 50%), radial-gradient(at 90% 10%, rgba(56,189,248,0.09) 0px, transparent 50%), radial-gradient(at 50% 90%, rgba(251,191,36,0.07) 0px, transparent 50%), #ffffff"}}>
       {/* Header */}
       <div className="px-5 pt-5 pb-4 border-b border-gray-200">
         <div className="flex items-center gap-2 mb-1">

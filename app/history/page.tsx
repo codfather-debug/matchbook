@@ -61,7 +61,34 @@ export default function HistoryPage() {
   });
 
   return (
-    <main className="min-h-screen bg-white max-w-sm mx-auto pb-24">
+    <main className="min-h-screen max-w-sm mx-auto pb-24 relative overflow-hidden" style={{background:"linear-gradient(to bottom, #fff4ed 0%, #ffffff 40%)"}}>
+
+      {/* Clay court watermark */}
+      <div className="absolute inset-x-0 top-0 h-72 pointer-events-none select-none" aria-hidden="true">
+        <svg viewBox="0 0 390 290" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
+          {/* Court surface tint */}
+          <rect width="390" height="290" fill="rgba(192,90,40,0.045)"/>
+          {/* Doubles sidelines (outer rectangle) */}
+          <rect x="22" y="22" width="346" height="246" stroke="rgba(160,70,20,0.18)" strokeWidth="2"/>
+          {/* Singles sidelines */}
+          <line x1="70" y1="22" x2="70" y2="268" stroke="rgba(160,70,20,0.13)" strokeWidth="1.5"/>
+          <line x1="320" y1="22" x2="320" y2="268" stroke="rgba(160,70,20,0.13)" strokeWidth="1.5"/>
+          {/* Net */}
+          <line x1="22" y1="145" x2="368" y2="145" stroke="rgba(160,70,20,0.22)" strokeWidth="2.5"/>
+          {/* Service lines */}
+          <line x1="70" y1="85" x2="320" y2="85" stroke="rgba(160,70,20,0.13)" strokeWidth="1.5"/>
+          <line x1="70" y1="205" x2="320" y2="205" stroke="rgba(160,70,20,0.13)" strokeWidth="1.5"/>
+          {/* Centre service lines */}
+          <line x1="195" y1="85" x2="195" y2="145" stroke="rgba(160,70,20,0.13)" strokeWidth="1.5"/>
+          <line x1="195" y1="145" x2="195" y2="205" stroke="rgba(160,70,20,0.13)" strokeWidth="1.5"/>
+          {/* Baseline centre marks */}
+          <line x1="195" y1="22" x2="195" y2="30" stroke="rgba(160,70,20,0.18)" strokeWidth="2"/>
+          <line x1="195" y1="268" x2="195" y2="260" stroke="rgba(160,70,20,0.18)" strokeWidth="2"/>
+        </svg>
+        {/* Fade out at bottom */}
+        <div className="absolute inset-0" style={{background:"linear-gradient(to bottom, transparent 45%, #fff4ed 75%, #ffffff 100%)"}}/>
+      </div>
+
       {/* Header */}
       <div className="px-5 pt-5 pb-4 border-b border-gray-200">
         <div className="flex items-end justify-between">
