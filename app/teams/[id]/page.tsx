@@ -273,17 +273,18 @@ export default function TeamPage() {
 
       // Load team meta
       const { data: team } = await supabase
-        .from("teams").select("name, invite_code").eq("id", teamId).single();
+        .from("teams").select("name, invite_code, created_by").eq("id", teamId).single();
       if (!team) { router.push("/friends"); return; }
       setTeamName(team.name);
       setInviteCode(team.invite_code);
 
-      // Check membership + role
+      // Check membership + role (creator always gets admin access as fallback)
       const { data: membership } = await supabase
         .from("team_members").select("role").eq("team_id", teamId).eq("user_id", user.id).single();
       if (!membership) { router.push("/friends"); return; }
-      setIsAdmin(membership.role === "admin");
-      setIsAssistant(membership.role === "assistant");
+      const memberRole = membership.role ?? "member";
+      setIsAdmin(memberRole === "admin" || (team as { created_by?: string }).created_by === user.id);
+      setIsAssistant(memberRole === "assistant");
 
       // Member count
       const { count } = await supabase
@@ -355,6 +356,9 @@ export default function TeamPage() {
   }
 
   async function kickMember(uid: string) {
+    const member = managedMembers.find(m => m.userId === uid);
+    const name = member?.displayName || `@${member?.username ?? uid}`;
+    if (!confirm(`Remove ${name} from the team?`)) return;
     setManageBusy(s => new Set(s).add(uid));
     await supabase.from("team_members").delete().eq("team_id", teamId).eq("user_id", uid);
     setMemberCount(c => Math.max(0, c - 1));

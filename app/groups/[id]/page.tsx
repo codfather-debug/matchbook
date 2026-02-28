@@ -344,6 +344,9 @@ export default function GroupPage() {
   }
 
   async function kickGroupMember(uid: string) {
+    const member = managedGroupMembers.find(m => m.userId === uid);
+    const name = member?.displayName || `@${member?.username ?? uid}`;
+    if (!confirm(`Remove ${name} from the group?`)) return;
     setManageBusy(s => new Set(s).add(uid));
     await supabase.from("friend_group_members").delete().eq("group_id", groupId).eq("user_id", uid);
     await loadManagedGroupMembers();
