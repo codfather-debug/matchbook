@@ -133,6 +133,7 @@ export default function MatchDetailPage() {
       setConfirmDelete(false);
       return;
     }
+    router.refresh();
     router.push("/history");
   }
 

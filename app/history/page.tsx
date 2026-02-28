@@ -46,7 +46,8 @@ export default function HistoryPage() {
       setLoading(false);
     }
     load();
-  }, [router]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   async function signOut() {
     await supabase.auth.signOut();
