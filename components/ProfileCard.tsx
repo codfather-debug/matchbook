@@ -10,6 +10,7 @@ interface Props {
 interface ProfileData {
   displayName?: string;
   username: string;
+  avatarUrl?: string;
   wins: number;
   losses: number;
   winPct: number;
@@ -22,7 +23,7 @@ export default function ProfileCard({ userId, onClose }: Props) {
   useEffect(() => {
     async function load() {
       const [{ data: profile }, { data: matches }] = await Promise.all([
-        supabase.from("profiles").select("display_name, username").eq("id", userId).single(),
+        supabase.from("profiles").select("display_name, username, avatar_url").eq("id", userId).single(),
         supabase.from("matches")
           .select("id, opponent_name, result, surface, created_at")
           .eq("user_id", userId)
@@ -35,6 +36,7 @@ export default function ProfileCard({ userId, onClose }: Props) {
       setData({
         displayName: profile?.display_name,
         username: profile?.username ?? userId,
+        avatarUrl: profile?.avatar_url ?? undefined,
         wins,
         losses,
         winPct: total > 0 ? Math.round((wins / total) * 100) : 0,
@@ -61,10 +63,15 @@ export default function ProfileCard({ userId, onClose }: Props) {
           <>
             {/* Avatar + name */}
             <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-full bg-lime-50 flex items-center justify-center flex-shrink-0">
-                <span className="text-2xl font-black text-lime-700">
-                  {(data.displayName || data.username)[0].toUpperCase()}
-                </span>
+              <div className="w-14 h-14 rounded-full overflow-hidden bg-lime-50 flex items-center justify-center flex-shrink-0">
+                {data.avatarUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={data.avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                ) : (
+                  <span className="text-2xl font-black text-lime-700">
+                    {(data.displayName || data.username)[0].toUpperCase()}
+                  </span>
+                )}
               </div>
               <div>
                 <p className="text-lg font-black text-white">
