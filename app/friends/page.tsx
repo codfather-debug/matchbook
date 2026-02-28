@@ -58,6 +58,13 @@ export default function FriendsPage() {
   const [selectedFriendIds, setSelectedFriendIds] = useState<Set<string>>(new Set());
   const [groupBusy, setGroupBusy] = useState(false);
   const [groupError, setGroupError] = useState("");
+  const [groupJoinCode, setGroupJoinCode] = useState("");
+
+  // Discover teams/groups
+  const [discoverTeams, setDiscoverTeams] = useState<{id: string; name: string; member_count: number}[]>([]);
+  const [discoverTeamsBusy, setDiscoverTeamsBusy] = useState<Set<string>>(new Set());
+  const [discoverGroups, setDiscoverGroups] = useState<{id: string; name: string; member_count: number}[]>([]);
+  const [discoverGroupsBusy, setDiscoverGroupsBusy] = useState<Set<string>>(new Set());
 
   // Discover tab
   const [discoverQuery, setDiscoverQuery] = useState("");
@@ -174,6 +181,34 @@ export default function FriendsPage() {
     );
 
     setGroups(groupList);
+  }, []);
+
+  const loadDiscoverTeams = useCallback(async (uid: string) => {
+    const { data: mine } = await supabase.from("team_members").select("team_id").eq("user_id", uid);
+    const myIds = (mine ?? []).map(r => r.team_id);
+    let q = supabase.from("teams").select("id, name").limit(10);
+    if (myIds.length > 0) q = q.not("id", "in", `(${myIds.join(",")})`);
+    const { data: rows } = await q;
+    if (!rows) { setDiscoverTeams([]); return; }
+    const withCounts = await Promise.all(rows.map(async t => {
+      const { count } = await supabase.from("team_members").select("id", { count: "exact", head: true }).eq("team_id", t.id);
+      return { id: t.id, name: t.name, member_count: count ?? 0 };
+    }));
+    setDiscoverTeams(withCounts);
+  }, []);
+
+  const loadDiscoverGroups = useCallback(async (uid: string) => {
+    const { data: mine } = await supabase.from("friend_group_members").select("group_id").eq("user_id", uid);
+    const myIds = (mine ?? []).map(r => r.group_id);
+    let q = supabase.from("friend_groups").select("id, name").limit(10);
+    if (myIds.length > 0) q = q.not("id", "in", `(${myIds.join(",")})`);
+    const { data: rows } = await q;
+    if (!rows) { setDiscoverGroups([]); return; }
+    const withCounts = await Promise.all(rows.map(async g => {
+      const { count } = await supabase.from("friend_group_members").select("id", { count: "exact", head: true }).eq("group_id", g.id);
+      return { id: g.id, name: g.name, member_count: count ?? 0 };
+    }));
+    setDiscoverGroups(withCounts);
   }, []);
 
   const loadDiscover = useCallback(async (uid: string, friendships: FriendshipRow[], q = "", filter = "all") => {
@@ -297,6 +332,14 @@ export default function FriendsPage() {
     loadChallenges(userId);
   }, [activeTab, userId, loadChallenges]);
 
+  useEffect(() => {
+    if (activeTab === "teams" && userId) loadDiscoverTeams(userId);
+  }, [activeTab, userId, loadDiscoverTeams]);
+
+  useEffect(() => {
+    if (activeTab === "groups" && userId) loadDiscoverGroups(userId);
+  }, [activeTab, userId, loadDiscoverGroups]);
+
   // Refresh discover list whenever the friends tab is active, query, or filter changes
   useEffect(() => {
     if (activeTab !== "friends" || !userId) return;
@@ -349,6 +392,36 @@ export default function FriendsPage() {
     await supabase.from(table).update({ status: "accepted" }).eq("id", challenge.id);
     setChallenges(prev => prev.map(c => c.id === challenge.id ? { ...c, status: "accepted" } : c));
     setChallengeBusy(s => { const n = new Set(s); n.delete(challenge.id); return n; });
+  }
+
+  async function joinDiscoverTeam(teamId: string) {
+    setDiscoverTeamsBusy(s => new Set(s).add(teamId));
+    const { error } = await supabase.from("team_members").insert({ team_id: teamId, user_id: userId, role: "member" });
+    if (error) { setTeamError("Could not join — you may already be a member."); }
+    else { await Promise.all([loadTeams(userId), loadDiscoverTeams(userId)]); }
+    setDiscoverTeamsBusy(s => { const n = new Set(s); n.delete(teamId); return n; });
+  }
+
+  async function joinDiscoverGroup(groupId: string) {
+    setDiscoverGroupsBusy(s => new Set(s).add(groupId));
+    const { error } = await supabase.from("friend_group_members").insert({ group_id: groupId, user_id: userId, role: "member" });
+    if (error) { setGroupError("Could not join — you may already be a member."); }
+    else { await Promise.all([loadGroups(userId), loadDiscoverGroups(userId)]); }
+    setDiscoverGroupsBusy(s => { const n = new Set(s); n.delete(groupId); return n; });
+  }
+
+  async function joinGroupByCode() {
+    const code = groupJoinCode.trim().toUpperCase();
+    if (!code) return;
+    setGroupBusy(true);
+    setGroupError("");
+    const { data: group } = await supabase.from("friend_groups").select("id").eq("invite_code", code).maybeSingle();
+    if (!group) { setGroupError("Invalid code — no group found."); setGroupBusy(false); return; }
+    const { error } = await supabase.from("friend_group_members").insert({ group_id: group.id, user_id: userId, role: "member" });
+    if (error) { setGroupError("You're already in this group."); setGroupBusy(false); return; }
+    setGroupJoinCode("");
+    await Promise.all([loadGroups(userId), loadDiscoverGroups(userId)]);
+    setGroupBusy(false);
   }
 
   async function createTeam() {
@@ -405,9 +478,10 @@ export default function FriendsPage() {
       setGroupBusy(false); return;
     }
     const groupId = crypto.randomUUID();
+    const inviteCode = Math.random().toString(36).substring(2, 8).toUpperCase();
     const { error } = await supabase
       .from("friend_groups")
-      .insert({ id: groupId, name: newGroupName.trim(), created_by: userId });
+      .insert({ id: groupId, name: newGroupName.trim(), created_by: userId, invite_code: inviteCode });
     if (error) { setGroupError("Failed to create group."); setGroupBusy(false); return; }
     const memberInserts = [
       { group_id: groupId, user_id: userId, role: "admin" },
@@ -636,6 +710,32 @@ export default function FriendsPage() {
               {teamError && <p className="text-xs text-red-400/80">{teamError}</p>}
             </section>
 
+            {/* Discover Teams */}
+            <section className="space-y-3">
+              <p className="text-xs font-black tracking-widest uppercase text-white/30">Discover Teams</p>
+              {discoverTeams.length === 0 ? (
+                <p className="text-white/25 text-xs text-center py-3">No other teams to discover</p>
+              ) : (
+                <div className="rounded-2xl border border-white/10 bg-white/[0.03] divide-y divide-white/[0.06]">
+                  {discoverTeams.map(t => (
+                    <div key={t.id} className="flex items-center justify-between px-4 py-3">
+                      <div>
+                        <p className="text-sm font-semibold text-white/80">{t.name}</p>
+                        <p className="text-xs text-white/30">{t.member_count} member{t.member_count !== 1 ? "s" : ""}</p>
+                      </div>
+                      <button
+                        onClick={() => joinDiscoverTeam(t.id)}
+                        disabled={discoverTeamsBusy.has(t.id)}
+                        className="text-xs font-black text-lime-400 bg-lime-400/10 px-3 py-1.5 rounded-xl hover:bg-lime-400/20 transition-all active:scale-95 disabled:opacity-40"
+                      >
+                        {discoverTeamsBusy.has(t.id) ? "Joining…" : "Join"}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </section>
+
             {/* Teams list */}
             <section className="space-y-3">
               <p className="text-xs font-black tracking-widest uppercase text-white/30">
@@ -719,6 +819,55 @@ export default function FriendsPage() {
                 + Create Group
               </button>
             </div>
+
+            {/* Join via Invite Code */}
+            <section className="space-y-2">
+              <p className="text-xs font-black tracking-widest uppercase text-white/30">Join via Invite Code</p>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  placeholder="Enter 6-char code…"
+                  value={groupJoinCode}
+                  onChange={e => setGroupJoinCode(e.target.value.toUpperCase())}
+                  maxLength={6}
+                  className="flex-1 bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white text-sm placeholder:text-white/25 outline-none focus:ring-2 focus:ring-lime-400/50 focus:border-lime-400/30 transition-all font-mono tracking-widest uppercase"
+                />
+                <button
+                  onClick={joinGroupByCode}
+                  disabled={groupBusy || groupJoinCode.trim().length < 6}
+                  className="text-xs font-black text-lime-400 bg-lime-400/10 px-4 rounded-xl hover:bg-lime-400/20 transition-all active:scale-95 disabled:opacity-40"
+                >
+                  Join
+                </button>
+              </div>
+              {groupError && <p className="text-xs text-red-400/80">{groupError}</p>}
+            </section>
+
+            {/* Discover Groups */}
+            <section className="space-y-3">
+              <p className="text-xs font-black tracking-widest uppercase text-white/30">Discover Groups</p>
+              {discoverGroups.length === 0 ? (
+                <p className="text-white/25 text-xs text-center py-3">No other groups to discover</p>
+              ) : (
+                <div className="rounded-2xl border border-white/10 bg-white/[0.03] divide-y divide-white/[0.06]">
+                  {discoverGroups.map(g => (
+                    <div key={g.id} className="flex items-center justify-between px-4 py-3">
+                      <div>
+                        <p className="text-sm font-semibold text-white/80">{g.name}</p>
+                        <p className="text-xs text-white/30">{g.member_count} member{g.member_count !== 1 ? "s" : ""}</p>
+                      </div>
+                      <button
+                        onClick={() => joinDiscoverGroup(g.id)}
+                        disabled={discoverGroupsBusy.has(g.id)}
+                        className="text-xs font-black text-lime-400 bg-lime-400/10 px-3 py-1.5 rounded-xl hover:bg-lime-400/20 transition-all active:scale-95 disabled:opacity-40"
+                      >
+                        {discoverGroupsBusy.has(g.id) ? "Joining…" : "Join"}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </section>
 
             {/* Groups list */}
             <section className="space-y-3">
