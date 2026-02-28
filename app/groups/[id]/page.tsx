@@ -59,6 +59,8 @@ interface GroupChallenge {
   created_at: string;
   challengerName: string;
   opponentName: string;
+  pending_match_result?: string;
+  pending_match_score?: string;
 }
 
 type SubTab = "leaderboard" | "feed" | "wall" | "challenges" | "manage";
@@ -224,6 +226,26 @@ export default function GroupPage() {
     );
     const name = (id: string) => pm[id]?.display_name ?? `@${pm[id]?.username ?? id}`;
 
+    // Fetch match data for pending_confirmation rows so opponent can see the score
+    type SetData = { player?: number | null; opponent?: number | null };
+    type MatchData = { result?: string; score?: { sets: SetData[] } };
+    const pendingMatchIds = (rows as CRow[])
+      .filter(r => r.status === "pending_confirmation" && r.match_id)
+      .map(r => r.match_id as string);
+    const matchInfoMap: Record<string, { result: string; scoreStr: string }> = {};
+    if (pendingMatchIds.length > 0) {
+      const { data: matchRows } = await supabase
+        .from("matches").select("id, data").in("id", pendingMatchIds);
+      for (const m of matchRows ?? []) {
+        const d = m.data as MatchData;
+        const scoreStr = (d?.score?.sets ?? [])
+          .filter(s => s.player != null && s.opponent != null)
+          .map(s => `${s.player}-${s.opponent}`)
+          .join(", ");
+        matchInfoMap[m.id] = { result: d?.result ?? "unknown", scoreStr };
+      }
+    }
+
     setChallenges((rows as CRow[]).map(r => ({
       id: r.id,
       challenger_id: r.challenger_id,
@@ -233,6 +255,8 @@ export default function GroupPage() {
       created_at: r.created_at,
       challengerName: name(r.challenger_id),
       opponentName: name(r.opponent_id),
+      pending_match_result: r.match_id ? matchInfoMap[r.match_id]?.result : undefined,
+      pending_match_score: r.match_id ? matchInfoMap[r.match_id]?.scoreStr : undefined,
     })));
   }, [groupId]);
 
@@ -412,6 +436,16 @@ export default function GroupPage() {
       await supabase.from("group_challenges").update({ status: "accepted" }).eq("id", challengeId);
     } else {
       await supabase.from("group_challenges").delete().eq("id", challengeId);
+    }
+    await loadChallenges(userId);
+  }
+
+  async function confirmGroupChallengeScore(id: string, accept: boolean) {
+    if (accept) {
+      await supabase.from("group_challenges").update({ status: "completed" }).eq("id", id);
+    } else {
+      // Dispute: reset to accepted so challenger can re-log the correct score
+      await supabase.from("group_challenges").update({ status: "accepted", match_id: null }).eq("id", id);
     }
     await loadChallenges(userId);
   }
@@ -670,8 +704,12 @@ export default function GroupPage() {
                   const isChallenger = c.challenger_id === userId;
                   const isPending = c.status === "pending";
                   const isReceived = isPending && !isChallenger;
+                  const needsConfirm = c.status === "pending_confirmation" && c.opponent_id === userId;
+                  const waitingConfirm = c.status === "pending_confirmation" && c.challenger_id === userId;
+                  const statusLabel =
+                    c.status === "pending_confirmation" ? "Awaiting confirmation" : c.status;
                   return (
-                    <div key={c.id} className="px-4 py-3">
+                    <div key={c.id} className="px-4 py-3 space-y-2">
                       <div className="flex items-center justify-between gap-3">
                         <div className="min-w-0">
                           <p className="text-sm font-semibold text-white/80 truncate">
@@ -681,9 +719,10 @@ export default function GroupPage() {
                             <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md ${
                               c.status === "accepted" ? "bg-lime-400/10 text-lime-400" :
                               c.status === "completed" ? "bg-white/5 text-white/30" :
+                              c.status === "pending_confirmation" ? "bg-amber-400/10 text-amber-400/80" :
                               "bg-amber-400/10 text-amber-400/80"
                             }`}>
-                              {c.status}
+                              {statusLabel}
                             </span>
                             <span className="text-[10px] text-white/20">{relativeTime(c.created_at)}</span>
                           </div>
@@ -710,14 +749,13 @@ export default function GroupPage() {
                         {c.status === "accepted" && (
                           <div className="flex gap-2 flex-shrink-0">
                             <Link
-                              href={`/log?opponent=${encodeURIComponent(isChallenger ? c.opponentName : c.challengerName)}&challengeId=${c.id}&challengeType=group`}
+                              href={`/log?opponent=${encodeURIComponent(isChallenger ? c.opponentName : c.challengerName)}&challengeId=${c.id}&challengeType=group&returnTo=/groups/${groupId}`}
                               className="text-xs font-black text-lime-400 bg-lime-400/10 px-2.5 py-1.5 rounded-xl hover:bg-lime-400/20 transition-all"
                             >
                               Log Match
                             </Link>
                             <button
                               onClick={() => respondChallenge(c.id, false)}
-                              disabled={false}
                               className="text-xs font-bold text-white/25 hover:text-red-400/70 transition-colors"
                               title="Cancel challenge"
                             >
@@ -725,7 +763,50 @@ export default function GroupPage() {
                             </button>
                           </div>
                         )}
+                        {c.status === "completed" && c.match_id && (
+                          <Link
+                            href={`/match/${c.match_id}`}
+                            className="text-xs font-black text-lime-400/70 bg-lime-400/10 px-2.5 py-1.5 rounded-xl hover:bg-lime-400/20 transition-all flex-shrink-0"
+                          >
+                            View Match
+                          </Link>
+                        )}
                       </div>
+
+                      {/* Score confirmation UI for the opponent */}
+                      {needsConfirm && (
+                        <div className="p-3 bg-amber-400/5 border border-amber-400/20 rounded-xl space-y-2">
+                          <p className="text-xs font-bold text-amber-400/80">Confirm the score</p>
+                          <p className="text-xs text-white/50">
+                            {c.challengerName} logged:{" "}
+                            <span className={c.pending_match_result === "win" ? "text-red-400 font-semibold" : "text-lime-400 font-semibold"}>
+                              {c.pending_match_result === "win" ? "their win" : "your win"}
+                            </span>
+                            {c.pending_match_score ? ` · ${c.pending_match_score}` : ""}
+                          </p>
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => confirmGroupChallengeScore(c.id, false)}
+                              className="flex-1 text-xs font-bold text-white/40 bg-white/5 border border-white/10 py-1.5 rounded-xl hover:text-red-400/70 transition-all"
+                            >
+                              Dispute
+                            </button>
+                            <button
+                              onClick={() => confirmGroupChallengeScore(c.id, true)}
+                              className="flex-1 text-xs font-black text-lime-400 bg-lime-400/10 py-1.5 rounded-xl hover:bg-lime-400/20 transition-all"
+                            >
+                              Confirm ✓
+                            </button>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Waiting indicator for the challenger */}
+                      {waitingConfirm && (
+                        <p className="text-xs text-amber-400/60">
+                          Waiting for {c.opponentName} to confirm the score…
+                        </p>
+                      )}
                     </div>
                   );
                 })}
