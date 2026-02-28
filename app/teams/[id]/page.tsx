@@ -83,6 +83,7 @@ export default function TeamPage() {
   const [subTab, setSubTab] = useState<SubTab>("leaderboard");
   const [copied, setCopied] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isAssistant, setIsAssistant] = useState(false);
   const [leaveBusy, setLeaveBusy] = useState(false);
 
   // Team metadata
@@ -282,6 +283,7 @@ export default function TeamPage() {
         .from("team_members").select("role").eq("team_id", teamId).eq("user_id", user.id).single();
       if (!membership) { router.push("/friends"); return; }
       setIsAdmin(membership.role === "admin");
+      setIsAssistant(membership.role === "assistant");
 
       // Member count
       const { count } = await supabase
@@ -361,9 +363,11 @@ export default function TeamPage() {
     setManageBusy(s => { const n = new Set(s); n.delete(uid); return n; });
   }
 
-  async function changeTeamRole(uid: string, newRole: "admin" | "member") {
+  async function changeTeamRole(uid: string, newRole: "admin" | "assistant" | "member") {
     setManageBusy(s => new Set(s).add(uid));
-    await supabase.from("team_members").update({ role: newRole }).eq("team_id", teamId).eq("user_id", uid);
+    const { error } = await supabase
+      .from("team_members").update({ role: newRole }).eq("team_id", teamId).eq("user_id", uid);
+    if (error) console.error("changeTeamRole:", error.message);
     await loadManagedMembers();
     setManageBusy(s => { const n = new Set(s); n.delete(uid); return n; });
   }
@@ -765,13 +769,13 @@ export default function TeamPage() {
         {/* ── MANAGE ── */}
         {subTab === "manage" && (
           <div className="space-y-5">
-            {!isAdmin ? (
+            {(!isAdmin && !isAssistant) ? (
               <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-6 text-center">
-                <p className="text-sm text-white/40">Only team admins can manage members.</p>
+                <p className="text-sm text-white/40">Only coaches can manage members.</p>
               </div>
             ) : (
               <>
-                {/* Add Member */}
+                {/* Add Member — coaches + assistants */}
                 <section className="space-y-3">
                   <p className="text-xs font-black tracking-widest uppercase text-white/30">Add Member</p>
                   <input
@@ -802,57 +806,79 @@ export default function TeamPage() {
                   )}
                 </section>
 
-                {/* Member list */}
-                <section className="space-y-3">
-                  <p className="text-xs font-black tracking-widest uppercase text-white/30">
-                    Members <span className="text-white/20">({managedMembers.length})</span>
-                  </p>
-                  {managedMembers.length === 0 ? (
-                    <p className="text-white/25 text-sm text-center py-4">No members</p>
-                  ) : (
-                    <div className="rounded-2xl border border-white/10 bg-white/[0.03] divide-y divide-white/[0.06]">
-                      {managedMembers.map(m => (
-                        <div key={m.userId} className="flex items-center justify-between px-4 py-3 gap-3">
-                          <div className="flex items-center gap-2.5 min-w-0">
-                            <div className="w-8 h-8 rounded-full bg-lime-400/10 flex items-center justify-center flex-shrink-0">
-                              <span className="text-xs font-black text-lime-400">
-                                {(m.displayName || m.username)[0].toUpperCase()}
-                              </span>
+                {/* Member list — coaches only */}
+                {isAdmin && (
+                  <section className="space-y-3">
+                    <p className="text-xs font-black tracking-widest uppercase text-white/30">
+                      Members <span className="text-white/20">({managedMembers.length})</span>
+                    </p>
+                    {managedMembers.length === 0 ? (
+                      <p className="text-white/25 text-sm text-center py-4">No members</p>
+                    ) : (
+                      <div className="rounded-2xl border border-white/10 bg-white/[0.03] divide-y divide-white/[0.06]">
+                        {managedMembers.map(m => (
+                          <div key={m.userId} className="flex items-center justify-between px-4 py-3 gap-2">
+                            <div className="flex items-center gap-2.5 min-w-0">
+                              <div className="w-8 h-8 rounded-full bg-lime-400/10 flex items-center justify-center flex-shrink-0">
+                                <span className="text-xs font-black text-lime-400">
+                                  {(m.displayName || m.username)[0].toUpperCase()}
+                                </span>
+                              </div>
+                              <div className="min-w-0">
+                                <p className="text-sm font-semibold text-white/80 truncate">
+                                  {m.displayName || `@${m.username}`}
+                                  {m.userId === userId && <span className="text-xs text-lime-400/50 ml-1.5">you</span>}
+                                </p>
+                                <span className={`text-[10px] font-black px-1.5 py-0.5 rounded-md ${
+                                  m.role === "admin" ? "bg-lime-400/10 text-lime-400"
+                                  : m.role === "assistant" ? "bg-amber-400/10 text-amber-400"
+                                  : "bg-white/5 text-white/30"
+                                }`}>
+                                  {m.role === "admin" ? "Coach" : m.role === "assistant" ? "Asst" : "Member"}
+                                </span>
+                              </div>
                             </div>
-                            <div className="min-w-0">
-                              <p className="text-sm font-semibold text-white/80 truncate">
-                                {m.displayName || `@${m.username}`}
-                                {m.userId === userId && <span className="text-xs text-lime-400/50 ml-1.5">you</span>}
-                              </p>
-                              <span className={`text-[10px] font-black px-1.5 py-0.5 rounded-md ${m.role === "admin" ? "bg-lime-400/10 text-lime-400" : "bg-white/5 text-white/30"}`}>
-                                {m.role}
-                              </span>
-                            </div>
+                            {m.userId !== userId && (
+                              <div className="flex gap-1.5 flex-shrink-0 items-center">
+                                {m.role === "member" && (<>
+                                  <button onClick={() => changeTeamRole(m.userId, "admin")} disabled={manageBusy.has(m.userId)}
+                                    className="text-[10px] font-black text-lime-400/70 bg-lime-400/10 px-2 py-1 rounded-xl hover:bg-lime-400/20 transition-all active:scale-95 disabled:opacity-40">
+                                    Coach
+                                  </button>
+                                  <button onClick={() => changeTeamRole(m.userId, "assistant")} disabled={manageBusy.has(m.userId)}
+                                    className="text-[10px] font-black text-amber-400/70 bg-amber-400/10 px-2 py-1 rounded-xl hover:bg-amber-400/20 transition-all active:scale-95 disabled:opacity-40">
+                                    Asst
+                                  </button>
+                                </>)}
+                                {m.role === "assistant" && (<>
+                                  <button onClick={() => changeTeamRole(m.userId, "admin")} disabled={manageBusy.has(m.userId)}
+                                    className="text-[10px] font-black text-lime-400/70 bg-lime-400/10 px-2 py-1 rounded-xl hover:bg-lime-400/20 transition-all active:scale-95 disabled:opacity-40">
+                                    Coach
+                                  </button>
+                                  <button onClick={() => changeTeamRole(m.userId, "member")} disabled={manageBusy.has(m.userId)}
+                                    className="text-[10px] font-black text-white/40 bg-white/5 border border-white/10 px-2 py-1 rounded-xl hover:text-white/70 transition-all active:scale-95 disabled:opacity-40">
+                                    Demote
+                                  </button>
+                                </>)}
+                                {m.role === "admin" && (
+                                  <button onClick={() => changeTeamRole(m.userId, "member")} disabled={manageBusy.has(m.userId)}
+                                    className="text-[10px] font-black text-white/40 bg-white/5 border border-white/10 px-2.5 py-1 rounded-xl hover:text-white/70 transition-all active:scale-95 disabled:opacity-40">
+                                    Demote
+                                  </button>
+                                )}
+                                <button onClick={() => kickMember(m.userId)} disabled={manageBusy.has(m.userId)}
+                                  className="text-[10px] font-bold text-white/25 hover:text-red-400/70 transition-colors disabled:opacity-40"
+                                  title="Remove from team">
+                                  ×
+                                </button>
+                              </div>
+                            )}
                           </div>
-                          {m.userId !== userId && (
-                            <div className="flex gap-2 flex-shrink-0">
-                              <button
-                                onClick={() => changeTeamRole(m.userId, m.role === "admin" ? "member" : "admin")}
-                                disabled={manageBusy.has(m.userId)}
-                                className="text-[10px] font-black text-white/40 bg-white/5 border border-white/10 px-2.5 py-1 rounded-xl hover:text-white/70 hover:border-white/20 transition-all active:scale-95 disabled:opacity-40"
-                              >
-                                {m.role === "admin" ? "Demote" : "Make Admin"}
-                              </button>
-                              <button
-                                onClick={() => kickMember(m.userId)}
-                                disabled={manageBusy.has(m.userId)}
-                                className="text-[10px] font-bold text-white/25 hover:text-red-400/70 transition-colors disabled:opacity-40"
-                                title="Remove from team"
-                              >
-                                ×
-                              </button>
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </section>
+                        ))}
+                      </div>
+                    )}
+                  </section>
+                )}
               </>
             )}
           </div>
