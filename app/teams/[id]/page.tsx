@@ -360,7 +360,12 @@ export default function TeamPage() {
     const name = member?.displayName || `@${member?.username ?? uid}`;
     if (!confirm(`Remove ${name} from the team?`)) return;
     setManageBusy(s => new Set(s).add(uid));
-    await supabase.from("team_members").delete().eq("team_id", teamId).eq("user_id", uid);
+    const { error } = await supabase.from("team_members").delete().eq("team_id", teamId).eq("user_id", uid);
+    if (error) {
+      alert("Remove failed — run the DELETE policy SQL in Supabase first.");
+      setManageBusy(s => { const n = new Set(s); n.delete(uid); return n; });
+      return;
+    }
     setMemberCount(c => Math.max(0, c - 1));
     await loadManagedMembers();
     await loadLeaderboard();
@@ -492,15 +497,15 @@ export default function TeamPage() {
         </div>
 
         {/* Sub-tab switcher */}
-        <div className="flex gap-1 mt-4 overflow-x-auto no-scrollbar">
+        <div className="flex gap-1 mt-4">
           {subTabs.map(t => (
             <button
               key={t}
               onClick={() => switchTab(t)}
-              className={`text-[10px] font-black tracking-widest uppercase px-3 py-1.5 rounded-xl whitespace-nowrap transition-all flex-shrink-0
+              className={`text-[10px] font-black tracking-widest uppercase px-2.5 py-1.5 rounded-xl whitespace-nowrap transition-all flex-shrink-0
                 ${subTab === t ? "bg-lime-400/20 text-lime-400" : "text-white/30 hover:text-white/50"}`}
             >
-              {t}
+              {t === "leaderboard" ? "Board" : t === "challenges" ? "Duels" : t}
             </button>
           ))}
         </div>

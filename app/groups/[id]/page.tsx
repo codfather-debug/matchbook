@@ -295,12 +295,6 @@ export default function GroupPage() {
     return () => document.removeEventListener("visibilitychange", onVisible);
   }, [userId, loadAll]);
 
-  async function removeMember(memberId: string) {
-    await supabase.from("friend_group_members").delete()
-      .eq("group_id", groupId).eq("user_id", memberId);
-    await loadAll();
-  }
-
   async function leaveOrDelete() {
     if (!confirm(isCreator ? "Delete this group?" : "Leave this group?")) return;
     setLeaveBusy(true);
@@ -348,7 +342,12 @@ export default function GroupPage() {
     const name = member?.displayName || `@${member?.username ?? uid}`;
     if (!confirm(`Remove ${name} from the group?`)) return;
     setManageBusy(s => new Set(s).add(uid));
-    await supabase.from("friend_group_members").delete().eq("group_id", groupId).eq("user_id", uid);
+    const { error } = await supabase.from("friend_group_members").delete().eq("group_id", groupId).eq("user_id", uid);
+    if (error) {
+      alert("Remove failed — run the DELETE policy SQL in Supabase first.");
+      setManageBusy(s => { const n = new Set(s); n.delete(uid); return n; });
+      return;
+    }
     await loadManagedGroupMembers();
     await loadAll();
     setManageBusy(s => { const n = new Set(s); n.delete(uid); return n; });
@@ -453,7 +452,7 @@ export default function GroupPage() {
         </div>
 
         {/* Sub-tabs */}
-        <div className="flex gap-1 mt-3 -mx-1">
+        <div className="flex gap-1 mt-3">
           {(["leaderboard", "feed", "wall", "challenges", "manage"] as SubTab[]).map(t => (
             <button
               key={t}
@@ -461,7 +460,7 @@ export default function GroupPage() {
               className={`text-[10px] font-black tracking-widest uppercase px-2.5 py-1.5 rounded-xl transition-all capitalize
                 ${subTab === t ? "bg-lime-400/20 text-lime-400" : "text-white/25 hover:text-white/50"}`}
             >
-              {t}
+              {t === "leaderboard" ? "Board" : t === "challenges" ? "Duels" : t}
             </button>
           ))}
         </div>
