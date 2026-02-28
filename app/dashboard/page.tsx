@@ -192,9 +192,10 @@ export default function DashboardPage() {
 
   // Arc geometry
   const R = 56; const C = 2 * Math.PI * R;
-  const arcColor = winRate >= 60 ? "#a3e635" : winRate >= 40 ? "#f59e0b" : "#ef4444";
-  const glowColor = winRate >= 60 ? "rgba(163,230,53,0.55)" : winRate >= 40 ? "rgba(245,158,11,0.55)" : "rgba(239,68,68,0.55)";
-  const bgGlowColor = winRate >= 60 ? "#a3e635" : winRate >= 40 ? "#f59e0b" : "#ef4444";
+  const noMatches = matches.length === 0;
+  const arcColor = noMatches ? "#d1d5db" : winRate >= 60 ? "#a3e635" : winRate >= 40 ? "#f59e0b" : "#ef4444";
+  const glowColor = noMatches ? "rgba(0,0,0,0)" : winRate >= 60 ? "rgba(163,230,53,0.55)" : winRate >= 40 ? "rgba(245,158,11,0.55)" : "rgba(239,68,68,0.55)";
+  const bgGlowColor = noMatches ? "transparent" : winRate >= 60 ? "#a3e635" : winRate >= 40 ? "#f59e0b" : "#ef4444";
 
   return (
     <>
@@ -243,105 +244,26 @@ export default function DashboardPage() {
 
       <div className="px-5 py-5 space-y-5">
 
-        {matches.length === 0 ? (
-          <>
-            {/* Empty hero */}
-            <div className="pt-6 pb-2 flex flex-col items-center text-center space-y-1">
-              <p className="text-gray-300 text-xs font-black tracking-[0.3em] uppercase">Matchbook</p>
-              <h1 className="text-2xl font-black text-gray-900 mt-1">Dashboard</h1>
-            </div>
-            <div className="rounded-2xl border border-gray-200 bg-gray-50 p-8 text-center space-y-3">
-              <p className="text-4xl">🎾</p>
-              <p className="text-gray-900 font-bold">No matches yet</p>
-              <p className="text-gray-500 text-sm">Log your first match to unlock your dashboard.</p>
-              <Link href="/log" className="inline-block mt-2 bg-lime-400 text-black px-5 py-2.5 rounded-2xl text-sm font-black hover:bg-lime-300 transition-all">
-                + Log a Match
-              </Link>
-            </div>
-            {/* Still show challenges even if no matches */}
-            {dashChallenges.filter(c => !dismissedChallengeIds.has(c.id)).length > 0 && (
-              <section className="space-y-3">
-                <p className="text-xs font-black tracking-widest uppercase text-gray-400">
-                  Challenges <span className="text-lime-700">({dashChallenges.filter(c => !dismissedChallengeIds.has(c.id)).length})</span>
-                </p>
-                <div className="rounded-2xl border border-gray-200 bg-gray-50 divide-y divide-white/[0.06]">
-                  {dashChallenges.filter(c => !dismissedChallengeIds.has(c.id)).map(c => (
-                    <div key={c.id} className="px-4 py-3">
-                      <div className="flex items-start justify-between gap-2">
-                        <div>
-                          <p className="text-sm font-semibold text-gray-800">
-                            {c.isReceived ? `${c.challengerName} challenged you` : `vs ${c.opponentName}`}
-                          </p>
-                          <p className="text-xs text-gray-400 mt-0.5">
-                            {c.type === "team" ? "Team" : "Group"}: {c.contextName}
-                          </p>
-                        </div>
-                        <div className="flex gap-2 flex-shrink-0">
-                          {c.status === "accepted" ? (
-                            <>
-                              <Link
-                                href={`/log?opponent=${encodeURIComponent(c.isReceived ? c.challengerName : c.opponentName)}&challengeId=${c.id}&challengeType=${c.type}`}
-                                className="text-xs font-black text-lime-700 bg-lime-50 px-3 py-1.5 rounded-xl hover:bg-lime-100 transition-all"
-                              >
-                                Log Match
-                              </Link>
-                              <button
-                                onClick={() => setDismissedChallengeIds(s => new Set(s).add(c.id))}
-                                className="text-xs font-bold text-gray-300 hover:text-gray-500 transition-colors"
-                                title="Dismiss notification"
-                              >
-                                ×
-                              </button>
-                            </>
-                          ) : c.isReceived ? (
-                            <>
-                              <button
-                                onClick={() => declineChallenge(c)}
-                                disabled={challengeBusy.has(c.id)}
-                                className="text-xs font-bold text-gray-500 bg-white/5 border border-gray-200 px-3 py-1.5 rounded-xl hover:text-red-600/70 hover:border-red-400/20 transition-all active:scale-95 disabled:opacity-40"
-                              >
-                                Decline
-                              </button>
-                              <button
-                                onClick={() => acceptChallenge(c)}
-                                disabled={challengeBusy.has(c.id)}
-                                className="text-xs font-black text-lime-700 bg-lime-50 px-3 py-1.5 rounded-xl hover:bg-lime-100 transition-all active:scale-95 disabled:opacity-40"
-                              >
-                                Accept
-                              </button>
-                            </>
-                          ) : (
-                            <span className="text-[10px] font-black px-2 py-1 rounded-lg text-gray-400 bg-white/5">
-                              Pending
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </section>
-            )}
-          </>
-        ) : (
-          <>
+        <>
             {/* ── Hero ── */}
             <div className="relative flex flex-col items-center pt-4 pb-2 overflow-hidden">
-              {/* Background glow blob */}
-              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-56 h-56 rounded-full blur-[70px] opacity-25 pointer-events-none"
-                style={{ background: bgGlowColor }} />
+              {/* Background glow blob — only when there's data */}
+              {!noMatches && (
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-56 h-56 rounded-full blur-[70px] opacity-25 pointer-events-none"
+                  style={{ background: bgGlowColor }} />
+              )}
 
               <p className="text-gray-300 text-[10px] font-black tracking-[0.35em] uppercase mb-5 z-10">Matchbook</p>
 
               {/* Win rate arc */}
               <div className="relative w-36 h-36 flex items-center justify-center z-10">
                 <svg width="144" height="144" viewBox="0 0 144 144" className="absolute inset-0 -rotate-90">
-                  <circle cx="72" cy="72" r={R} fill="none" stroke="white" strokeOpacity="0.06" strokeWidth="10" />
+                  <circle cx="72" cy="72" r={R} fill="none" stroke="#e5e7eb" strokeWidth="10" />
                   <circle
                     cx="72" cy="72" r={R} fill="none"
                     stroke={arcColor} strokeWidth="10" strokeLinecap="round"
                     strokeDasharray={`${(winRate / 100) * C} ${C}`}
-                    style={{ filter: `drop-shadow(0 0 10px ${glowColor})` }}
+                    style={{ filter: noMatches ? "none" : `drop-shadow(0 0 10px ${glowColor})` }}
                   />
                 </svg>
                 <div className="text-center z-10">
@@ -363,13 +285,23 @@ export default function DashboardPage() {
               </div>
             </div>
 
+            {/* New-user nudge */}
+            {noMatches && (
+              <div className="flex items-center justify-between gap-3 rounded-2xl border border-lime-200 bg-lime-50 px-4 py-3">
+                <p className="text-sm font-semibold text-lime-800">Log your first match to fill in your stats!</p>
+                <Link href="/log" className="flex-shrink-0 text-sm font-black text-black bg-lime-400 px-4 py-2 rounded-xl hover:bg-lime-300 transition-all active:scale-95">
+                  + Log
+                </Link>
+              </div>
+            )}
+
             {/* ── Challenges ── */}
             {dashChallenges.filter(c => !dismissedChallengeIds.has(c.id)).length > 0 && (
               <section className="space-y-3">
                 <p className="text-xs font-black tracking-widest uppercase text-gray-400">
                   Challenges <span className="text-lime-700">({dashChallenges.filter(c => !dismissedChallengeIds.has(c.id)).length})</span>
                 </p>
-                <div className="rounded-2xl border border-gray-200 bg-gray-50 divide-y divide-white/[0.06]">
+                <div className="rounded-2xl border border-gray-200 bg-gray-50 divide-y divide-gray-100">
                   {dashChallenges.filter(c => !dismissedChallengeIds.has(c.id)).map(c => (
                     <div key={c.id} className="px-4 py-3">
                       <div className="flex items-start justify-between gap-2">
@@ -416,7 +348,7 @@ export default function DashboardPage() {
                               </button>
                             </>
                           ) : (
-                            <span className="text-[10px] font-black px-2 py-1 rounded-lg text-gray-400 bg-white/5">
+                            <span className="text-[10px] font-black px-2 py-1 rounded-lg text-gray-400 bg-gray-100">
                               Pending
                             </span>
                           )}
@@ -462,7 +394,7 @@ export default function DashboardPage() {
             )}
 
             {/* Recommended Focus */}
-            <InsightCard icon="🎯" label="Recommended Focus" text={focus} type="focus" />
+            {focus && <InsightCard icon="🎯" label="Recommended Focus" text={focus} type="focus" />}
 
             {/* Quick Links */}
             <div className="grid grid-cols-2 gap-3 pt-1">
@@ -515,7 +447,6 @@ export default function DashboardPage() {
               </Link>
             </div>
           </>
-        )}
       </div>
 
       <BottomNav active="dashboard" />
