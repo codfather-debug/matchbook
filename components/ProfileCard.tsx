@@ -14,7 +14,7 @@ interface ProfileData {
   wins: number;
   losses: number;
   winPct: number;
-  recentMatches: { id: string; opponentName: string; result: string; surface: string }[];
+  recentMatches: { id: string; opponentName: string; result: string; surface: string; score: string }[];
 }
 
 export default function ProfileCard({ userId, onClose }: Props) {
@@ -30,7 +30,8 @@ export default function ProfileCard({ userId, onClose }: Props) {
           .order("created_at", { ascending: false })
           .limit(100),
       ]);
-      const rows = (matches ?? []) as { id: string; data: { opponentName?: string; result?: string; surface?: string } }[];
+      type MatchRow = { id: string; data: { opponentName?: string; result?: string; surface?: string; score?: { sets: { player: number | null; opponent: number | null }[] } } };
+      const rows = (matches ?? []) as MatchRow[];
       const wins = rows.filter(m => m.data?.result === "win").length;
       const losses = rows.filter(m => m.data?.result === "loss").length;
       const total = wins + losses;
@@ -41,12 +42,17 @@ export default function ProfileCard({ userId, onClose }: Props) {
         wins,
         losses,
         winPct: total > 0 ? Math.round((wins / total) * 100) : 0,
-        recentMatches: rows.slice(0, 5).map(m => ({
-          id: m.id,
-          opponentName: m.data?.opponentName ?? "Unknown",
-          result: m.data?.result ?? "",
-          surface: m.data?.surface ?? "",
-        })),
+        recentMatches: rows.slice(0, 5).map(m => {
+          const sets = (m.data?.score?.sets ?? []).filter(s => s.player !== null && s.opponent !== null);
+          const score = sets.map(s => `${s.player}-${s.opponent}`).join(", ");
+          return {
+            id: m.id,
+            opponentName: m.data?.opponentName ?? "Unknown",
+            result: m.data?.result ?? "",
+            surface: m.data?.surface ?? "",
+            score,
+          };
+        }),
       });
     }
     load();
@@ -115,8 +121,11 @@ export default function ProfileCard({ userId, onClose }: Props) {
                       key={m.id}
                       className="flex items-center justify-between bg-gray-50 border border-gray-100 rounded-xl px-3 py-2"
                     >
-                      <p className="text-sm text-gray-700 truncate">vs {m.opponentName}</p>
-                      <div className="flex items-center gap-2 flex-shrink-0">
+                      <div className="min-w-0">
+                        <p className="text-sm text-gray-700 truncate">vs {m.opponentName}</p>
+                        {m.score && <p className="text-[10px] text-gray-400 mt-0.5">{m.score}</p>}
+                      </div>
+                      <div className="flex items-center gap-2 flex-shrink-0 ml-2">
                         <span className="text-[10px] text-gray-400 capitalize">{m.surface}</span>
                         <span className={`text-xs font-black px-1.5 py-0.5 rounded-lg ${
                           m.result === "win" ? "text-lime-700 bg-lime-50" : "text-red-600/70 bg-red-400/10"
