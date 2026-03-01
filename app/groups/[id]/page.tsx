@@ -766,20 +766,24 @@ export default function GroupPage() {
                           <span className="text-xs text-gray-400 flex-shrink-0">Waiting…</span>
                         )}
                         {c.status === "accepted" && (
-                          <div className="flex gap-2 flex-shrink-0">
-                            <Link
-                              href={`/log?opponent=${encodeURIComponent(isChallenger ? c.opponentName : c.challengerName)}&challengeId=${c.id}&challengeType=group&returnTo=/groups/${groupId}`}
-                              className="text-xs font-black text-lime-700 bg-lime-50 px-2.5 py-1.5 rounded-xl hover:bg-lime-100 transition-all"
-                            >
-                              Log Match
-                            </Link>
-                            <button
-                              onClick={() => respondChallenge(c.id, false)}
-                              className="text-xs font-bold text-red-500 hover:text-red-600 transition-colors"
-                              title="Cancel challenge"
-                            >
-                              ×
-                            </button>
+                          <div className="mt-2 w-full rounded-xl border border-lime-300 bg-lime-50 px-3 py-2.5 space-y-2">
+                            <p className="text-xs font-bold text-lime-800">Challenge accepted! Log your match result below — both players log separately.</p>
+                            <div className="flex items-center gap-2">
+                              <Link
+                                href={`/log?opponent=${encodeURIComponent(isChallenger ? c.opponentName : c.challengerName)}&challengeId=${c.id}&challengeType=group&returnTo=/groups/${groupId}`}
+                                className="flex-1 text-center text-xs font-black text-black bg-lime-400 py-2 rounded-lg hover:bg-lime-300 transition-all active:scale-95"
+                              >
+                                Log My Match →
+                              </Link>
+                              <button
+                                onClick={() => respondChallenge(c.id, false)}
+                                disabled={challengeBusy.has(c.id)}
+                                className="text-xs font-bold text-red-400 hover:text-red-600 transition-colors disabled:opacity-40 px-1"
+                                title="Cancel challenge"
+                              >
+                                Cancel
+                              </button>
+                            </div>
                           </div>
                         )}
                         {c.status === "completed" && c.match_id && (

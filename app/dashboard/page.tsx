@@ -308,7 +308,7 @@ export default function DashboardPage() {
                 </p>
                 <div className="rounded-2xl border border-gray-200 bg-gray-50 divide-y divide-gray-100">
                   {dashChallenges.filter(c => !dismissedChallengeIds.has(c.id)).map(c => (
-                    <div key={c.id} className="px-4 py-3">
+                    <div key={c.id} className="px-4 py-3 space-y-2">
                       <div className="flex items-start justify-between gap-2">
                         <div>
                           <p className="text-sm font-semibold text-gray-800">
@@ -318,47 +318,49 @@ export default function DashboardPage() {
                             {c.type === "team" ? "Team" : "Group"}: {c.contextName}
                           </p>
                         </div>
-                        <div className="flex gap-2 flex-shrink-0">
-                          {c.status === "accepted" ? (
-                            <>
-                              <Link
-                                href={`/log?opponent=${encodeURIComponent(c.isReceived ? c.challengerName : c.opponentName)}&challengeId=${c.id}&challengeType=${c.type}`}
-                                className="text-xs font-black text-lime-700 bg-lime-50 px-3 py-1.5 rounded-xl hover:bg-lime-100 transition-all"
-                              >
-                                Log Match
-                              </Link>
-                              <button
-                                onClick={() => setDismissedChallengeIds(s => new Set(s).add(c.id))}
-                                className="text-xs font-bold text-gray-300 hover:text-gray-500 transition-colors"
-                                title="Dismiss notification"
-                              >
-                                ×
-                              </button>
-                            </>
-                          ) : c.isReceived ? (
-                            <>
-                              <button
-                                onClick={() => declineChallenge(c)}
-                                disabled={challengeBusy.has(c.id)}
-                                className="text-xs font-bold text-gray-500 bg-white/5 border border-gray-200 px-3 py-1.5 rounded-xl hover:text-red-600/70 hover:border-red-400/20 transition-all active:scale-95 disabled:opacity-40"
-                              >
-                                Decline
-                              </button>
-                              <button
-                                onClick={() => acceptChallenge(c)}
-                                disabled={challengeBusy.has(c.id)}
-                                className="text-xs font-black text-lime-700 bg-lime-50 px-3 py-1.5 rounded-xl hover:bg-lime-100 transition-all active:scale-95 disabled:opacity-40"
-                              >
-                                Accept
-                              </button>
-                            </>
-                          ) : (
-                            <span className="text-[10px] font-black px-2 py-1 rounded-lg text-gray-400 bg-gray-100">
-                              Pending
-                            </span>
-                          )}
-                        </div>
+                        {c.status === "pending" && c.isReceived && (
+                          <div className="flex gap-2 flex-shrink-0">
+                            <button
+                              onClick={() => declineChallenge(c)}
+                              disabled={challengeBusy.has(c.id)}
+                              className="text-xs font-bold text-gray-500 bg-white/5 border border-gray-200 px-3 py-1.5 rounded-xl hover:text-red-600/70 hover:border-red-400/20 transition-all active:scale-95 disabled:opacity-40"
+                            >
+                              Decline
+                            </button>
+                            <button
+                              onClick={() => acceptChallenge(c)}
+                              disabled={challengeBusy.has(c.id)}
+                              className="text-xs font-black text-lime-700 bg-lime-50 px-3 py-1.5 rounded-xl hover:bg-lime-100 transition-all active:scale-95 disabled:opacity-40"
+                            >
+                              Accept
+                            </button>
+                          </div>
+                        )}
+                        {c.status === "pending" && !c.isReceived && (
+                          <span className="text-[10px] font-black px-2 py-1 rounded-lg text-gray-400 bg-gray-100 flex-shrink-0">
+                            Pending
+                          </span>
+                        )}
                       </div>
+                      {c.status === "accepted" && (
+                        <div className="rounded-xl border border-lime-300 bg-lime-50 px-3 py-2.5 space-y-2">
+                          <p className="text-xs font-bold text-lime-800">Challenge accepted! Log your result — both players log separately.</p>
+                          <div className="flex items-center gap-2">
+                            <Link
+                              href={`/log?opponent=${encodeURIComponent(c.isReceived ? c.challengerName : c.opponentName)}&challengeId=${c.id}&challengeType=${c.type}`}
+                              className="flex-1 text-center text-xs font-black text-black bg-lime-400 py-2 rounded-lg hover:bg-lime-300 transition-all active:scale-95"
+                            >
+                              Log My Match →
+                            </Link>
+                            <button
+                              onClick={() => setDismissedChallengeIds(s => new Set(s).add(c.id))}
+                              className="text-xs font-bold text-gray-400 hover:text-gray-600 transition-colors px-1"
+                            >
+                              Dismiss
+                            </button>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
